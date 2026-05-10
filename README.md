@@ -1,28 +1,33 @@
-# Heroes of Might and Magic III UJ Edition
+# HoMM3-UJ
 
-## Team: *Stepan Simak (group 3), Ivan Bohun (group 2), Timur Degteari (group 2).*
+A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
 
-## Description
+This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
 
-A remaster of the legendary strategy game Heroes of Might and Magic III.
+## Platforms
 
-### Basic functionality
+- `core`: Main module with the application logic shared by all platforms.
+- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
 
-1. A lobby where you set the initial parameters for the game: map, town, heroes, etc.
-2. Hero experience levels, attributes: attack, defense, knowledge, spell power, and skills.
-3. Battles with mechanics from the original game: defense, wait, attack, spells, etc.
-4. Battlefield generator.
-5. Basic AI that will control enemy units.
+## Gradle
 
-At this stage, only the *Luck Test* scenario will be available: random-magic chess.
+This project uses [Gradle](https://gradle.org/) to manage dependencies.
+The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
+Useful Gradle tasks and flags:
 
-### Optional functionality
+- `--continue`: when using this flag, errors will not stop the tasks from running.
+- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
+- `--offline`: when using this flag, cached dependency archives will be used.
+- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
+- `build`: builds sources and archives of every project.
+- `cleanEclipse`: removes Eclipse project data.
+- `cleanIdea`: removes IntelliJ project data.
+- `clean`: removes `build` folders, which store compiled classes and built archives.
+- `eclipse`: generates Eclipse project data.
+- `idea`: generates IntelliJ project data.
+- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
+- `lwjgl3:run`: starts the application.
+- `test`: runs unit tests (if any).
 
-1. Offline PvP.
-2. Online PvP.
-3. Map generator and the ability for heroes to move around the map.
-4. Towns.
-5. Additional objects on the map.
-
-
-### Frameworks: libGDX, Grable.
+Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
+For example, `core:clean` removes `build` folder only from the `core` project.
