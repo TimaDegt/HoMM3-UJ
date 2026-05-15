@@ -1,4 +1,4 @@
-package io.github.heroes;
+package io.github.heroes.view;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
@@ -27,7 +27,10 @@ import io.github.heroes.model.Player;
 import io.github.heroes.model.Position;
 import io.github.heroes.model.UnitStack;
 import io.github.heroes.model.UnitType;
-import io.github.heroes.view.BattleViewConfig;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import java.util.List;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 
 public class BattleScreen extends ScreenAdapter {
     private com.badlogic.gdx.graphics.glutils.ShapeRenderer shapeRenderer;
@@ -37,6 +40,7 @@ public class BattleScreen extends ScreenAdapter {
     private final BattleController battleController;
     private Stage stage;
     private Skin skin;
+    private Table queueTable;
 
     private Map<UnitType, Texture> unitTextures;
 
@@ -47,12 +51,12 @@ public class BattleScreen extends ScreenAdapter {
         this.game = game;
         this.battleController = battleController;
         stage = new Stage(new ScreenViewport());
-        Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
 
         loadTextures();
         setupUI();
         setupInput();
+        updateQueueUI();
     }
 
     private void loadTextures() {
@@ -75,16 +79,27 @@ public class BattleScreen extends ScreenAdapter {
             }
         });
         table.add(backButton).pad(20);
+        queueTable = new Table();
+        queueTable.setFillParent(true);
+        queueTable.bottom();
+        stage.addActor(queueTable);
     }
 
+
     private void setupInput() {
-        stage.addListener(new InputListener() {
+        InputMultiplexer multiplexer = new InputMultiplexer();
+
+        multiplexer.addProcessor(stage);
+
+        multiplexer.addProcessor(new InputAdapter() {
             @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                handleBattlefieldClick(x, y);
-                return false;
+            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                float worldY = Gdx.graphics.getHeight() - screenY;
+                handleBattlefieldClick(screenX, worldY);
+                return true;
             }
         });
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     public void render(float delta) {
@@ -163,11 +178,29 @@ public class BattleScreen extends ScreenAdapter {
         }
 
         Position clickedPosition = screenToPosition(x, y);
-        if (clickedPosition == null || isOccupied(clickedPosition)) {
+        if (clickedPosition == null) {
+            System.out.println("LOG: Клік повз гекси");
             return;
         }
 
-        battleController.performAction(new MoveAction(battleController.getActiveUnit(), clickedPosition));
+        if (isOccupied(clickedPosition)) {
+            System.out.println("LOG: Гекс зайнятий іншим юнітом!");
+            return;
+        }
+
+        System.out.println("LOG: Спроба ходу на X:" + clickedPosition.x() + " Y:" + clickedPosition.y());
+
+        try {
+            // Робимо хід
+            battleController.performAction(new MoveAction(battleController.getActiveUnit(), clickedPosition));
+            System.out.println("LOG: Хід успішний!");
+
+            updateQueueUI();
+
+        } catch (Exception e) {
+            System.out.println("LOG: Помилка під час ходу: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private Position screenToPosition(float screenX, float screenY) {
@@ -219,5 +252,44 @@ public class BattleScreen extends ScreenAdapter {
             vertices[i * 2 + 1] = centerY + size * (float)Math.sin(angle_rad);
         }
         shapeRenderer.polygon(vertices);
+    }
+
+
+    public void updateQueueUI() {
+        if (queueTable == null) return;
+
+        queueTable.clear();
+        queueTable.padBottom(20);
+        List<UnitStack> queue = battleController.getTurnQueueOrder();
+        UnitStack activeUnit = battleController.getActiveUnit();
+
+        if (queue == null || queue.isEmpty()) return;
+
+        boolean startDrawing = false;
+
+        for (UnitStack unit : queue) {
+            if (!unit.isAlive()) continue;
+
+            if (unit == activeUnit) {
+                startDrawing = true;
+            }
+
+            if (startDrawing) {
+                String text = unit.getType().name() + " (" + unit.getCount() + ")";
+                Label unitLabel = new Label(text, skin);
+
+                if (unit == activeUnit) {
+                    unitLabel.setText("=> " + text + " <=");
+                    unitLabel.setFontScale(1.2f);
+                }
+                if (unit.getOwner() == Player.PLAYER_ONE) {
+                    unitLabel.setColor(0.5f, 0.7f, 1f, 1f);
+                } else {
+                    unitLabel.setColor(1f, 0.5f, 0.5f, 1f);
+                }
+
+                queueTable.add(unitLabel).padLeft(15).padRight(15);
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-package io.github.heroes;
+package io.github.heroes.view;
 
 import com.badlogic.gdx.Game;
 //lol
