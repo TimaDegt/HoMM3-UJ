@@ -13,16 +13,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.heroes.combat.BattleController;
+import io.github.heroes.model.Army;
 import io.github.heroes.model.BattleField;
+import io.github.heroes.model.Player;
 import io.github.heroes.model.Position;
+import io.github.heroes.model.UnitStack;
+import io.github.heroes.view.BattleViewConfig;
 
 public class BattleScreen extends ScreenAdapter{
-    private static final float HEX_SIZE = 30f;
-    private static final float HEX_WIDTH = HEX_SIZE * (float)Math.sqrt(3);
-    private static final float HEX_HEIGHT = HEX_SIZE * 2f;
-    private static final float FIELD_START_X = 50f;
-    private static final float FIELD_START_Y = 100f;
-
     private com.badlogic.gdx.graphics.glutils.ShapeRenderer shapeRenderer;
     private final Main game;
     private final BattleController battleController;
@@ -63,10 +61,13 @@ public class BattleScreen extends ScreenAdapter{
         for(int row=0; row<field.getHeight(); row++){
             for(int col=0; col<field.getWidth(); col++){
                 Vector2 center = positionToScreen(new Position(col, row));
-                drawHexagon(center.x, center.y, HEX_SIZE);
+                drawHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE);
             }
         }
         shapeRenderer.end();
+
+        drawUnits();
+
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
     }
@@ -80,14 +81,41 @@ public class BattleScreen extends ScreenAdapter{
     }
 
     private Vector2 positionToScreen(Position position) {
-        float x = FIELD_START_X + position.x() * HEX_WIDTH;
-        float y = FIELD_START_Y + position.y() * HEX_HEIGHT * 0.75f;
+        float x = BattleViewConfig.FIELD_START_X + position.x() * BattleViewConfig.HEX_WIDTH;
+        float y = BattleViewConfig.FIELD_START_Y + position.y() * BattleViewConfig.HEX_HEIGHT * 0.75f;
 
         if (position.y() % 2 == 1) {
-            x += HEX_WIDTH / 2;
+            x += BattleViewConfig.HEX_WIDTH / 2;
         }
 
         return new Vector2(x, y);
+    }
+
+    private void drawUnits() {
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        drawArmy(battleController.getState().getPlayerOne().getArmy());
+        drawArmy(battleController.getState().getPlayerTwo().getArmy());
+        shapeRenderer.end();
+    }
+
+    private void drawArmy(Army army) {
+        for (UnitStack unit : army.getUnits()) {
+            if (unit.isAlive()) {
+                drawUnit(unit);
+            }
+        }
+    }
+
+    private void drawUnit(UnitStack unit) {
+        Vector2 center = positionToScreen(unit.getPosition());
+
+        if (unit.getOwner() == Player.PLAYER_ONE) {
+            shapeRenderer.setColor(0.1f, 0.25f, 0.9f, 1);
+        } else {
+            shapeRenderer.setColor(0.85f, 0.15f, 0.1f, 1);
+        }
+
+        shapeRenderer.circle(center.x, center.y, BattleViewConfig.UNIT_RADIUS);
     }
 
     private void drawHexagon(float centerX, float centerY, float size) {
