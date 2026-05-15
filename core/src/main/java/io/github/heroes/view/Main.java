@@ -1,7 +1,6 @@
-package io.github.heroes;
+package io.github.heroes.view;
 
 import com.badlogic.gdx.Game;
-import io.github.heroes.view.LobbyScreen;
 
 //lol
 public class Main extends Game {

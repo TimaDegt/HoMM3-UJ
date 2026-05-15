@@ -1,6 +1,8 @@
 package io.github.heroes.view;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -8,19 +10,19 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import io.github.heroes.Main;
 import io.github.heroes.combat.BattleController;
 import io.github.heroes.combat.MoveAndAttackAction;
 import io.github.heroes.combat.MoveAction;
 import io.github.heroes.model.Army;
 import io.github.heroes.model.BattleField;
+import io.github.heroes.model.Player;
 import io.github.heroes.model.Position;
 import io.github.heroes.model.UnitStack;
 import io.github.heroes.model.UnitType;
@@ -28,6 +30,7 @@ import io.github.heroes.model.UnitType;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -38,9 +41,10 @@ public class BattleScreen extends ScreenAdapter {
 
     private final Main game;
     private final BattleController battleController;
+    private final BattlefieldGeometry battlefieldGeometry;
     private Stage stage;
     private Skin skin;
-    private final BattlefieldGeometry battlefieldGeometry;
+    private Table queueTable;
 
     private Map<UnitType, Texture> unitTextures;
 
@@ -52,12 +56,12 @@ public class BattleScreen extends ScreenAdapter {
         this.battleController = battleController;
         this.battlefieldGeometry = new BattlefieldGeometry();
         stage = new Stage(new ScreenViewport());
-        Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
 
         loadTextures();
         setupUI();
         setupInput();
+        updateQueueUI();
     }
 
     private void loadTextures() {
@@ -72,6 +76,7 @@ public class BattleScreen extends ScreenAdapter {
         table.setFillParent(true);
         table.top().right();
         stage.addActor(table);
+
         TextButton backButton = new TextButton("Back to lobby", skin);
         backButton.addListener(new ClickListener() {
             @Override
@@ -80,16 +85,25 @@ public class BattleScreen extends ScreenAdapter {
             }
         });
         table.add(backButton).pad(20);
+
+        queueTable = new Table();
+        queueTable.setFillParent(true);
+        queueTable.bottom();
+        stage.addActor(queueTable);
     }
 
     private void setupInput() {
-        stage.addListener(new InputListener() {
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(new InputAdapter() {
             @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                handleBattlefieldClick(x, y);
-                return false;
+            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                float worldY = Gdx.graphics.getHeight() - screenY;
+                handleBattlefieldClick(screenX, worldY);
+                return true;
             }
         });
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     public void render(float delta) {
@@ -99,8 +113,8 @@ public class BattleScreen extends ScreenAdapter {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
-        for(int row=0; row<field.getHeight(); row++){
-            for(int col=0; col<field.getWidth(); col++){
+        for (int row = 0; row < field.getHeight(); row++) {
+            for (int col = 0; col < field.getWidth(); col++) {
                 Vector2 center = battlefieldGeometry.positionToScreen(new Position(col, row));
                 drawHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE);
             }
@@ -112,11 +126,11 @@ public class BattleScreen extends ScreenAdapter {
         stage.draw();
     }
 
-    public void resize(int width, int height){
+    public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
-    public void dispose(){
+    public void dispose() {
         stage.dispose();
         skin.dispose();
         shapeRenderer.dispose();
@@ -174,6 +188,7 @@ public class BattleScreen extends ScreenAdapter {
         UnitStack activeUnit = battleController.getActiveUnit();
         if (canReach(activeUnit, clickedPosition)) {
             battleController.performAction(new MoveAction(activeUnit, clickedPosition));
+            updateQueueUI();
         }
     }
 
@@ -185,14 +200,12 @@ public class BattleScreen extends ScreenAdapter {
         }
 
         Position attackPosition = findNearestAttackPosition(clickedUnit.getPosition(), x, y);
-        if (attackPosition == null) {
-            return;
-        }
-        if (!canReach(activeUnit, attackPosition)) {
+        if (attackPosition == null || !canReach(activeUnit, attackPosition)) {
             return;
         }
 
         battleController.performAction(new MoveAndAttackAction(activeUnit, attackPosition, clickedUnit));
+        updateQueueUI();
     }
 
     private boolean isOccupied(Position position) {
@@ -301,10 +314,48 @@ public class BattleScreen extends ScreenAdapter {
         float[] vertices = new float[12];
 
         for (int i = 0; i < 6; i++) {
-            double angle_rad = Math.PI/180 * (60*i-30);
-            vertices[i * 2] = centerX+size * (float)Math.cos(angle_rad);
+            double angle_rad = Math.PI / 180 * (60 * i - 30);
+            vertices[i * 2] = centerX + size * (float)Math.cos(angle_rad);
             vertices[i * 2 + 1] = centerY + size * (float)Math.sin(angle_rad);
         }
         shapeRenderer.polygon(vertices);
+    }
+
+    public void updateQueueUI() {
+        if (queueTable == null) return;
+
+        queueTable.clear();
+        queueTable.padBottom(20);
+        List<UnitStack> queue = battleController.getTurnQueueOrder();
+        UnitStack activeUnit = battleController.getActiveUnit();
+
+        if (queue == null || queue.isEmpty()) return;
+
+        boolean startDrawing = false;
+
+        for (UnitStack unit : queue) {
+            if (!unit.isAlive()) continue;
+
+            if (unit == activeUnit) {
+                startDrawing = true;
+            }
+
+            if (startDrawing) {
+                String text = unit.getType().name() + " (" + unit.getCount() + ")";
+                Label unitLabel = new Label(text, skin);
+
+                if (unit == activeUnit) {
+                    unitLabel.setText("=> " + text + " <=");
+                    unitLabel.setFontScale(1.2f);
+                }
+                if (unit.getOwner() == Player.PLAYER_ONE) {
+                    unitLabel.setColor(0.5f, 0.7f, 1f, 1f);
+                } else {
+                    unitLabel.setColor(1f, 0.5f, 0.5f, 1f);
+                }
+
+                queueTable.add(unitLabel).padLeft(15).padRight(15);
+            }
+        }
     }
 }

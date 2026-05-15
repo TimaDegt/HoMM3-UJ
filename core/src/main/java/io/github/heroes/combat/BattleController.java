@@ -2,6 +2,7 @@ package io.github.heroes.combat;
 
 import io.github.heroes.model.BattleState;
 import io.github.heroes.model.UnitStack;
+import java.util.List;
 
 public class BattleController {
     private final BattleState state;
@@ -46,5 +47,9 @@ public class BattleController {
 
     public int getRound() {
         return state.getRound();
+    }
+
+    public List<UnitStack> getTurnQueueOrder() {
+        return turnQueue.getQueue();
     }
 }

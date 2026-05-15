@@ -86,4 +86,8 @@ public class TurnQueue {
     private void updateActiveUnit() {
         state.setActiveUnit(getCurrentUnit());
     }
+
+    public List<UnitStack> getQueue() {
+        return queue;
+    }
 }
