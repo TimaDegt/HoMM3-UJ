@@ -21,12 +21,7 @@ import io.github.heroes.combat.BattlePathFinder;
 import io.github.heroes.combat.BattleController;
 import io.github.heroes.combat.MoveAndAttackAction;
 import io.github.heroes.combat.MoveAction;
-import io.github.heroes.model.Army;
-import io.github.heroes.model.BattleField;
-import io.github.heroes.model.Player;
-import io.github.heroes.model.Position;
-import io.github.heroes.model.UnitStack;
-import io.github.heroes.model.UnitType;
+import io.github.heroes.model.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,10 +38,12 @@ public class BattleScreen extends ScreenAdapter {
     private Stage stage;
     private Skin skin;
     private Table queueTable;
+    private BattlePathFinder pathFinder;
 
     private Map<UnitType, Texture> unitTextures;
 
     public BattleScreen(Main game, BattleController battleController) {
+        this.pathFinder = new BattlePathFinder(new BattlefieldGeometry());
         shapeRenderer = new ShapeRenderer();
         batch = new SpriteBatch();
 
@@ -120,8 +117,8 @@ public class BattleScreen extends ScreenAdapter {
         }
         shapeRenderer.end();
 
+        drawMovementRange();
         drawActiveUnitHighlight();
-
         drawUnits();
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
@@ -169,6 +166,7 @@ public class BattleScreen extends ScreenAdapter {
             batch.draw(tex, center.x - size / 2f, center.y - size / 2f, size, size);
         }
     }
+
 
     private void handleBattlefieldClick(float x, float y) {
         if (battleController.getState().isFinished()) {
@@ -338,14 +336,57 @@ public class BattleScreen extends ScreenAdapter {
         Vector2 center = battlefieldGeometry.positionToScreen(activeUnit.getPosition());
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
-        Gdx.gl.glLineWidth(3);
+        Gdx.gl.glLineWidth(4);
 
         shapeRenderer.setColor(1, 1, 0, 1);
 
-        drawHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE + 1f);
+        drawHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE + 2f);
 
         shapeRenderer.end();
         Gdx.gl.glLineWidth(1);
+    }
+    private void drawMovementRange() {
+        UnitStack activeUnit = battleController.getActiveUnit();
+        if (activeUnit == null || !activeUnit.isAlive()) return;
+
+        BattleState state = battleController.getState();
+        BattleField field = state.getField();
+
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0.1f, 0.5f, 0.2f, 0.5f);
+        for (int row = 0; row < field.getHeight(); row++) {
+            for (int col = 0; col < field.getWidth(); col++) {
+                Position target = new Position(col, row);
+
+                if (target.equals(activeUnit.getPosition())) continue;
+
+                if (battlePathFinder.canReach(state, activeUnit, target)) {
+                    Vector2 center = battlefieldGeometry.positionToScreen(target);
+                    drawFilledHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE - 2f);
+                }
+            }
+        }
+
+        shapeRenderer.end();
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+
+    }
+    private void drawFilledHexagon(float centerX, float centerY, float size) {
+        float[] x = new float[6];
+        float[] y = new float[6];
+
+        for (int i = 0; i < 6; i++) {
+            double angle_rad = Math.PI / 180 * (60 * i - 30);
+            x[i] = centerX + size * (float)Math.cos(angle_rad);
+            y[i] = centerY + size * (float)Math.sin(angle_rad);
+        }
+
+        for (int i = 0; i < 6; i++) {
+            int next = (i + 1) % 6;
+            shapeRenderer.triangle(centerX, centerY, x[i], y[i], x[next], y[next]);
+        }
     }
 }
