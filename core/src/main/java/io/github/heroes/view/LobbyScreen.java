@@ -1,23 +1,23 @@
-package io.github.heroes;
+package io.github.heroes.view;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import io.github.heroes.Main;
 import io.github.heroes.setup.BattleFactory;
-
 
 public class LobbyScreen extends ScreenAdapter {
     private final Main game;
     private Stage stage;
     private Skin skin;
+
     public LobbyScreen(Main game) {
         this.game = game;
         stage = new Stage(new ScreenViewport());
@@ -48,6 +48,7 @@ public class LobbyScreen extends ScreenAdapter {
         table.row();
         table.add(exitButton).expandX().fillX().uniform().pad(10);
     }
+
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
@@ -55,10 +56,12 @@ public class LobbyScreen extends ScreenAdapter {
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
     }
+
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
+
     @Override
     public void dispose() {
         stage.dispose();
