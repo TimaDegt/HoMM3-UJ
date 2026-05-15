@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.github.heroes.combat.BattleController;
+import io.github.heroes.combat.MoveAndAttackAction;
 import io.github.heroes.combat.MoveAction;
 import io.github.heroes.model.Army;
 import io.github.heroes.model.BattleField;
@@ -163,11 +164,32 @@ public class BattleScreen extends ScreenAdapter {
         }
 
         Position clickedPosition = screenToPosition(x, y);
-        if (clickedPosition == null || isOccupied(clickedPosition)) {
+        if (clickedPosition == null) {
+            return;
+        }
+
+        UnitStack clickedUnit = findUnitAt(clickedPosition);
+        if (clickedUnit != null) {
+            handleUnitClick(clickedUnit, x, y);
             return;
         }
 
         battleController.performAction(new MoveAction(battleController.getActiveUnit(), clickedPosition));
+    }
+
+    private void handleUnitClick(UnitStack clickedUnit, float x, float y) {
+        UnitStack activeUnit = battleController.getActiveUnit();
+
+        if (clickedUnit.getOwner() == activeUnit.getOwner()) {
+            return;
+        }
+
+        Position attackPosition = findNearestAttackPosition(clickedUnit.getPosition(), x, y);
+        if (attackPosition == null) {
+            return;
+        }
+
+        battleController.performAction(new MoveAndAttackAction(activeUnit, attackPosition, clickedUnit));
     }
 
     private Position screenToPosition(float screenX, float screenY) {
@@ -200,6 +222,25 @@ public class BattleScreen extends ScreenAdapter {
             || isOccupiedByArmy(position, battleController.getState().getPlayerTwo().getArmy());
     }
 
+    private UnitStack findUnitAt(Position position) {
+        UnitStack unit = findUnitAtArmy(position, battleController.getState().getPlayerOne().getArmy());
+        if (unit != null) {
+            return unit;
+        }
+
+        return findUnitAtArmy(position, battleController.getState().getPlayerTwo().getArmy());
+    }
+
+    private UnitStack findUnitAtArmy(Position position, Army army) {
+        for (UnitStack unit : army.getUnits()) {
+            if (unit.isAlive() && unit.getPosition().equals(position)) {
+                return unit;
+            }
+        }
+
+        return null;
+    }
+
     private boolean isOccupiedByArmy(Position position, Army army) {
         for (UnitStack unit : army.getUnits()) {
             if (unit.isAlive() && unit.getPosition().equals(position)) {
@@ -208,6 +249,54 @@ public class BattleScreen extends ScreenAdapter {
         }
 
         return false;
+    }
+
+    private Position findNearestAttackPosition(Position targetPosition, float clickX, float clickY) {
+        Position nearestPosition = null;
+        float nearestDistance = Float.MAX_VALUE;
+
+        for (Position neighbor : getNeighbors(targetPosition)) {
+            if (!battleController.getState().getField().isInside(neighbor)) {
+                continue;
+            }
+            if (isOccupied(neighbor) && !neighbor.equals(battleController.getActiveUnit().getPosition())) {
+                continue;
+            }
+
+            Vector2 center = positionToScreen(neighbor);
+            float distance = center.dst(clickX, clickY);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestPosition = neighbor;
+            }
+        }
+
+        return nearestPosition;
+    }
+
+    private Position[] getNeighbors(Position position) {
+        int x = position.x();
+        int y = position.y();
+
+        if (y % 2 == 0) {
+            return new Position[] {
+                new Position(x + 1, y),
+                new Position(x - 1, y),
+                new Position(x, y + 1),
+                new Position(x - 1, y + 1),
+                new Position(x, y - 1),
+                new Position(x - 1, y - 1)
+            };
+        }
+
+        return new Position[] {
+            new Position(x + 1, y),
+            new Position(x - 1, y),
+            new Position(x + 1, y + 1),
+            new Position(x, y + 1),
+            new Position(x + 1, y - 1),
+            new Position(x, y - 1)
+        };
     }
 
     private void drawHexagon(float centerX, float centerY, float size) {
