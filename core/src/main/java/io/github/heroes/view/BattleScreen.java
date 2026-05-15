@@ -111,15 +111,19 @@ public class BattleScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         BattleField field = battleController.getState().getField();
 
+        // 1. Малюємо звичайну сітку
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
-        for (int row = 0; row < field.getHeight(); row++) {
-            for (int col = 0; col < field.getWidth(); col++) {
-                Vector2 center = battlefieldGeometry.positionToScreen(new Position(col, row));
+        for(int row=0; row<field.getHeight(); row++){
+            for(int col=0; col<field.getWidth(); col++){
+                Vector2 center = positionToScreen(new Position(col, row));
                 drawHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE);
             }
         }
         shapeRenderer.end();
+
+        drawActiveUnitHighlight();
+
         drawUnits();
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
@@ -141,6 +145,17 @@ public class BattleScreen extends ScreenAdapter {
         for (Texture tex : unitTextures.values()) {
             tex.dispose();
         }
+    }
+
+    private Vector2 positionToScreen(Position position) {
+        float x = BattleViewConfig.FIELD_START_X + position.x() * BattleViewConfig.HEX_WIDTH;
+        float y = BattleViewConfig.FIELD_START_Y + position.y() * BattleViewConfig.HEX_HEIGHT * 0.75f;
+
+        if (position.y() % 2 == 1) {
+            x += BattleViewConfig.HEX_WIDTH / 2f;
+        }
+
+        return new Vector2(x, y);
     }
 
     private void drawUnits() {
@@ -360,5 +375,22 @@ public class BattleScreen extends ScreenAdapter {
                 queueTable.add(unitLabel).padLeft(15).padRight(15);
             }
         }
+    }
+    private void drawActiveUnitHighlight() {
+        UnitStack activeUnit = battleController.getActiveUnit();
+        if (activeUnit == null || !activeUnit.isAlive()) return;
+
+        Vector2 center = positionToScreen(activeUnit.getPosition());
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+
+        Gdx.gl.glLineWidth(3);
+
+        shapeRenderer.setColor(1, 1, 0, 1);
+
+        drawHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE + 1f);
+
+        shapeRenderer.end();
+        Gdx.gl.glLineWidth(1);
     }
 }
