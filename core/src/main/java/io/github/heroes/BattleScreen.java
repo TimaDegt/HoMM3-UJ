@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -11,15 +12,26 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import io.github.heroes.combat.BattleController;
+import io.github.heroes.model.BattleField;
+import io.github.heroes.model.Position;
 
 public class BattleScreen extends ScreenAdapter{
+    private static final float HEX_SIZE = 30f;
+    private static final float HEX_WIDTH = HEX_SIZE * (float)Math.sqrt(3);
+    private static final float HEX_HEIGHT = HEX_SIZE * 2f;
+    private static final float FIELD_START_X = 50f;
+    private static final float FIELD_START_Y = 100f;
+
     private com.badlogic.gdx.graphics.glutils.ShapeRenderer shapeRenderer;
     private final Main game;
+    private final BattleController battleController;
     private Stage stage;
     private Skin skin;
-    public BattleScreen(Main game) {
+    public BattleScreen(Main game, BattleController battleController) {
         shapeRenderer = new ShapeRenderer();
         this.game = game;
+        this.battleController = battleController;
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
@@ -44,17 +56,14 @@ public class BattleScreen extends ScreenAdapter{
     public void render(float delta){
         Gdx.gl.glClearColor(0.1f, 0.4f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        float hexsz=30f, hexw=hexsz*(float)Math.sqrt(3), hexh=hexsz*2f;
-        float startx=50f, starty=100f;
+        BattleField field = battleController.getState().getField();
+
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
-        for(int row=0; row<11; row++){
-            for(int col=0; col<15; col++){
-                float x=startx+col*hexw, y=starty+(row*hexh*0.75f);
-                if(row%2==1){
-                    x+=hexw/2;
-                }
-                drawHexagon(x, y, hexsz);
+        for(int row=0; row<field.getHeight(); row++){
+            for(int col=0; col<field.getWidth(); col++){
+                Vector2 center = positionToScreen(new Position(col, row));
+                drawHexagon(center.x, center.y, HEX_SIZE);
             }
         }
         shapeRenderer.end();
@@ -68,6 +77,17 @@ public class BattleScreen extends ScreenAdapter{
         stage.dispose();
         skin.dispose();
         shapeRenderer.dispose();
+    }
+
+    private Vector2 positionToScreen(Position position) {
+        float x = FIELD_START_X + position.x() * HEX_WIDTH;
+        float y = FIELD_START_Y + position.y() * HEX_HEIGHT * 0.75f;
+
+        if (position.y() % 2 == 1) {
+            x += HEX_WIDTH / 2;
+        }
+
+        return new Vector2(x, y);
     }
 
     private void drawHexagon(float centerX, float centerY, float size) {

@@ -11,6 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import io.github.heroes.setup.BattleFactory;
+
 
 public class LobbyScreen extends ScreenAdapter {
     private final Main game;
@@ -33,7 +35,7 @@ public class LobbyScreen extends ScreenAdapter {
         startButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y){
-                game.setScreen(new BattleScreen(game));
+                game.setScreen(new BattleScreen(game, BattleFactory.createDemoBattle()));
             }
         });
         exitButton.addListener(new ClickListener() {
