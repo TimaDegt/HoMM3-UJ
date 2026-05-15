@@ -1,7 +1,7 @@
 package io.github.heroes;
 
 import com.badlogic.gdx.Game;
-
+//lol
 public class Main extends Game {
 
     @Override
