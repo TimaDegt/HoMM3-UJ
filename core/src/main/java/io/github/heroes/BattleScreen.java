@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.heroes.combat.BattleController;
+import io.github.heroes.combat.MoveAction;
 import io.github.heroes.model.Army;
 import io.github.heroes.model.BattleField;
 import io.github.heroes.model.Player;
@@ -34,6 +36,7 @@ public class BattleScreen extends ScreenAdapter{
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
         setupUI();
+        setupInput();
     }
     private void setupUI() {
         Table table = new Table();
@@ -49,6 +52,16 @@ public class BattleScreen extends ScreenAdapter{
         });
         table.add(backButton).expandX().fillX().uniform().pad(10);
 
+    }
+
+    private void setupInput() {
+        stage.addListener(new InputListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                handleBattlefieldClick(x, y);
+                return false;
+            }
+        });
     }
 
     public void render(float delta){
@@ -116,6 +129,59 @@ public class BattleScreen extends ScreenAdapter{
         }
 
         shapeRenderer.circle(center.x, center.y, BattleViewConfig.UNIT_RADIUS);
+    }
+
+    private void handleBattlefieldClick(float x, float y) {
+        if (battleController.getState().isFinished()) {
+            return;
+        }
+
+        Position clickedPosition = screenToPosition(x, y);
+        if (clickedPosition == null || isOccupied(clickedPosition)) {
+            return;
+        }
+
+        battleController.performAction(new MoveAction(battleController.getActiveUnit(), clickedPosition));
+    }
+
+    private Position screenToPosition(float screenX, float screenY) {
+        BattleField field = battleController.getState().getField();
+        Position closestPosition = null;
+        float closestDistance = Float.MAX_VALUE;
+
+        for (int row = 0; row < field.getHeight(); row++) {
+            for (int col = 0; col < field.getWidth(); col++) {
+                Position position = new Position(col, row);
+                Vector2 center = positionToScreen(position);
+                float distance = center.dst(screenX, screenY);
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestPosition = position;
+                }
+            }
+        }
+
+        if (closestDistance <= BattleViewConfig.HEX_SIZE) {
+            return closestPosition;
+        }
+
+        return null;
+    }
+
+    private boolean isOccupied(Position position) {
+        return isOccupiedByArmy(position, battleController.getState().getPlayerOne().getArmy())
+            || isOccupiedByArmy(position, battleController.getState().getPlayerTwo().getArmy());
+    }
+
+    private boolean isOccupiedByArmy(Position position, Army army) {
+        for (UnitStack unit : army.getUnits()) {
+            if (unit.isAlive() && unit.getPosition().equals(position)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void drawHexagon(float centerX, float centerY, float size) {
