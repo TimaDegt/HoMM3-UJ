@@ -126,8 +126,11 @@ public class BattleScreen extends ScreenAdapter {
         stage.draw();
     }
 
+    @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+        BattleField field = battleController.getState().getField();
+        BattleViewConfig.updateDimensions(width, height, field.getWidth(), field.getHeight());
     }
 
     public void dispose() {
