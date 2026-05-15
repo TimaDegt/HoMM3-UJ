@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import io.github.heroes.combat.BattlePathFinder;
 import io.github.heroes.combat.BattleController;
 import io.github.heroes.combat.MoveAndAttackAction;
 import io.github.heroes.combat.MoveAction;
@@ -27,13 +28,9 @@ import io.github.heroes.model.Position;
 import io.github.heroes.model.UnitStack;
 import io.github.heroes.model.UnitType;
 
-import java.util.ArrayDeque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
 
 public class BattleScreen extends ScreenAdapter {
     private com.badlogic.gdx.graphics.glutils.ShapeRenderer shapeRenderer;
@@ -42,6 +39,7 @@ public class BattleScreen extends ScreenAdapter {
     private final Main game;
     private final BattleController battleController;
     private final BattlefieldGeometry battlefieldGeometry;
+    private final BattlePathFinder battlePathFinder;
     private Stage stage;
     private Skin skin;
     private Table queueTable;
@@ -55,6 +53,7 @@ public class BattleScreen extends ScreenAdapter {
         this.game = game;
         this.battleController = battleController;
         this.battlefieldGeometry = new BattlefieldGeometry();
+        this.battlePathFinder = new BattlePathFinder(battlefieldGeometry);
         stage = new Stage(new ScreenViewport());
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
 
@@ -111,12 +110,11 @@ public class BattleScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         BattleField field = battleController.getState().getField();
 
-        // 1. Малюємо звичайну сітку
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
         for(int row=0; row<field.getHeight(); row++){
             for(int col=0; col<field.getWidth(); col++){
-                Vector2 center = positionToScreen(new Position(col, row));
+                Vector2 center = battlefieldGeometry.positionToScreen(new Position(col, row));
                 drawHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE);
             }
         }
@@ -145,17 +143,6 @@ public class BattleScreen extends ScreenAdapter {
         for (Texture tex : unitTextures.values()) {
             tex.dispose();
         }
-    }
-
-    private Vector2 positionToScreen(Position position) {
-        float x = BattleViewConfig.FIELD_START_X + position.x() * BattleViewConfig.HEX_WIDTH;
-        float y = BattleViewConfig.FIELD_START_Y + position.y() * BattleViewConfig.HEX_HEIGHT * 0.75f;
-
-        if (position.y() % 2 == 1) {
-            x += BattleViewConfig.HEX_WIDTH / 2f;
-        }
-
-        return new Vector2(x, y);
     }
 
     private void drawUnits() {
@@ -206,7 +193,7 @@ public class BattleScreen extends ScreenAdapter {
         UnitStack activeUnit = battleController.getActiveUnit();
         if (canReach(activeUnit, clickedPosition)) {
             battleController.performAction(new MoveAction(activeUnit, clickedPosition));
-            updateQueueUI();
+            finishTurn();
         }
     }
 
@@ -223,6 +210,15 @@ public class BattleScreen extends ScreenAdapter {
         }
 
         battleController.performAction(new MoveAndAttackAction(activeUnit, attackPosition, clickedUnit));
+        finishTurn();
+    }
+
+    private void finishTurn() {
+        if (battleController.getState().isFinished()) {
+            game.setScreen(new VictoryScreen(game));
+            return;
+        }
+
         updateQueueUI();
     }
 
@@ -284,48 +280,7 @@ public class BattleScreen extends ScreenAdapter {
     }
 
     private boolean canReach(UnitStack unit, Position targetPosition) {
-        int distance = findDistance(unit.getPosition(), targetPosition);
-        return distance >= 0 && distance <= unit.getType().speed;
-    }
-
-    private int findDistance(Position start, Position target) {
-        if (start.equals(target)) {
-            return 0;
-        }
-
-        BattleField field = battleController.getState().getField();
-        Queue<Position> queue = new ArrayDeque<>();
-        Map<Position, Integer> distances = new HashMap<>();
-        Set<Position> visited = new HashSet<>();
-
-        queue.add(start);
-        distances.put(start, 0);
-        visited.add(start);
-
-        while (!queue.isEmpty()) {
-            Position current = queue.remove();
-            int currentDistance = distances.get(current);
-
-            for (Position neighbor : battlefieldGeometry.getNeighbors(current)) {
-                if (!field.isInside(neighbor) || visited.contains(neighbor)) {
-                    continue;
-                }
-                if (isOccupied(neighbor) && !neighbor.equals(target)) {
-                    continue;
-                }
-
-                int nextDistance = currentDistance + 1;
-                if (neighbor.equals(target)) {
-                    return nextDistance;
-                }
-
-                queue.add(neighbor);
-                distances.put(neighbor, nextDistance);
-                visited.add(neighbor);
-            }
-        }
-
-        return -1;
+        return battlePathFinder.canReach(battleController.getState(), unit, targetPosition);
     }
 
     private void drawHexagon(float centerX, float centerY, float size) {
@@ -380,7 +335,7 @@ public class BattleScreen extends ScreenAdapter {
         UnitStack activeUnit = battleController.getActiveUnit();
         if (activeUnit == null || !activeUnit.isAlive()) return;
 
-        Vector2 center = positionToScreen(activeUnit.getPosition());
+        Vector2 center = battlefieldGeometry.positionToScreen(activeUnit.getPosition());
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 
