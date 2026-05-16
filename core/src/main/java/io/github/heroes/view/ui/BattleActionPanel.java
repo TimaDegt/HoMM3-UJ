@@ -123,11 +123,16 @@ public class BattleActionPanel {
 
     private void addActionButton(Table targetTable, String text, ActionButtonType type) {
         TextButton button = new TextButton(text, skin);
+        button.setDisabled(!isEnabledActionButton(type));
         addActionButtonListener(button, type);
         targetTable.add(button)
             .width(BattleViewConfig.ACTION_BUTTON_SIZE)
             .height(BattleViewConfig.ACTION_BUTTON_SIZE)
             .top();
+    }
+
+    private boolean isEnabledActionButton(ActionButtonType type) {
+        return type == ActionButtonType.DEFENCE || type == ActionButtonType.WAIT;
     }
 
     private void addActionButtonListener(TextButton button, ActionButtonType type) {
