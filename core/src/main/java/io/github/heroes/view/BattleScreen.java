@@ -1,6 +1,7 @@
 package io.github.heroes.view;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
@@ -19,6 +20,7 @@ import io.github.heroes.combat.MoveAndAttackAction;
 import io.github.heroes.combat.MoveAction;
 import io.github.heroes.model.*;
 import io.github.heroes.view.ui.BattleActionPanel;
+import io.github.heroes.view.ui.UnitInfoPopup;
 
 public class BattleScreen extends ScreenAdapter {
     private final Main game;
@@ -29,6 +31,7 @@ public class BattleScreen extends ScreenAdapter {
     private final Stage stage;
     private final Skin skin;
     private BattleActionPanel actionPanel;
+    private UnitInfoPopup unitInfoPopup;
 
     public BattleScreen(Main game, BattleController battleController) {
         this.game = game;
@@ -60,6 +63,13 @@ public class BattleScreen extends ScreenAdapter {
 
         actionPanel = new BattleActionPanel(skin, battleController);
         actionPanel.addTo(stage);
+
+        setupUnitInfoPopup();
+    }
+
+    private void setupUnitInfoPopup() {
+        unitInfoPopup = new UnitInfoPopup(skin);
+        unitInfoPopup.addTo(stage);
     }
 
     private void setupInput() {
@@ -69,8 +79,13 @@ public class BattleScreen extends ScreenAdapter {
             @Override
             public boolean touchDown(int screenX, int screenY, int pointer, int button) {
                 float worldY = Gdx.graphics.getHeight() - screenY;
-                handleBattlefieldClick(screenX, worldY);
-                return true;
+
+                if (button == Input.Buttons.LEFT) {
+                    handleLeftBattlefieldClick(screenX, worldY);
+                    return true;
+                }
+
+                return false;
             }
         });
         Gdx.input.setInputProcessor(multiplexer);
@@ -79,6 +94,13 @@ public class BattleScreen extends ScreenAdapter {
     public void render(float delta) {
         Gdx.gl.glClearColor(0.1f, 0.4f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
+            float worldY = Gdx.graphics.getHeight() - Gdx.input.getY();
+            handleRightBattlefieldClick(Gdx.input.getX(), worldY);
+        } else {
+            hideUnitInfoPopup();
+        }
+
         battleRenderer.render();
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
@@ -99,7 +121,7 @@ public class BattleScreen extends ScreenAdapter {
     }
 
 
-    private void handleBattlefieldClick(float x, float y) {
+    private void handleLeftBattlefieldClick(float x, float y) {
         if (battleController.getState().isFinished()) {
             return;
         }
@@ -124,6 +146,34 @@ public class BattleScreen extends ScreenAdapter {
             battleController.performAction(new MoveAction(activeUnit, clickedPosition));
             finishTurn();
         }
+    }
+
+    private void handleRightBattlefieldClick(float x, float y) {
+        Position clickedPosition = battlefieldGeometry.screenToPosition(
+            x,
+            y,
+            battleController.getState().getField()
+        );
+        if (clickedPosition == null) {
+            hideUnitInfoPopup();
+            return;
+        }
+
+        UnitStack unit = findUnitAt(clickedPosition);
+        if (unit == null) {
+            hideUnitInfoPopup();
+            return;
+        }
+
+        showUnitInfoPopup(unit);
+    }
+
+    private void showUnitInfoPopup(UnitStack unit) {
+        unitInfoPopup.show(unit);
+    }
+
+    private void hideUnitInfoPopup() {
+        unitInfoPopup.hide();
     }
 
     private void handleUnitClick(UnitStack clickedUnit, float x, float y) {
