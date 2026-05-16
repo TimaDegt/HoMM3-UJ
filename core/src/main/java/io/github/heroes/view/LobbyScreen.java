@@ -21,10 +21,10 @@ public class LobbyScreen extends ScreenAdapter {
     private static final float BUTTON_PADDING = 12f;
 
     private final Main game;
-    private Stage stage;
-    private Skin skin;
-    private SpriteBatch batch;
-    private Texture background;
+    private final Stage stage;
+    private final Skin skin;
+    private final SpriteBatch batch;
+    private final Texture background;
 
     public LobbyScreen(Main game) {
         this.game = game;

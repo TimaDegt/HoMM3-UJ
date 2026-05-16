@@ -5,6 +5,11 @@ public class BattleViewConfig {
     public static final float SCREEN_HEIGHT_MARGIN = 0.75f;
     public static final float UI_BOTTOM_MARGIN = 0.1f;
     public static final float UNIT_SPRITE_SCALE = 1.8f;
+    public static final float ACTION_BUTTON_SIZE = 80f;
+    public static final float QUEUE_BUTTON_WIDTH = 70f;
+    public static final float QUEUE_BUTTON_HEIGHT = 130f;
+    public static final int ACTION_PANEL_QUEUE_BUTTON_COUNT = 15;
+    public static final float TURN_QUEUE_BOTTOM_PADDING = 60f;
 
     public static float HEX_SIZE;
     public static float HEX_WIDTH;

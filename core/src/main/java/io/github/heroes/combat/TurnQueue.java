@@ -8,9 +8,10 @@ import java.util.Comparator;
 import java.util.List;
 
 public class TurnQueue {
+    private static final int MAX_ROUNDS = 100;
+
     private final BattleState state;
-    private final List<UnitStack> queue;
-    private int currentIndex;
+    private final List<TurnQueueEntry> queue;
 
     public TurnQueue(BattleState state) {
         if (state == null) {
@@ -19,32 +20,21 @@ public class TurnQueue {
 
         this.state = state;
         this.queue = new ArrayList<>();
-        this.currentIndex = 0;
 
-        rebuildQueue();
+        buildQueue();
         updateActiveUnit();
     }
 
     public UnitStack getCurrentUnit() {
-        if (queue.isEmpty()) {
-            return null;
-        }
+        if (queue.isEmpty()) return null;
 
-        return queue.get(currentIndex);
+        return queue.get(0).getUnitStack();
     }
 
     public void nextTurn() {
-        if (queue.isEmpty()) {
-            return;
-        }
+        if (queue.isEmpty()) return;
 
-        currentIndex++;
-
-        if (currentIndex >= queue.size()) {
-            currentIndex = 0;
-            state.nextRound();
-            rebuildQueue();
-        }
+        queue.remove(0);
 
         skipDeadUnits();
         updateActiveUnit();
@@ -53,41 +43,61 @@ public class TurnQueue {
     public void waitCurrentUnit() {
         if (queue.isEmpty()) return;
 
-        UnitStack waitingUnit = queue.remove(currentIndex);
-        queue.add(waitingUnit);
-
-        if (currentIndex >= queue.size()) currentIndex = 0;
-
+        TurnQueueEntry waitingEntry = queue.remove(0);
+        waitingEntry.setWait(true);
+        queue.add(waitingEntry);
         skipDeadUnits();
+        sortQueue();
         updateActiveUnit();
     }
 
-    private void rebuildQueue() {
+    public void sortQueue(){
+        queue.sort(Comparator
+            .comparingInt(TurnQueueEntry::getRound)
+                .thenComparing(
+                    Comparator.comparing(TurnQueueEntry::gatWait)
+                )
+            .thenComparing(
+                Comparator.comparingInt((TurnQueueEntry entry) -> entry.getUnitStack().getType().speed)
+                    .reversed()
+            ));
+    }
+
+    private void buildQueue() {
         queue.clear();
 
-        queue.addAll(state.getPlayerOne().getArmy().getAliveUnits());
-        queue.addAll(state.getPlayerTwo().getArmy().getAliveUnits());
+        List<UnitStack> units = new ArrayList<>();
+        units.addAll(state.getPlayerOne().getArmy().getAliveUnits());
+        units.addAll(state.getPlayerTwo().getArmy().getAliveUnits());
 
-        queue.sort(Comparator
-            .comparingInt((UnitStack unit) -> unit.getType().speed)
-            .reversed());
+        for (int round = 1; round <= MAX_ROUNDS; round++) {
+            for (UnitStack unit : units) {
+                queue.add(new TurnQueueEntry(unit, round,false));
+            }
+        }
+
+        sortQueue();
+
     }
 
     private void skipDeadUnits() {
-        while (!queue.isEmpty() && !queue.get(currentIndex).isAlive()) {
-            queue.remove(currentIndex);
-
-            if (currentIndex >= queue.size()) {
-                currentIndex = 0;
-            }
+        int currentIndex = 0;
+        while (!queue.isEmpty() && currentIndex < queue.size()) {
+            if (!queue.get(currentIndex).getUnitStack().isAlive())queue.remove(currentIndex);
+            else currentIndex++;
         }
     }
+
 
     private void updateActiveUnit() {
         state.setActiveUnit(getCurrentUnit());
     }
 
-    public List<UnitStack> getQueue() {
+    public List<TurnQueueEntry> getQueue() {
+        if (queue.isEmpty()) {
+            return List.of();
+        }
+
         return queue;
     }
 }

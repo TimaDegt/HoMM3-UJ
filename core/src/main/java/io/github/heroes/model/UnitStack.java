@@ -55,6 +55,8 @@ public class UnitStack {
         validatePositiveValue(damage);
 
         int totalHp = (count-1) * type.maxHp + currentHp;
+
+
         if (totalHp<=damage){
             currentHp=0;
             count=0;
@@ -63,6 +65,7 @@ public class UnitStack {
             if (currentHp == 0)currentHp=type.maxHp;
             count = (totalHp - damage - currentHp)/type.maxHp + 1;
         }
+
     }
 
     public void changePosition(Position newPosition){

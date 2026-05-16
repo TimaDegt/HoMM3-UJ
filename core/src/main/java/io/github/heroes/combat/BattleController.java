@@ -49,7 +49,7 @@ public class BattleController {
         return state.getRound();
     }
 
-    public List<UnitStack> getTurnQueueOrder() {
+    public List<TurnQueueEntry> getTurnQueueOrder() {
         return turnQueue.getQueue();
     }
 }
