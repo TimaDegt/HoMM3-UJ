@@ -33,14 +33,30 @@ public class BattleActionPanel {
     }
 
     public void updateQueueButtons() {
-        for (int i = 0; i < queueButtons.size(); i++) {
-            queueButtons.get(i).setText(getQueueButtonText(i));
+        List<TurnQueueEntry> queue = battleController.getTurnQueueOrder();
+        List<String> queueText = new ArrayList<>();
+        int curr_index=0;
+        while(queueText.size()<BattleViewConfig.ACTION_PANEL_QUEUE_BUTTON_COUNT){
+            if (curr_index >= queue.size()){
+                queueText.add("");
+                continue;
+            }
+
+            queueText.add(queue.get(curr_index).getUnitStack().getType().name());
+
+            if (curr_index<queue.size()-1 && queue.get(curr_index).getRound()!=queue.get(curr_index+1).getRound()){
+                queueText.add(String.valueOf(queue.get(curr_index).getRound()+1));
+            }
+            curr_index++;
+        }
+
+        for (int i =0;i<BattleViewConfig.ACTION_PANEL_QUEUE_BUTTON_COUNT;i++){
+            queueButtons.get(i).setText(queueText.get(i));
         }
     }
 
     private void setupTable() {
         table.setFillParent(true);
-        //table.bottom().right().pad(0);
         table.bottom().pad(0);
     }
 
@@ -68,14 +84,7 @@ public class BattleActionPanel {
         return buttonBlock;
     }
 
-    private String getQueueButtonText(int queueIndex) {
-        List<TurnQueueEntry> queue = battleController.getTurnQueueOrder();
-        if (queueIndex >= queue.size()) {
-            return "";
-        }
 
-        return queue.get(queueIndex).getUnitStack().getType().name();
-    }
 
     private void addActionButton(Table targetTable, String text) {
         TextButton button = new TextButton(text, skin);
