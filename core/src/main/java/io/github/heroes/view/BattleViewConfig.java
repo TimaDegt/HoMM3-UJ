@@ -10,6 +10,9 @@ public class BattleViewConfig {
     public static final float QUEUE_BUTTON_HEIGHT = 130f;
     public static final int ACTION_PANEL_QUEUE_BUTTON_COUNT = 15;
     public static final float TURN_QUEUE_BOTTOM_PADDING = 60f;
+    public static final float UNIT_COUNT_BADGE_WIDTH = 34f;
+    public static final float UNIT_COUNT_BADGE_HEIGHT = 16f;
+    public static final float UNIT_COUNT_BADGE_Y_OFFSET = 8f;
 
     public static float HEX_SIZE;
     public static float HEX_WIDTH;

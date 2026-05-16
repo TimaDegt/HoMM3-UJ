@@ -1,9 +1,12 @@
 package io.github.heroes.view;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import io.github.heroes.combat.BattleController;
@@ -24,6 +27,8 @@ public class BattleRenderer {
     private final BattlePathFinder battlePathFinder;
     private final ShapeRenderer shapeRenderer;
     private final SpriteBatch batch;
+    private final BitmapFont font;
+    private final GlyphLayout glyphLayout;
     private final Map<UnitType, Texture> unitTextures;
 
     public BattleRenderer(
@@ -36,6 +41,8 @@ public class BattleRenderer {
         this.battlePathFinder = battlePathFinder;
         this.shapeRenderer = new ShapeRenderer();
         this.batch = new SpriteBatch();
+        this.font = new BitmapFont();
+        this.glyphLayout = new GlyphLayout();
         this.unitTextures = new HashMap<>();
 
         loadTextures();
@@ -51,6 +58,7 @@ public class BattleRenderer {
     public void dispose() {
         shapeRenderer.dispose();
         batch.dispose();
+        font.dispose();
         for (Texture texture : unitTextures.values()) {
             texture.dispose();
         }
@@ -78,20 +86,23 @@ public class BattleRenderer {
 
     private void drawUnits() {
         batch.begin();
-        drawArmy(battleController.getState().getPlayerOne().getArmy());
-        drawArmy(battleController.getState().getPlayerTwo().getArmy());
+        drawArmySprites(battleController.getState().getPlayerOne().getArmy());
+        drawArmySprites(battleController.getState().getPlayerTwo().getArmy());
         batch.end();
+
+        drawUnitCountBadgeBackgrounds();
+        drawUnitCountBadgeTexts();
     }
 
-    private void drawArmy(Army army) {
+    private void drawArmySprites(Army army) {
         for (UnitStack unit : army.getUnits()) {
             if (unit.isAlive()) {
-                drawUnit(unit);
+                drawUnitSprite(unit);
             }
         }
     }
 
-    private void drawUnit(UnitStack unit) {
+    private void drawUnitSprite(UnitStack unit) {
         Vector2 center = battlefieldGeometry.positionToScreen(unit.getPosition());
         Texture texture = unitTextures.get(unit.getType());
 
@@ -99,6 +110,78 @@ public class BattleRenderer {
             float size = BattleViewConfig.HEX_SIZE * BattleViewConfig.UNIT_SPRITE_SCALE;
             batch.draw(texture, center.x - size / 2f, center.y - size / 2f, size, size);
         }
+    }
+
+    private void drawUnitCountBadgeBackgrounds() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0.05f, 0.04f, 0.03f, 0.9f);
+        drawArmyCountBadgeBackgrounds(battleController.getState().getPlayerOne().getArmy());
+        drawArmyCountBadgeBackgrounds(battleController.getState().getPlayerTwo().getArmy());
+        shapeRenderer.end();
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(0.85f, 0.78f, 0.45f, 1f);
+        drawArmyCountBadgeBackgrounds(battleController.getState().getPlayerOne().getArmy());
+        drawArmyCountBadgeBackgrounds(battleController.getState().getPlayerTwo().getArmy());
+        shapeRenderer.end();
+
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+    }
+
+    private void drawArmyCountBadgeBackgrounds(Army army) {
+        for (UnitStack unit : army.getUnits()) {
+            if (unit.isAlive()) {
+                drawUnitCountBadgeRectangle(unit);
+            }
+        }
+    }
+
+    private void drawUnitCountBadgeRectangle(UnitStack unit) {
+        Vector2 badgePosition = getUnitCountBadgePosition(unit);
+        shapeRenderer.rect(
+            badgePosition.x,
+            badgePosition.y,
+            BattleViewConfig.UNIT_COUNT_BADGE_WIDTH,
+            BattleViewConfig.UNIT_COUNT_BADGE_HEIGHT
+        );
+    }
+
+    private void drawUnitCountBadgeTexts() {
+        batch.begin();
+        font.setColor(Color.WHITE);
+        drawArmyCountBadgeTexts(battleController.getState().getPlayerOne().getArmy());
+        drawArmyCountBadgeTexts(battleController.getState().getPlayerTwo().getArmy());
+        batch.end();
+    }
+
+    private void drawArmyCountBadgeTexts(Army army) {
+        for (UnitStack unit : army.getUnits()) {
+            if (unit.isAlive()) {
+                drawUnitCountBadgeText(unit);
+            }
+        }
+    }
+
+    private void drawUnitCountBadgeText(UnitStack unit) {
+        String text = String.valueOf(unit.getCount());
+        Vector2 badgePosition = getUnitCountBadgePosition(unit);
+        glyphLayout.setText(font, text);
+
+        float textX = badgePosition.x + (BattleViewConfig.UNIT_COUNT_BADGE_WIDTH - glyphLayout.width) / 2f;
+        float textY = badgePosition.y + (BattleViewConfig.UNIT_COUNT_BADGE_HEIGHT + glyphLayout.height) / 2f;
+        font.draw(batch, text, textX, textY);
+    }
+
+    private Vector2 getUnitCountBadgePosition(UnitStack unit) {
+        Vector2 center = battlefieldGeometry.positionToScreen(unit.getPosition());
+        float spriteSize = BattleViewConfig.HEX_SIZE * BattleViewConfig.UNIT_SPRITE_SCALE;
+        float badgeX = center.x - BattleViewConfig.UNIT_COUNT_BADGE_WIDTH / 2f;
+        float badgeY = center.y - spriteSize / 2f + BattleViewConfig.UNIT_COUNT_BADGE_Y_OFFSET;
+
+        return new Vector2(badgeX, badgeY);
     }
 
     private void drawActiveUnitHighlight() {
