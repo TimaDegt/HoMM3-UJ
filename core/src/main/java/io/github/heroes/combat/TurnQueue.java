@@ -58,9 +58,16 @@ public class TurnQueue {
                     Comparator.comparing(TurnQueueEntry::gatWait)
                 )
             .thenComparing(
-                Comparator.comparingInt((TurnQueueEntry entry) -> entry.getUnitStack().getType().speed)
-                    .reversed()
+                Comparator.comparingInt(this::getSpeedPriority)
             ));
+    }
+
+    private int getSpeedPriority(TurnQueueEntry entry) {
+        if (entry.gatWait()) {
+            return entry.getUnitStack().getType().speed;
+        }
+
+        return -entry.getUnitStack().getType().speed;
     }
 
     private void buildQueue() {
