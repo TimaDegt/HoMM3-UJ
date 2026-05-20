@@ -33,6 +33,20 @@ public class Army {
             .toList();
     }
 
+    public UnitStack findUnitAtPosition(Position position){
+        for (UnitStack unit : getAliveUnits()) {
+            if  (unit.getPosition().equals(position)) return unit;
+        }
+        return null;
+    }
+
+    public boolean isPositionOccupied(Position position){
+        for (UnitStack unit : getAliveUnits()) {
+            if (unit.getPosition().equals(position)) return true;
+        }
+        return false;
+    }
+
     public boolean isDefeated() {
         return getAliveUnits().isEmpty();
     }

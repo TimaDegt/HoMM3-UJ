@@ -7,12 +7,7 @@ import io.github.heroes.model.Position;
 import io.github.heroes.model.UnitStack;
 import io.github.heroes.view.BattlefieldGeometry;
 
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 public class BattlePathFinder {
     private final BattlefieldGeometry battlefieldGeometry;
@@ -68,6 +63,52 @@ public class BattlePathFinder {
         }
 
         return -1;
+    }
+
+
+    public List<Position> findPath(BattleState state, Position start, Position target) {
+        if (start.equals(target)) {
+            return new ArrayList<>(Collections.singleton(start));
+        }
+
+        BattleField field = state.getField();
+        Queue<Position> queue = new ArrayDeque<>();
+        Map<Position, Position> prevPosition = new HashMap<>();
+        Set<Position> visited = new HashSet<>();
+
+        queue.add(start);
+        visited.add(start);
+        prevPosition.put(start,start);
+
+        while (!queue.isEmpty()) {
+            Position current = queue.remove();
+
+            for (Position neighbor : battlefieldGeometry.getNeighbors(current)) {
+                if (!field.isInside(neighbor) || visited.contains(neighbor)) {
+                    continue;
+                }
+                if (isOccupied(state, neighbor) && !neighbor.equals(target)) {
+                    continue;
+                }
+
+                prevPosition.put(neighbor,current);
+                if (neighbor.equals(target)) {
+                    return recreatePath(prevPosition, target);
+                }
+                queue.add(neighbor);
+                visited.add(neighbor);
+            }
+        }
+        throw new IllegalArgumentException("Position can not be reached");
+    }
+
+    List<Position> recreatePath(Map<Position,Position> prevPosition, Position target){
+        List<Position> path = new ArrayList<>(Collections.singleton(target));
+        while(!prevPosition.get(target).equals(target)){
+            target=prevPosition.get(target);
+            path.add(target);
+        }
+        return path.reversed();
     }
 
     private boolean isOccupied(BattleState state, Position position) {
