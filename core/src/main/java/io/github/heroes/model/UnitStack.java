@@ -60,7 +60,7 @@ public class UnitStack {
         if (totalHp<=damage){
             currentHp=0;
             count=0;
-        }else {
+        } else {
             currentHp = (totalHp - damage)% type.maxHp;
             if (currentHp == 0)currentHp=type.maxHp;
             count = (totalHp - damage - currentHp)/type.maxHp + 1;
