@@ -7,7 +7,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import io.github.heroes.combat.BattleController;
 import io.github.heroes.combat.BattlePathFinder;
@@ -31,6 +33,31 @@ public class BattleRenderer {
     private final GlyphLayout glyphLayout;
     private final Map<UnitType, Texture> unitTextures;
 
+    private TextureRegion background;
+    private Map<UnitType,TextureRegion> leftFacingUnits;
+    private Map<UnitType,TextureRegion> rightFacingUnits;
+
+    private void initGraphics(){
+
+        leftFacingUnits=new HashMap<>();
+        rightFacingUnits=new HashMap<>();
+
+        for(UnitType type:UnitType.values()){
+            String townFolder=type.getCastleType().getName();
+            String unitName=type.getName();
+            String unitPath="Units/"+townFolder+"/"+unitName+".png";
+
+            Texture tex=new Texture(Gdx.files.internal(unitPath));
+
+            TextureRegion right=new TextureRegion(tex);
+            TextureRegion left=new TextureRegion(tex);
+            left.flip(true,false);
+
+            rightFacingUnits.put(type,right);
+            leftFacingUnits.put(type,left);
+        }
+    }
+
     public BattleRenderer(
         BattleController battleController,
         BattlefieldGeometry battlefieldGeometry,
@@ -49,6 +76,12 @@ public class BattleRenderer {
     }
 
     public void render() {
+        batch.begin();
+        if (background != null) {
+            batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        }
+        batch.end();
+
         drawBattlefield();
         drawMovementRange();
         drawActiveUnitHighlight();
@@ -62,12 +95,20 @@ public class BattleRenderer {
         for (Texture texture : unitTextures.values()) {
             texture.dispose();
         }
+        if (background != null && background.getTexture() != null) {
+            background.getTexture().dispose();
+        }
     }
 
     private void loadTextures() {
         unitTextures.put(UnitType.PIKEMAN, new Texture("pikeman.png"));
         unitTextures.put(UnitType.ARCHER, new Texture("archer.png"));
         unitTextures.put(UnitType.GRIFFIN, new Texture("griffin.png"));
+
+        int bgId= MathUtils.random(0,9);
+        String bgPath="Battlefields/"+bgId+".png";
+        Texture bgTex=new Texture(bgPath);
+        this.background=new TextureRegion(bgTex);
     }
 
     private void drawBattlefield() {
