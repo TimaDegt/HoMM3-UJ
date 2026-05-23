@@ -1,7 +1,10 @@
 package io.github.heroes.combat;
 
 import io.github.heroes.model.BattleState;
+import io.github.heroes.model.Position;
 import io.github.heroes.model.UnitStack;
+import io.github.heroes.view.BattlefieldGeometry;
+
 import java.util.List;
 
 public class BattleController {
@@ -51,5 +54,17 @@ public class BattleController {
 
     public List<TurnQueueEntry> getTurnQueueOrder() {
         return turnQueue.getQueue();
+    }
+
+    public boolean isPositionOccupied(Position position) {
+        return state.getPlayerOne().getArmy().isPositionOccupied(position)
+            || state.getPlayerTwo().getArmy().isPositionOccupied(position);
+    }
+
+    public UnitStack findUnitAt(Position position) {
+        UnitStack unit = state.getPlayerOne().getArmy().findUnitAtPosition(position);
+        if (unit != null) return unit;
+
+        return state.getPlayerTwo().getArmy().findUnitAtPosition(position);
     }
 }
