@@ -25,7 +25,6 @@ public class BattleScreen extends ScreenAdapter {
     private final BattleController battleController;
     private final BattlePathFinder battlePathFinder;
     private final BattleRenderer battleRenderer;
-    private final BattleScreenController battleScreenController;
     private final Stage stage;
     private Stage actionPanelStage;
     private final Skin skin;
@@ -36,11 +35,7 @@ public class BattleScreen extends ScreenAdapter {
         this.game = game;
         this.battleController = battleController;
         this.battlePathFinder = new BattlePathFinder();
-        this.battleRenderer = new BattleRenderer(battleController, battlePathFinder);
-        this.battleScreenController = new BattleScreenController(
-            battleController,
-            battlePathFinder
-        );
+        this.battleRenderer = new BattleRenderer(battleController);
         stage = new Stage(new ScreenViewport());
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
 
@@ -83,7 +78,7 @@ public class BattleScreen extends ScreenAdapter {
                 float worldY = Gdx.graphics.getHeight() - screenY;
 
                 if (button == Input.Buttons.LEFT) {
-                    if (battleScreenController.handleLeftBattlefieldClick(screenX, worldY)) {
+                    if (BattleScreenController.handleLeftBattlefieldClick(screenX, worldY, battleController)) {
                         finishTurn();
                     }
                     return true;
@@ -126,7 +121,7 @@ public class BattleScreen extends ScreenAdapter {
 
 
     private void handleRightBattlefieldClick(float x, float y) {
-        UnitStack unit = battleScreenController.findUnitUnderCursor(x, y);
+        UnitStack unit = BattleScreenController.findUnitUnderCursor(x, y, battleController);
         if (unit == null) {
             hideUnitInfoPopup();
             return;

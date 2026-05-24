@@ -10,22 +10,16 @@ import io.github.heroes.view.BattlefieldGeometry;
 import java.util.*;
 
 public class BattlePathFinder {
-    //private final BattlefieldGeometry battlefieldGeometry;
 
     public BattlePathFinder() {
-//        if (battlefieldGeometry == null) {
-//            throw new IllegalArgumentException("Battlefield geometry cannot be null");
-//        }
-//
-//        this.battlefieldGeometry = battlefieldGeometry;
     }
 
-    public boolean canReach(BattleState state, UnitStack unit, Position targetPosition) {
+    public static boolean canReach(BattleState state, UnitStack unit, Position targetPosition) {
         int distance = findDistance(state, unit.getPosition(), targetPosition);
         return distance >= 0 && distance <= unit.getType().speed;
     }
 
-    public int findDistance(BattleState state, Position start, Position target) {
+    public static int findDistance(BattleState state, Position start, Position target) {
         if (start.equals(target)) {
             return 0;
         }

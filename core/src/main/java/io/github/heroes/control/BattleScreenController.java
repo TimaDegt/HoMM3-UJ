@@ -10,34 +10,31 @@ import io.github.heroes.model.UnitStack;
 import io.github.heroes.view.BattlefieldGeometry;
 
 public class BattleScreenController {
-    private final BattleController battleController;
-    private final BattlePathFinder battlePathFinder;
 
-    public BattleScreenController(
-        BattleController battleController,
-        BattlePathFinder battlePathFinder
-    ) {
-        this.battleController = battleController;
-        this.battlePathFinder = battlePathFinder;
+    public BattleScreenController(){
     }
 
-    public boolean handleLeftBattlefieldClick(float x, float y) {
+    public static boolean handleLeftBattlefieldClick(float x, float y, BattleController battleController) {
         if (battleController.getState().isFinished()) {
             return false;
         }
 
-        Position clickedPosition = getBattlefieldPosition(x, y);
+        Position clickedPosition = BattlefieldGeometry.screenToPosition(
+            x,
+            y,
+            battleController.getState().getField()
+        );
         if (clickedPosition == null) {
             return false;
         }
 
         UnitStack clickedUnit = battleController.findUnitAt(clickedPosition);
         if (clickedUnit != null) {
-            return handleUnitClick(clickedUnit, x, y);
+            return handleUnitClick(clickedUnit, x, y, battleController);
         }
 
         UnitStack activeUnit = battleController.getActiveUnit();
-        if (canReach(activeUnit, clickedPosition)) {
+        if (canReach(activeUnit, clickedPosition, battleController)) {
             battleController.performAction(new MoveAction(activeUnit, clickedPosition));
             return true;
         }
@@ -45,24 +42,27 @@ public class BattleScreenController {
         return false;
     }
 
-    public UnitStack findUnitUnderCursor(float x, float y) {
-        Position clickedPosition = getBattlefieldPosition(x, y);
+    public static UnitStack findUnitUnderCursor(float x, float y, BattleController battleController) {
+        Position clickedPosition = BattlefieldGeometry.screenToPosition(
+            x,
+            y,
+            battleController.getState().getField()
+        );
         if (clickedPosition == null) {
             return null;
         }
-
         return battleController.findUnitAt(clickedPosition);
     }
 
-    private boolean handleUnitClick(UnitStack clickedUnit, float x, float y) {
+    private static boolean handleUnitClick(UnitStack clickedUnit, float x, float y, BattleController battleController) {
         UnitStack activeUnit = battleController.getActiveUnit();
 
         if (clickedUnit.getOwner() == activeUnit.getOwner()) {
             return false;
         }
 
-        Position attackPosition = findNearestAttackPosition(clickedUnit.getPosition(), x, y);
-        if (attackPosition == null || !canReach(activeUnit, attackPosition)) {
+        Position attackPosition = findNearestAttackPosition(clickedUnit.getPosition(), x, y, battleController);
+        if (attackPosition == null || !canReach(activeUnit, attackPosition, battleController)) {
             return false;
         }
 
@@ -70,24 +70,12 @@ public class BattleScreenController {
         return true;
     }
 
-    private Position getBattlefieldPosition(float x, float y) {
-        return BattlefieldGeometry.screenToPosition(
-            x,
-            y,
-            battleController.getState().getField()
-        );
-    }
-
-    private Position findNearestAttackPosition(Position targetPosition, float clickX, float clickY) {
+    public static Position findNearestAttackPosition(Position targetPosition, float clickX, float clickY, BattleController battleController) {
         Position nearestPosition = null;
         float nearestDistance = Float.MAX_VALUE;
 
         for (Position neighbor : BattlefieldGeometry.getNeighbors(targetPosition)) {
             if (!battleController.getState().getField().isInside(neighbor)) {
-                continue;
-            }
-            if (battleController.isPositionOccupied(neighbor)
-                && !neighbor.equals(battleController.getActiveUnit().getPosition())) {
                 continue;
             }
 
@@ -98,11 +86,15 @@ public class BattleScreenController {
                 nearestPosition = neighbor;
             }
         }
-
+        if (nearestPosition == null) return null;
+        if (battleController.isPositionOccupied(nearestPosition)
+                && !nearestPosition.equals(battleController.getActiveUnit().getPosition())) {
+            return null;
+        }
         return nearestPosition;
     }
 
-    private boolean canReach(UnitStack unit, Position targetPosition) {
-        return battlePathFinder.canReach(battleController.getState(), unit, targetPosition);
+    private static boolean canReach(UnitStack unit, Position targetPosition, BattleController battleController) {
+        return BattlePathFinder.canReach(battleController.getState(), unit, targetPosition);
     }
 }

@@ -48,6 +48,7 @@ public class VictoryScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
+        Gdx.graphics.setSystemCursor(com.badlogic.gdx.graphics.Cursor.SystemCursor.Arrow);
         Gdx.gl.glClearColor(0.08f, 0.08f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));

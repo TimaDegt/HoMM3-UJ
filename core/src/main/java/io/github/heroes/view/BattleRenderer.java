@@ -13,6 +13,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import io.github.heroes.combat.BattleController;
 import io.github.heroes.combat.BattlePathFinder;
+import io.github.heroes.combat.cursor.Cursor;
+import io.github.heroes.combat.cursor.CursorType;
 import io.github.heroes.model.*;
 import io.github.heroes.model.anim.SpriteCoordinate;
 import io.github.heroes.model.anim.Directions;
@@ -20,14 +22,16 @@ import io.github.heroes.model.anim.Directions;
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.github.heroes.view.BattleViewConfig.CURSOR_SCALE;
+
 public class BattleRenderer {
     private final BattleController battleController;
-    private final BattlePathFinder battlePathFinder;
     private final ShapeRenderer shapeRenderer;
     private final SpriteBatch batch;
     private final BitmapFont font;
     private final GlyphLayout glyphLayout;
     private final Map<UnitType, TextureRegion> unitTextures;
+    private final Map<CursorType, TextureRegion> cursorTextures;
 
     private TextureRegion background;
 
@@ -42,21 +46,43 @@ public class BattleRenderer {
             TextureRegion region=new TextureRegion(tex);
             unitTextures.put(type, region);
         }
+        for (CursorType cursorType:CursorType.values()){
+            String path = "Icons/Cursors/"+cursorType.getName()+".png";
+            Texture tex=new Texture(Gdx.files.internal(path));
+            TextureRegion region=new TextureRegion(tex);
+            cursorTextures.put(cursorType, region);
+        }
     }
 
     public BattleRenderer(
-        BattleController battleController,
-        BattlePathFinder battlePathFinder
+        BattleController battleController
     ) {
         this.battleController = battleController;
-        this.battlePathFinder = battlePathFinder;
         this.shapeRenderer = new ShapeRenderer();
         this.batch = new SpriteBatch();
         this.font = new BitmapFont();
         this.glyphLayout = new GlyphLayout();
         this.unitTextures = new HashMap<>();
+        this.cursorTextures = new HashMap<>();
 
         loadTextures();
+    }
+
+    private void drawCustomCursor() {
+        CursorType cursorType = Cursor.getCustomCursor(battleController);
+        Gdx.graphics.setSystemCursor(com.badlogic.gdx.graphics.Cursor.SystemCursor.None);
+        float mouseX = Gdx.input.getX();
+        float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
+
+        TextureRegion regionToDraw = cursorTextures.get(cursorType);
+
+        if (regionToDraw != null) {
+            float scaledWidth = regionToDraw.getRegionWidth() * CURSOR_SCALE;
+            float scaledHeight = regionToDraw.getRegionHeight() * CURSOR_SCALE;
+            batch.begin();
+            batch.draw(regionToDraw, mouseX + cursorType.offX * CURSOR_SCALE, mouseY - scaledHeight + cursorType.offY * CURSOR_SCALE, scaledWidth, scaledHeight);
+            batch.end();
+        }
     }
 
     public void render() {
@@ -70,6 +96,7 @@ public class BattleRenderer {
         drawMovementRange();
         drawActiveUnitHighlight();
         drawUnits();
+        drawCustomCursor();
     }
 
     public void dispose() {
@@ -83,6 +110,10 @@ public class BattleRenderer {
         if (background != null && background.getTexture() != null) {
             background.getTexture().dispose();
         }
+        for (TextureRegion region : cursorTextures.values()) {
+            region.getTexture().dispose();
+        }
+        cursorTextures.clear();
     }
 
     private void loadTextures() {
@@ -122,9 +153,7 @@ public class BattleRenderer {
 
     private void drawArmySprites(Army army) {
         for (UnitStack unit : army.getUnits()) {
-            //if (unit.isAlive()) {
-                drawUnitSprite(unit);
-            //}
+            drawUnitSprite(unit);
         }
     }
 
@@ -223,7 +252,6 @@ public class BattleRenderer {
 
     private Vector2 getUnitCountBadgePosition(UnitStack unit) {
         Vector2 center = BattlefieldGeometry.positionToScreen(unit.getPosition());
-        float spriteSize = unit.getType().getAnimParams().getSize();
         float hexHeight = BattleViewConfig.HEX_HEIGHT;
         float hexWidth = BattleViewConfig.HEX_WIDTH;
 
@@ -274,7 +302,7 @@ public class BattleRenderer {
                     continue;
                 }
 
-                if (battlePathFinder.canReach(state, activeUnit, target)) {
+                if (BattlePathFinder.canReach(state, activeUnit, target)) {
                     Vector2 center = BattlefieldGeometry.positionToScreen(target);
                     drawFilledHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE - 2f);
                 }
