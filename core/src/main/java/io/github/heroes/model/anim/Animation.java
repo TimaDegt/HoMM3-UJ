@@ -2,11 +2,13 @@ package io.github.heroes.model.anim;
 
 import com.badlogic.gdx.graphics.g3d.environment.AmbientCubemap;
 
+import static io.github.heroes.view.BattleViewConfig.ANIMATION_SPEED;
+
 public class Animation {
     private AnimParams params;
 
     private AnimParams.AnimType animType = AnimParams.AnimType.IDLE;
-    private int frameIndex = 0;
+    private float frameIndex = 0;
 
     public Animation(AnimParams params) {
         this.params = params;
@@ -38,10 +40,11 @@ public class Animation {
             );
         }
         SpriteCoordinate ret = new SpriteCoordinate(0,0,0);
-        ret.x = size * frameIndex;
+        int floorIndex = (int)frameIndex;
+        ret.x = size * floorIndex;
         ret.y = coordinate;
         ret.size = size;
-        frameIndex++;
+        frameIndex+=ANIMATION_SPEED;
         if (frameIndex >= length) {
             if (animType == AnimParams.AnimType.DEATH) {
                 animType = AnimParams.AnimType.DEAD;

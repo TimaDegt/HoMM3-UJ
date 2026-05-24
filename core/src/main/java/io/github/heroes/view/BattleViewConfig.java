@@ -16,6 +16,7 @@ public class BattleViewConfig {
     public static final float ACTION_PANEL_BASE_HEIGHT = 42f;
     public static final float ACTION_PANEL_BASE_WIDTH = 800f;
     public static float ACTION_PANEL_SCALE;
+    public static float ANIMATION_SPEED = 0.1f;
 
     public static final int UNIT_SPRITESHEET_SIZE = 1000;
 

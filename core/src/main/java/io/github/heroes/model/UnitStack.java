@@ -1,5 +1,9 @@
 package io.github.heroes.model;
 
+import io.github.heroes.model.anim.AnimParams;
+import io.github.heroes.model.anim.Animation;
+import io.github.heroes.model.anim.SpriteCoordinate;
+
 public class UnitStack {
     private final UnitType type;
     private int count;
@@ -7,6 +11,7 @@ public class UnitStack {
     private Position position;
     private final Player owner;
     private boolean defending;
+    private Animation animation;
 
     private void validatePositiveValue(int val) {
         if (val < 0) {
@@ -21,6 +26,7 @@ public class UnitStack {
         this.position = position;
         this.owner = owner;
         this.defending = false;
+        this.animation = new Animation(type.getAnimParams());
     }
 
     public UnitType getType() {
@@ -51,6 +57,10 @@ public class UnitStack {
 
     public void setDefending(boolean defending) {this.defending = defending;}
 
+    public SpriteCoordinate nextFrame() {
+        return animation.nextFrame();
+    }
+
     public void takeDamage(int damage){
         validatePositiveValue(damage);
 
@@ -60,10 +70,12 @@ public class UnitStack {
         if (totalHp<=damage){
             currentHp=0;
             count=0;
+            animation.startAnimation(AnimParams.AnimType.DEATH);
         } else {
             currentHp = (totalHp - damage)% type.maxHp;
             if (currentHp == 0)currentHp=type.maxHp;
             count = (totalHp - damage - currentHp)/type.maxHp + 1;
+            animation.startAnimation(AnimParams.AnimType.RECEIVEDMG);
         }
 
     }

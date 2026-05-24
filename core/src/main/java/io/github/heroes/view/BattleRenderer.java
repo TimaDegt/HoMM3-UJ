@@ -124,9 +124,9 @@ public class BattleRenderer {
 
     private void drawArmySprites(Army army) {
         for (UnitStack unit : army.getUnits()) {
-            if (unit.isAlive()) {
+            //if (unit.isAlive()) {
                 drawUnitSprite(unit);
-            }
+            //}
         }
     }
 
@@ -219,9 +219,15 @@ public class BattleRenderer {
 
     private Vector2 getUnitCountBadgePosition(UnitStack unit) {
         Vector2 center = battlefieldGeometry.positionToScreen(unit.getPosition());
-        float spriteSize = BattleViewConfig.HEX_SIZE * BattleViewConfig.UNIT_SPRITE_SCALE;
-        float badgeX = center.x - BattleViewConfig.UNIT_COUNT_BADGE_WIDTH / 2f;
-        float badgeY = center.y - spriteSize / 2f + BattleViewConfig.UNIT_COUNT_BADGE_Y_OFFSET;
+        float spriteSize = unit.getType().getAnimParams().getSize();
+        float hexHeight = BattleViewConfig.HEX_HEIGHT;
+        float hexWidth = BattleViewConfig.HEX_WIDTH;
+
+        float badgeX = center.x + hexWidth/4f;//BattleViewConfig.UNIT_COUNT_BADGE_WIDTH / 2f;
+        float badgeY = center.y - hexHeight/4f;//spriteSize / 2f + BattleViewConfig.UNIT_COUNT_BADGE_Y_OFFSET;
+        if (unit.getOwner() == Player.PLAYER_TWO) {
+            badgeX-=3f*hexWidth/4f;
+        }
 
         return new Vector2(badgeX, badgeY);
     }
