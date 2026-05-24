@@ -15,13 +15,13 @@ import io.github.heroes.combat.BattleController;
 import io.github.heroes.combat.BattlePathFinder;
 import io.github.heroes.model.*;
 import io.github.heroes.model.anim.SpriteCoordinate;
+import io.github.heroes.model.anim.Directions;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class BattleRenderer {
     private final BattleController battleController;
-    private final BattlefieldGeometry battlefieldGeometry;
     private final BattlePathFinder battlePathFinder;
     private final ShapeRenderer shapeRenderer;
     private final SpriteBatch batch;
@@ -46,11 +46,9 @@ public class BattleRenderer {
 
     public BattleRenderer(
         BattleController battleController,
-        BattlefieldGeometry battlefieldGeometry,
         BattlePathFinder battlePathFinder
     ) {
         this.battleController = battleController;
-        this.battlefieldGeometry = battlefieldGeometry;
         this.battlePathFinder = battlePathFinder;
         this.shapeRenderer = new ShapeRenderer();
         this.batch = new SpriteBatch();
@@ -104,7 +102,7 @@ public class BattleRenderer {
         shapeRenderer.setColor(0.92f, 0.86f, 0.55f, 1.0f);
         for (int row = 0; row < field.getHeight(); row++) {
             for (int col = 0; col < field.getWidth(); col++) {
-                Vector2 center = battlefieldGeometry.positionToScreen(new Position(col, row));
+                Vector2 center = BattlefieldGeometry.positionToScreen(new Position(col, row));
                 drawHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE);
             }
         }
@@ -131,7 +129,6 @@ public class BattleRenderer {
     }
 
     private void drawUnitSprite(UnitStack unit) {
-        Vector2 center = battlefieldGeometry.positionToScreen(unit.getPosition());
 
         float hexHeight = BattleViewConfig.HEX_HEIGHT;
         float hexWidth = BattleViewConfig.HEX_WIDTH;
@@ -142,16 +139,23 @@ public class BattleRenderer {
         int squareLength = coordinate.size;
         float dx = 0;
         TextureRegion texture = new TextureRegion(unitTextures.get(unit.getType()), x, y, squareLength, squareLength); //
+        Directions direction = Directions.RIGHT;
         if (unit.getOwner() == Player.PLAYER_TWO) {
-            //left oriented
+            direction = Directions.LEFT;
+        }
+        if (unit.isMoving()) {
+            direction = unit.getMovementDirection();
+        }
+
+        if (direction == Directions.LEFT) {
             texture.flip(true, false);
             dx += squareLength - hexWidth/2f;
         }
 
         float size = squareLength*1.5f;
 
-        batch.draw(texture, center.x - hexHeight/2f - dx, center.y - hexHeight/4f, size, size);
-        if (unit.getType()==UnitType.ARCHER) batch.draw(texture, 0, 0, size, size);
+        Vector2 center = BattlefieldGeometry.positionToScreen(unit.getPosition());
+        batch.draw(texture, unit.deltaX + center.x - hexHeight/2f - dx, unit.deltaY + center.y - hexHeight/4f, size, size);
     }
 
     private void drawUnitCountBadgeBackgrounds() {
@@ -218,7 +222,7 @@ public class BattleRenderer {
     }
 
     private Vector2 getUnitCountBadgePosition(UnitStack unit) {
-        Vector2 center = battlefieldGeometry.positionToScreen(unit.getPosition());
+        Vector2 center = BattlefieldGeometry.positionToScreen(unit.getPosition());
         float spriteSize = unit.getType().getAnimParams().getSize();
         float hexHeight = BattleViewConfig.HEX_HEIGHT;
         float hexWidth = BattleViewConfig.HEX_WIDTH;
@@ -238,7 +242,7 @@ public class BattleRenderer {
             return;
         }
 
-        Vector2 center = battlefieldGeometry.positionToScreen(activeUnit.getPosition());
+        Vector2 center = BattlefieldGeometry.positionToScreen(activeUnit.getPosition());
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         Gdx.gl.glLineWidth(3);
@@ -266,12 +270,12 @@ public class BattleRenderer {
             for (int col = 0; col < field.getWidth(); col++) {
                 Position target = new Position(col, row);
 
-                if (target.equals(activeUnit.getPosition())) {
+                if (battleController.findUnitAt(target)!=null) {
                     continue;
                 }
 
                 if (battlePathFinder.canReach(state, activeUnit, target)) {
-                    Vector2 center = battlefieldGeometry.positionToScreen(target);
+                    Vector2 center = BattlefieldGeometry.positionToScreen(target);
                     drawFilledHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE - 2f);
                 }
             }

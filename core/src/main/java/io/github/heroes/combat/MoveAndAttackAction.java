@@ -4,6 +4,8 @@ import io.github.heroes.model.BattleState;
 import io.github.heroes.model.Position;
 import io.github.heroes.model.UnitStack;
 
+import java.util.List;
+
 public class MoveAndAttackAction implements BattleAction {
     private final UnitStack attacker;
     private final Position attackPosition;
@@ -45,7 +47,8 @@ public class MoveAndAttackAction implements BattleAction {
             throw new IllegalStateException("Attack position is outside the battlefield");
         }
 
-        attacker.changePosition(attackPosition);
+        List<Position> path = BattlePathFinder.findPath(state,attacker.getPosition(),attackPosition);
+        attacker.initiateMovement(path);
         combatResolver.attack(state, attacker, target);
     }
 }

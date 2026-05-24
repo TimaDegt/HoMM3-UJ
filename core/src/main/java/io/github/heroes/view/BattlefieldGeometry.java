@@ -5,7 +5,7 @@ import io.github.heroes.model.BattleField;
 import io.github.heroes.model.Position;
 
 public class BattlefieldGeometry {
-    public Vector2 positionToScreen(Position position) {
+    public static Vector2 positionToScreen(Position position) {
         float x = BattleViewConfig.FIELD_START_X + position.x() * BattleViewConfig.HEX_WIDTH;
         float y = BattleViewConfig.FIELD_START_Y + position.y() * BattleViewConfig.HEX_HEIGHT * 0.75f;
 
@@ -16,7 +16,7 @@ public class BattlefieldGeometry {
         return new Vector2(x, y);
     }
 
-    public Position screenToPosition(float screenX, float screenY, BattleField field) {
+    public static Position screenToPosition(float screenX, float screenY, BattleField field) {
         Position closestPosition = null;
         float closestDistance = Float.MAX_VALUE;
 
@@ -40,7 +40,7 @@ public class BattlefieldGeometry {
         return null;
     }
 
-    public Position[] getNeighbors(Position position) {
+    public static Position[] getNeighbors(Position position) {
         int x = position.x();
         int y = position.y();
 

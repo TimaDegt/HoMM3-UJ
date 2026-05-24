@@ -23,7 +23,6 @@ import io.github.heroes.view.ui.UnitInfoPopup;
 public class BattleScreen extends ScreenAdapter {
     private final Main game;
     private final BattleController battleController;
-    private final BattlefieldGeometry battlefieldGeometry;
     private final BattlePathFinder battlePathFinder;
     private final BattleRenderer battleRenderer;
     private final BattleScreenController battleScreenController;
@@ -36,12 +35,10 @@ public class BattleScreen extends ScreenAdapter {
     public BattleScreen(Main game, BattleController battleController) {
         this.game = game;
         this.battleController = battleController;
-        this.battlefieldGeometry = new BattlefieldGeometry();
-        this.battlePathFinder = new BattlePathFinder(battlefieldGeometry);
-        this.battleRenderer = new BattleRenderer(battleController, battlefieldGeometry, battlePathFinder);
+        this.battlePathFinder = new BattlePathFinder();
+        this.battleRenderer = new BattleRenderer(battleController, battlePathFinder);
         this.battleScreenController = new BattleScreenController(
             battleController,
-            battlefieldGeometry,
             battlePathFinder
         );
         stage = new Stage(new ScreenViewport());

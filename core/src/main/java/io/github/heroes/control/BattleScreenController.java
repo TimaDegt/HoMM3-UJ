@@ -11,16 +11,13 @@ import io.github.heroes.view.BattlefieldGeometry;
 
 public class BattleScreenController {
     private final BattleController battleController;
-    private final BattlefieldGeometry battlefieldGeometry;
     private final BattlePathFinder battlePathFinder;
 
     public BattleScreenController(
         BattleController battleController,
-        BattlefieldGeometry battlefieldGeometry,
         BattlePathFinder battlePathFinder
     ) {
         this.battleController = battleController;
-        this.battlefieldGeometry = battlefieldGeometry;
         this.battlePathFinder = battlePathFinder;
     }
 
@@ -74,7 +71,7 @@ public class BattleScreenController {
     }
 
     private Position getBattlefieldPosition(float x, float y) {
-        return battlefieldGeometry.screenToPosition(
+        return BattlefieldGeometry.screenToPosition(
             x,
             y,
             battleController.getState().getField()
@@ -85,7 +82,7 @@ public class BattleScreenController {
         Position nearestPosition = null;
         float nearestDistance = Float.MAX_VALUE;
 
-        for (Position neighbor : battlefieldGeometry.getNeighbors(targetPosition)) {
+        for (Position neighbor : BattlefieldGeometry.getNeighbors(targetPosition)) {
             if (!battleController.getState().getField().isInside(neighbor)) {
                 continue;
             }
@@ -94,7 +91,7 @@ public class BattleScreenController {
                 continue;
             }
 
-            Vector2 center = battlefieldGeometry.positionToScreen(neighbor);
+            Vector2 center = BattlefieldGeometry.positionToScreen(neighbor);
             float distance = center.dst(clickX, clickY);
             if (distance < nearestDistance) {
                 nearestDistance = distance;

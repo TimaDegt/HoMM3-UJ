@@ -3,6 +3,9 @@ package io.github.heroes.combat;
 import io.github.heroes.model.BattleState;
 import io.github.heroes.model.Position;
 import io.github.heroes.model.UnitStack;
+import io.github.heroes.model.anim.AnimParams;
+
+import java.util.List;
 
 public class MoveAction implements BattleAction {
     private final UnitStack unit;
@@ -35,6 +38,11 @@ public class MoveAction implements BattleAction {
             throw new IllegalStateException("Target position is outside the battlefield");
         }
 
-        unit.changePosition(targetPosition);
+        List<Position> path = BattlePathFinder.findPath(state, unit.getPosition(), targetPosition);
+        unit.initiateMovement(path);
+//        unit.startAnimation(AnimParams.AnimType.MOVE);
+//        for (Position nextPosition : path) {
+//            unit.changePosition(nextPosition);
+//        }
     }
 }

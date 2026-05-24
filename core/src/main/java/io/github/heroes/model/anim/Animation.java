@@ -14,12 +14,16 @@ public class Animation {
         this.params = params;
     }
     public void startAnimation(AnimParams.AnimType type) {
-        if (animType != AnimParams.AnimType.IDLE) { return; }
+        //if (isBusy()) { return; }
         animType = type;
         frameIndex = 0;
     }
     public boolean isBusy() {
         return animType != AnimParams.AnimType.IDLE;
+    }
+    public void setFree() {
+        animType = AnimParams.AnimType.IDLE;
+        frameIndex = 0;
     }
     public SpriteCoordinate nextFrame() {
         int coordinate = params.currentCoordinate(animType);

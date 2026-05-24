@@ -10,14 +10,14 @@ import io.github.heroes.view.BattlefieldGeometry;
 import java.util.*;
 
 public class BattlePathFinder {
-    private final BattlefieldGeometry battlefieldGeometry;
+    //private final BattlefieldGeometry battlefieldGeometry;
 
-    public BattlePathFinder(BattlefieldGeometry battlefieldGeometry) {
-        if (battlefieldGeometry == null) {
-            throw new IllegalArgumentException("Battlefield geometry cannot be null");
-        }
-
-        this.battlefieldGeometry = battlefieldGeometry;
+    public BattlePathFinder() {
+//        if (battlefieldGeometry == null) {
+//            throw new IllegalArgumentException("Battlefield geometry cannot be null");
+//        }
+//
+//        this.battlefieldGeometry = battlefieldGeometry;
     }
 
     public boolean canReach(BattleState state, UnitStack unit, Position targetPosition) {
@@ -43,7 +43,8 @@ public class BattlePathFinder {
             Position current = queue.remove();
             int currentDistance = distances.get(current);
 
-            for (Position neighbor : battlefieldGeometry.getNeighbors(current)) {
+            Position[] neighbors = BattlefieldGeometry.getNeighbors(current);
+            for (Position neighbor : neighbors) {
                 if (!field.isInside(neighbor) || visited.contains(neighbor)) {
                     continue;
                 }
@@ -66,7 +67,7 @@ public class BattlePathFinder {
     }
 
 
-    public List<Position> findPath(BattleState state, Position start, Position target) {
+    public static List<Position> findPath(BattleState state, Position start, Position target) {
         if (start.equals(target)) {
             return new ArrayList<>(Collections.singleton(start));
         }
@@ -83,7 +84,8 @@ public class BattlePathFinder {
         while (!queue.isEmpty()) {
             Position current = queue.remove();
 
-            for (Position neighbor : battlefieldGeometry.getNeighbors(current)) {
+            Position[] neighbors = BattlefieldGeometry.getNeighbors(current);
+            for (Position neighbor : neighbors) {
                 if (!field.isInside(neighbor) || visited.contains(neighbor)) {
                     continue;
                 }
@@ -102,7 +104,7 @@ public class BattlePathFinder {
         throw new IllegalArgumentException("Position can not be reached");
     }
 
-    List<Position> recreatePath(Map<Position,Position> prevPosition, Position target){
+    private static List<Position> recreatePath(Map<Position,Position> prevPosition, Position target){
         List<Position> path = new ArrayList<>(Collections.singleton(target));
         while(!prevPosition.get(target).equals(target)){
             target=prevPosition.get(target);
@@ -111,12 +113,12 @@ public class BattlePathFinder {
         return path.reversed();
     }
 
-    private boolean isOccupied(BattleState state, Position position) {
+    private static boolean isOccupied(BattleState state, Position position) {
         return isOccupiedByArmy(position, state.getPlayerOne().getArmy())
             || isOccupiedByArmy(position, state.getPlayerTwo().getArmy());
     }
 
-    private boolean isOccupiedByArmy(Position position, Army army) {
+    private static boolean isOccupiedByArmy(Position position, Army army) {
         for (UnitStack unit : army.getUnits()) {
             if (unit.isAlive() && unit.getPosition().equals(position)) {
                 return true;
