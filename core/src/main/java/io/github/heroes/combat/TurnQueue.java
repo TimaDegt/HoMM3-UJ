@@ -44,11 +44,6 @@ public class TurnQueue {
         if (queue.isEmpty()) return;
 
         TurnQueueEntry waitingEntry = queue.remove(0);
-        if (waitingEntry.gatWait()) {
-            skipDeadUnits();
-            updateActiveUnit();
-            return;
-        }
         waitingEntry.setWait(true);
         queue.add(waitingEntry);
         skipDeadUnits();
