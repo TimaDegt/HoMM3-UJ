@@ -47,6 +47,7 @@ public class BattleRenderer {
             unitTextures.put(type, region);
         }
         for (CursorType cursorType:CursorType.values()){
+            if (cursorType == CursorType.NONE) continue;
             String path = "Icons/Cursors/"+cursorType.getName()+".png";
             Texture tex=new Texture(Gdx.files.internal(path));
             TextureRegion region=new TextureRegion(tex);
@@ -70,6 +71,10 @@ public class BattleRenderer {
 
     private void drawCustomCursor() {
         CursorType cursorType = Cursor.getCustomCursor(battleController);
+        if (cursorType == CursorType.NONE) {
+            Gdx.graphics.setSystemCursor(com.badlogic.gdx.graphics.Cursor.SystemCursor.Arrow);
+            return;
+        }
         Gdx.graphics.setSystemCursor(com.badlogic.gdx.graphics.Cursor.SystemCursor.None);
         float mouseX = Gdx.input.getX();
         float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();

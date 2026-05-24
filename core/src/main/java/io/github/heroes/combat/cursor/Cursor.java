@@ -9,6 +9,9 @@ import io.github.heroes.model.Position;
 import io.github.heroes.model.UnitStack;
 import io.github.heroes.view.BattlefieldGeometry;
 
+import static io.github.heroes.view.BattleViewConfig.ACTION_PANEL_BASE_HEIGHT;
+import static io.github.heroes.view.BattleViewConfig.ACTION_PANEL_SCALE;
+
 public class Cursor {
     private static UnitStack getHoveredUnit(float mouseX, float mouseY, BattleController battleController) {
         Position converted = BattlefieldGeometry.screenToPosition(mouseX, mouseY, battleController.getState().getField());
@@ -20,6 +23,7 @@ public class Cursor {
         if (battleController.getState().isFinished()) return CursorType.DEFAULT;
         float mouseX = Gdx.input.getX();
         float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
+        if (mouseY <= ACTION_PANEL_BASE_HEIGHT * ACTION_PANEL_SCALE) return CursorType.NONE;
 
         UnitStack hoveredUnit = getHoveredUnit(mouseX, mouseY, battleController);
         UnitStack activeUnit = battleController.getActiveUnit();

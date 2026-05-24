@@ -8,7 +8,8 @@ public enum CursorType {
     ATTACKRU("AttackUpRight", -22f, 0f),
     ATTACKLD("AttackDownLeft", 0f, +22f),
     ATTACKRD("AttackDownRight", -22f, +22f),
-    NOPE("Nope", 0f, 0f);
+    NOPE("Nope", 0f, 0f),
+    NONE("",0f,0f);
 
     CursorType(String name, float offsetX, float offsetY) {
         this.name = name;
