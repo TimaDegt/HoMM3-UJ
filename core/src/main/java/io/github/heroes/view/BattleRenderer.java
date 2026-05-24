@@ -115,7 +115,8 @@ public class BattleRenderer {
         BattleField field = battleController.getState().getField();
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
+        Gdx.gl.glLineWidth(1.2f);
+        shapeRenderer.setColor(0.92f, 0.86f, 0.55f, 1.0f);
         for (int row = 0; row < field.getHeight(); row++) {
             for (int col = 0; col < field.getWidth(); col++) {
                 Vector2 center = battlefieldGeometry.positionToScreen(new Position(col, row));
@@ -123,6 +124,7 @@ public class BattleRenderer {
             }
         }
         shapeRenderer.end();
+        Gdx.gl.glLineWidth(1f);
     }
 
     private void drawUnits() {
@@ -234,7 +236,7 @@ public class BattleRenderer {
         Vector2 center = battlefieldGeometry.positionToScreen(activeUnit.getPosition());
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        Gdx.gl.glLineWidth(4);
+        Gdx.gl.glLineWidth(3);
         shapeRenderer.setColor(1, 1, 0, 1);
         drawHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE + 2f);
         shapeRenderer.end();
@@ -254,7 +256,7 @@ public class BattleRenderer {
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0.1f, 0.5f, 0.2f, 0.5f);
+        shapeRenderer.setColor(0.08f, 0.08f, 0.08f, 0.45f);
         for (int row = 0; row < field.getHeight(); row++) {
             for (int col = 0; col < field.getWidth(); col++) {
                 Position target = new Position(col, row);

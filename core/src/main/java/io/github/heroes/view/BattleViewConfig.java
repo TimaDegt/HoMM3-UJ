@@ -13,6 +13,9 @@ public class BattleViewConfig {
     public static final float UNIT_COUNT_BADGE_WIDTH = 34f;
     public static final float UNIT_COUNT_BADGE_HEIGHT = 16f;
     public static final float UNIT_COUNT_BADGE_Y_OFFSET = 8f;
+    public static final float ACTION_PANEL_BASE_HEIGHT = 42f;
+    public static final float ACTION_PANEL_BASE_WIDTH = 800f;
+    public static float ACTION_PANEL_SCALE;
 
     public static float HEX_SIZE;
     public static float HEX_WIDTH;
@@ -40,7 +43,9 @@ public class BattleViewConfig {
         float totalPixelWidth = totalGridWidthUnits * HEX_WIDTH;
         float totalPixelHeight = totalGridHeightUnits * HEX_HEIGHT;
 
+        ACTION_PANEL_SCALE = screenWidth / ACTION_PANEL_BASE_WIDTH;
+
         FIELD_START_X = (screenWidth - totalPixelWidth) / 2f;
-        FIELD_START_Y = (screenHeight - totalPixelHeight) / 2f + (screenHeight * UI_BOTTOM_MARGIN);
+        FIELD_START_Y = ACTION_PANEL_BASE_HEIGHT * ACTION_PANEL_SCALE + HEX_HEIGHT * 0.5f;//(screenHeight - totalPixelHeight) / 2f + (screenHeight * UI_BOTTOM_MARGIN);
     }
 }

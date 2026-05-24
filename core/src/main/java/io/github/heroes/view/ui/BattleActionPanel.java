@@ -1,10 +1,10 @@
 package io.github.heroes.view.ui;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import io.github.heroes.combat.BattleController;
 import io.github.heroes.combat.DefendAction;
@@ -12,15 +12,18 @@ import io.github.heroes.combat.TurnQueueEntry;
 import io.github.heroes.combat.WaitAction;
 import io.github.heroes.model.UnitStack;
 import io.github.heroes.view.BattleViewConfig;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BattleActionPanel {
-    private final Table table;
-    private final Skin skin;
+    private final Group group;
+    private final Texture panelBackground;
     private final BattleController battleController;
-    private final List<TextButton> queueButtons;
+    private final List<UIQueueEntry> queueEntries;
 
     private enum ActionButtonType {
         SURRENDER,
@@ -28,114 +31,142 @@ public class BattleActionPanel {
         OPTIONS,
         AUTO,
         SPELL_BOOK,
-        NONE,
         DEFENCE,
         WAIT
     }
 
-    public BattleActionPanel(Skin skin, BattleController battleController) {
-        this.skin = skin;
-        this.battleController = battleController;
-        this.table = new Table();
-        this.queueButtons = new ArrayList<>();
+    public void addTo(Stage stage) {
+        stage.addActor(this.group);
+    }
 
-        setupTable();
-        setupButtons();
+    public BattleActionPanel(BattleController battleController) {
+        this.group = new Group();
+        this.panelBackground = new Texture("Combat/FullPanel.png");
+        this.battleController = battleController;
+        this.queueEntries = new ArrayList<>();
+
+        Image backgroundActor = new Image(panelBackground);
+        float scale = Gdx.graphics.getWidth() / 800f;
+        backgroundActor.setSize(800 * scale, 42 * scale);
+        backgroundActor.setPosition(0, 0);
+        group.addActor(backgroundActor);
+
+        setupButtons(scale);
         updateQueueButtons();
     }
 
-    public void addTo(Stage stage) {
-        stage.addActor(table);
-    }
-
     public void updateQueueButtons() {
+        for (UIQueueEntry entry : queueEntries) {
+            entry.remove();
+        }
+        queueEntries.clear();
+
         List<TurnQueueEntry> queue = battleController.getTurnQueueOrder();
-        List<String> queueText = new ArrayList<>();
-        int curr_index=0;
-        while(queueText.size()<BattleViewConfig.ACTION_PANEL_QUEUE_BUTTON_COUNT){
-            if (curr_index >= queue.size()){
-                queueText.add("");
+        List<Object> queueData = new ArrayList<>();
+        int curr_index = 0;
+
+        while (queueData.size() < BattleViewConfig.ACTION_PANEL_QUEUE_BUTTON_COUNT) {
+            if (curr_index >= queue.size()) {
+                queueData.add(null);
                 continue;
             }
 
-            queueText.add(queue.get(curr_index).getUnitStack().getType().name());
+            queueData.add(queue.get(curr_index));
 
-            if (curr_index<queue.size()-1 && queue.get(curr_index).getRound()!=queue.get(curr_index+1).getRound()){
-                queueText.add(String.valueOf(queue.get(curr_index).getRound()+1));
+            if (curr_index < queue.size() - 1 && queue.get(curr_index).getRound() != queue.get(curr_index + 1).getRound()) {
+                if (queueData.size() < BattleViewConfig.ACTION_PANEL_QUEUE_BUTTON_COUNT) {
+                    queueData.add(queue.get(curr_index).getRound() + 1);
+                }
             }
             curr_index++;
         }
 
-        for (int i =0;i<BattleViewConfig.ACTION_PANEL_QUEUE_BUTTON_COUNT;i++){
-            queueButtons.get(i).setText(queueText.get(i));
+        float scale = Gdx.graphics.getWidth() / 800f;
+        float qStartX = 211 * scale;
+        float btnH = 38 * scale;
+        float qW = (406f / BattleViewConfig.ACTION_PANEL_QUEUE_BUTTON_COUNT) * scale;
+        float y = 2 * scale;
+
+        for (int i = 0; i < BattleViewConfig.ACTION_PANEL_QUEUE_BUTTON_COUNT; i++) {
+            Object data = queueData.get(i);
+
+            if (data == null) continue;
+
+            UIQueueEntry entry;
+            if (data instanceof Integer) {
+                entry = new UIQueueEntry((Integer) data);
+            } else {
+                entry = new UIQueueEntry((TurnQueueEntry) data);
+            }
+
+            entry.setBounds(qStartX + (i * qW), y, qW, btnH);
+            group.addActor(entry);
+            queueEntries.add(entry);
         }
     }
 
-    private void setupTable() {
-        table.setFillParent(true);
-        table.bottom().pad(0);
-    }
+    private void setupButtons(float scale) {
+        String[] leftButtons = {"Options", "Surrender", "Retreat", "Auto"};
+        float startX = 2 * scale;
+        float y = 2 * scale;
+        float btnW = 50 * scale;
+        float btnH = 38 * scale;
+        float gap = 1 * scale;
 
-    private void setupButtons() {
-        Table leftActionBlock = createActionButtonBlock(
-            "Surrender", ActionButtonType.SURRENDER,
-            "Retreat", ActionButtonType.RETREAT,
-            "Options", ActionButtonType.OPTIONS,
-            "Auto", ActionButtonType.AUTO
-        );
-        Table queueBlock = new Table();
-        Table rightActionBlock = createActionButtonBlock(
-            "Spell Book", ActionButtonType.SPELL_BOOK,
-            "Non", ActionButtonType.NONE,
-            "Defence", ActionButtonType.DEFENCE,
-            "Wait", ActionButtonType.WAIT
-        );
-
-        for (int i = 1; i <= BattleViewConfig.ACTION_PANEL_QUEUE_BUTTON_COUNT; i++) {
-            addQueueButton(queueBlock, "");
+        for (int i = 0; i < leftButtons.length; i++) {
+            addButton(leftButtons[i], startX + (i * (50 + 1)) * scale, y, btnW, btnH);
         }
 
-        table.add(leftActionBlock).top();
-        table.add(queueBlock).top();
-        table.add(rightActionBlock).top();
+        addStaticImage("Combat/QueueBackground.png", 211 * scale, 2 * scale, 406 * scale, 38 * scale);
+
+        addStaticImage("Combat/LogUp.png", 623 * scale, 21 * scale, 20 * scale, 19 * scale);
+        addStaticImage("Combat/LogDown.png", 623 * scale, 2 * scale, 20 * scale, 19 * scale);
+
+        String[] rightButtons = {"Spell Book", "Wait", "Defence"};
+        float rightStartX = 644 * scale;
+        for (int i = 0; i < rightButtons.length; i++) {
+            addButton(rightButtons[i], rightStartX + (i * (50 + 1)) * scale, y, btnW, btnH);
+        }
     }
 
-    private Table createActionButtonBlock(
-        String topLeft,
-        ActionButtonType topLeftType,
-        String topRight,
-        ActionButtonType topRightType,
-        String bottomLeft,
-        ActionButtonType bottomLeftType,
-        String bottomRight,
-        ActionButtonType bottomRightType
-    ) {
-        Table buttonBlock = new Table();
-        addActionButton(buttonBlock, topLeft, topLeftType);
-        addActionButton(buttonBlock, topRight, topRightType);
-        buttonBlock.row();
-        addActionButton(buttonBlock, bottomLeft, bottomLeftType);
-        addActionButton(buttonBlock, bottomRight, bottomRightType);
-        return buttonBlock;
+    private void addButton(String name, float x, float y, float w, float h) {
+        Texture tex = new Texture("Combat/" + name + ".png");
+        tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
+        style.imageUp = new TextureRegionDrawable(new TextureRegion(tex));
+
+        ImageButton btn = new ImageButton(style);
+        btn.setBounds(x, y, w, h);
+        btn.getImageCell().size(w, h);
+
+        ActionButtonType type = null;
+        if (name.equals("Surrender")) type = ActionButtonType.SURRENDER;
+        else if (name.equals("Retreat")) type = ActionButtonType.RETREAT;
+        else if (name.equals("Options")) type = ActionButtonType.OPTIONS;
+        else if (name.equals("Auto")) type = ActionButtonType.AUTO;
+        else if (name.equals("Spell Book")) type = ActionButtonType.SPELL_BOOK;
+        else if (name.equals("Wait")) type = ActionButtonType.WAIT;
+        else if (name.equals("Defence")) type = ActionButtonType.DEFENCE;
+        assert (type != null);
+
+        btn.setDisabled(!isEnabledActionButton(type));
+        addActionButtonListener(btn, type);
+        group.addActor(btn);
     }
-
-
-
-    private void addActionButton(Table targetTable, String text, ActionButtonType type) {
-        TextButton button = new TextButton(text, skin);
-        button.setDisabled(!isEnabledActionButton(type));
-        addActionButtonListener(button, type);
-        targetTable.add(button)
-            .width(BattleViewConfig.ACTION_BUTTON_SIZE)
-            .height(BattleViewConfig.ACTION_BUTTON_SIZE)
-            .top();
+    private void addStaticImage(String path, float x, float y, float w, float h) {
+        Texture tex = new Texture(path);
+        tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear); // <--- Add this!
+        Image img = new Image(tex);
+        img.setBounds(x, y, w, h);
+        group.addActor(img);
     }
 
     private boolean isEnabledActionButton(ActionButtonType type) {
         return type == ActionButtonType.DEFENCE || type == ActionButtonType.WAIT;
     }
 
-    private void addActionButtonListener(TextButton button, ActionButtonType type) {
+    private void addActionButtonListener(ImageButton button, ActionButtonType type) {
         if (type == ActionButtonType.DEFENCE) {
             button.addListener(new ClickListener() {
                 @Override
@@ -161,14 +192,5 @@ public class BattleActionPanel {
                 }
             });
         }
-    }
-
-    private void addQueueButton(Table targetTable, String text) {
-        TextButton button = new TextButton(text, skin);
-        queueButtons.add(button);
-        targetTable.add(button)
-            .width(BattleViewConfig.QUEUE_BUTTON_WIDTH)
-            .height(BattleViewConfig.QUEUE_BUTTON_HEIGHT)
-            .top();
     }
 }
