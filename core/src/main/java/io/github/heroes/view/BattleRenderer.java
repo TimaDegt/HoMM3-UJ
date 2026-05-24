@@ -13,12 +13,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import io.github.heroes.combat.BattleController;
 import io.github.heroes.combat.BattlePathFinder;
-import io.github.heroes.model.Army;
-import io.github.heroes.model.BattleField;
-import io.github.heroes.model.BattleState;
-import io.github.heroes.model.Position;
-import io.github.heroes.model.UnitStack;
-import io.github.heroes.model.UnitType;
+import io.github.heroes.model.*;
+import io.github.heroes.model.anim.SpriteCoordinate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,30 +27,20 @@ public class BattleRenderer {
     private final SpriteBatch batch;
     private final BitmapFont font;
     private final GlyphLayout glyphLayout;
-    private final Map<UnitType, Texture> unitTextures;
+    private final Map<UnitType, TextureRegion> unitTextures;
 
     private TextureRegion background;
-    private Map<UnitType,TextureRegion> leftFacingUnits;
-    private Map<UnitType,TextureRegion> rightFacingUnits;
 
     private void initGraphics(){
-
-        leftFacingUnits=new HashMap<>();
-        rightFacingUnits=new HashMap<>();
-
         for(UnitType type:UnitType.values()){
             String townFolder=type.getCastleType().getName();
             String unitName=type.getName();
-            String unitPath="Units/"+townFolder+"/"+unitName+".png";
+            String unitPath="Units/"+townFolder+"/"+unitName+"_spritesheet.png";
 
             Texture tex=new Texture(Gdx.files.internal(unitPath));
 
-            TextureRegion right=new TextureRegion(tex);
-            TextureRegion left=new TextureRegion(tex);
-            left.flip(true,false);
-
-            rightFacingUnits.put(type,right);
-            leftFacingUnits.put(type,left);
+            TextureRegion region=new TextureRegion(tex);
+            unitTextures.put(type, region);
         }
     }
 
@@ -92,18 +78,17 @@ public class BattleRenderer {
         shapeRenderer.dispose();
         batch.dispose();
         font.dispose();
-        for (Texture texture : unitTextures.values()) {
-            texture.dispose();
+        for (TextureRegion region : unitTextures.values()) {
+            region.getTexture().dispose();
         }
+        unitTextures.clear();
         if (background != null && background.getTexture() != null) {
             background.getTexture().dispose();
         }
     }
 
     private void loadTextures() {
-        unitTextures.put(UnitType.PIKEMAN, new Texture("pikeman.png"));
-        unitTextures.put(UnitType.ARCHER, new Texture("archer.png"));
-        unitTextures.put(UnitType.GRIFFIN, new Texture("griffin.png"));
+        initGraphics();
 
         int bgId= MathUtils.random(0,9);
         String bgPath="Battlefields/"+bgId+".png";
@@ -147,12 +132,26 @@ public class BattleRenderer {
 
     private void drawUnitSprite(UnitStack unit) {
         Vector2 center = battlefieldGeometry.positionToScreen(unit.getPosition());
-        Texture texture = unitTextures.get(unit.getType());
 
-        if (texture != null) {
-            float size = BattleViewConfig.HEX_SIZE * BattleViewConfig.UNIT_SPRITE_SCALE;
-            batch.draw(texture, center.x - size / 2f, center.y - size / 2f, size, size);
+        float hexHeight = BattleViewConfig.HEX_HEIGHT;
+        float hexWidth = BattleViewConfig.HEX_WIDTH;
+
+        SpriteCoordinate coordinate = unit.nextFrame();
+        int x = coordinate.x;
+        int y = coordinate.y;
+        int squareLength = coordinate.size;
+        float dx = 0;
+        TextureRegion texture = new TextureRegion(unitTextures.get(unit.getType()), x, y, squareLength, squareLength); //
+        if (unit.getOwner() == Player.PLAYER_TWO) {
+            //left oriented
+            texture.flip(true, false);
+            dx += squareLength - hexWidth/2f;
         }
+
+        float size = squareLength*1.5f;
+
+        batch.draw(texture, center.x - hexHeight/2f - dx, center.y - hexHeight/4f, size, size);
+        if (unit.getType()==UnitType.ARCHER) batch.draw(texture, 0, 0, size, size);
     }
 
     private void drawUnitCountBadgeBackgrounds() {
