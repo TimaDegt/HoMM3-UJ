@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import os
 
-image_path="Pikeman.png"
-out_dir="textures/pikeman_frames"
+image_path="Archer.png"
+out_dir="textures/archer_frames"
 os.makedirs(out_dir,exist_ok=True)
 
 img=cv2.imread(image_path,cv2.IMREAD_UNCHANGED)

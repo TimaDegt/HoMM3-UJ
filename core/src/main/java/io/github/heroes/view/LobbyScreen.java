@@ -29,7 +29,7 @@ public class LobbyScreen extends ScreenAdapter {
     public LobbyScreen(Main game) {
         this.game = game;
         batch = new SpriteBatch();
-        background = new Texture("lobby_background.jpg");
+        background = new Texture("Menu/lobby_background.jpg");
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));

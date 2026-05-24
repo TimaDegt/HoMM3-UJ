@@ -28,6 +28,7 @@ public class BattleScreen extends ScreenAdapter {
     private final BattleRenderer battleRenderer;
     private final BattleScreenController battleScreenController;
     private final Stage stage;
+    private Stage actionPanelStage;
     private final Skin skin;
     private BattleActionPanel actionPanel;
     private UnitInfoPopup unitInfoPopup;
@@ -65,7 +66,7 @@ public class BattleScreen extends ScreenAdapter {
         });
         table.add(backButton).pad(20);
 
-        actionPanel = new BattleActionPanel(skin, battleController);
+        actionPanel = new BattleActionPanel(battleController);
         actionPanel.addTo(stage);
 
         setupUnitInfoPopup();

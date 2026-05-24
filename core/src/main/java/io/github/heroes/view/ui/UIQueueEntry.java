@@ -4,13 +4,11 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
 import io.github.heroes.combat.TurnQueueEntry;
-import io.github.heroes.model.BattleState;
 import io.github.heroes.model.Player;
 import io.github.heroes.model.UnitStack;
 
@@ -19,45 +17,54 @@ public class UIQueueEntry extends Stack {
     private final Image colorBar;
 
     public UIQueueEntry(TurnQueueEntry entry) {
-        Table gapContainer = new Table();
-        gapContainer.pad(1f);
-        Stack innerStack = new Stack();
-
         UnitStack unitStack = entry.getUnitStack();
         int cnt = unitStack.getCount();
         Player owner = unitStack.getOwner();
+
+        Table gapContainer = new Table();
+        gapContainer.pad(1.5f);
+
+        Table outlineTable = new Table();
+        outlineTable.setBackground(createSolidTexture(new Color(0.92f, 0.88f, 0.78f, 1f)));
+
+        outlineTable.pad(2.5f, 1.0f, 2.5f, 1.0f);
+
+        Table contentTable = new Table();
 
         String iconPath = "Icons/" + unitStack.getType().getName() + ".png";
         Texture iconTex = new Texture(iconPath);
         iconTex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         icon = new Image(iconTex);
-        innerStack.add(icon);
+        icon.setScaling(Scaling.stretch);
 
-        Table bottomTable = new Table();
-        bottomTable.bottom();
+        contentTable.add(icon).expand().fill().row();
+
+        Image separator = new Image(createSolidTexture(new Color(0.92f, 0.88f, 0.78f, 1f)));
+        contentTable.add(separator).expandX().fillX().height(2f).row();
+
         Stack barStack = new Stack();
 
         colorBar = new Image(createSolidTexture(Color.WHITE));
+        colorBar.setScaling(Scaling.stretch);
+
         if (owner == Player.PLAYER_ONE) {
-            colorBar.setColor(Color.RED);
+            colorBar.setColor(new Color(0.55f, 0.16f, 0.06f, 1f));
         } else {
-            colorBar.setColor(Color.BLUE);
+            colorBar.setColor(new Color(0.06f, 0.16f, 0.55f, 1f));
         }
 
         Label.LabelStyle labelStyle = new Label.LabelStyle(new BitmapFont(), Color.WHITE);
         Label countLabel = new Label(String.valueOf(cnt), labelStyle);
         countLabel.setAlignment(Align.center);
-        countLabel.setFontScale(1.3f);
+        countLabel.setFontScale(1f);
 
         barStack.add(colorBar);
         barStack.add(countLabel);
 
-        bottomTable.add(barStack).expandX().fillX().height(20f);
-        innerStack.add(bottomTable);
+        contentTable.add(barStack).expandX().fillX().height(22f);
 
-        innerStack.add(createOutline());
-
-        gapContainer.add(innerStack).expand().fill();
+        outlineTable.add(contentTable).expand().fill();
+        gapContainer.add(outlineTable).expand().fill();
         this.add(gapContainer);
     }
     public UIQueueEntry(int roundNumber) {
@@ -66,29 +73,28 @@ public class UIQueueEntry extends Stack {
 
         Table gapContainer = new Table();
         gapContainer.pad(1.5f);
-        Stack innerStack = new Stack();
 
-        Image bg = new Image(createSolidTexture(Color.DARK_GRAY));
-        innerStack.add(bg);
+        Table outlineTable = new Table();
+        outlineTable.setBackground(createSolidTexture(new Color(0.92f, 0.88f, 0.78f, 1f)));
+        outlineTable.pad(2.5f);
 
-        Table textTable = new Table();
+        Table contentTable = new Table();
+        contentTable.setBackground(createSolidTexture(new Color(0.2f, 0.15f, 0.1f, 1f)));
+
         Label.LabelStyle labelStyle = new Label.LabelStyle(new BitmapFont(), Color.WHITE);
         Label numLabel = new Label(String.valueOf(roundNumber), labelStyle);
-        Label roundLabel = new Label("Round", labelStyle);
-
-        numLabel.setFontScale(1.4f);
-        roundLabel.setFontScale(0.9f);
+        Label roundLabel = new Label("round", labelStyle);
 
         numLabel.setAlignment(Align.center);
         roundLabel.setAlignment(Align.center);
+        numLabel.setFontScale(1.8f);
+        roundLabel.setFontScale(1.0f);
 
-        textTable.add(numLabel).row();
-        textTable.add(roundLabel);
-        innerStack.add(textTable);
+        contentTable.add(numLabel).expandX().center().row();
+        contentTable.add(roundLabel).expandX().center();
 
-        innerStack.add(createOutline());
-
-        gapContainer.add(innerStack).expand().fill();
+        outlineTable.add(contentTable).expand().fill();
+        gapContainer.add(outlineTable).expand().fill();
         this.add(gapContainer);
     }
 
@@ -99,23 +105,5 @@ public class UIQueueEntry extends Stack {
         Texture tex = new Texture(pixmap);
         pixmap.dispose();
         return new TextureRegionDrawable(tex);
-    }
-    private Table createOutline() {
-        TextureRegionDrawable outlineDrawable = createSolidTexture(new Color(0.45f, 0.25f, 0.1f, 1f));
-        Table outlineTable = new Table();
-        outlineTable.setFillParent(true);
-
-        Image top = new Image(outlineDrawable);
-        Image bottom = new Image(outlineDrawable);
-        Image left = new Image(outlineDrawable);
-        Image right = new Image(outlineDrawable);
-
-        outlineTable.add(top).height(1).expandX().fillX().colspan(3).row();
-        outlineTable.add(left).width(1).expandY().fillY();
-        outlineTable.add().expand().fill();
-        outlineTable.add(right).width(1).expandY().fillY().row();
-        outlineTable.add(bottom).height(1).expandX().fillX().colspan(3);
-
-        return outlineTable;
     }
 }
