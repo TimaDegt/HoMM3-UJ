@@ -11,13 +11,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import io.github.heroes.combat.BattleController;
-import io.github.heroes.combat.BattlePathFinder;
+import io.github.heroes.model.combat.BattleEngine;
+import io.github.heroes.model.combat.BattlePathFinder;
 import io.github.heroes.combat.cursor.Cursor;
 import io.github.heroes.combat.cursor.CursorType;
-import io.github.heroes.model.*;
-import io.github.heroes.model.anim.SpriteCoordinate;
-import io.github.heroes.model.anim.Directions;
+import io.github.heroes.model.state.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +23,7 @@ import java.util.Map;
 import static io.github.heroes.view.Battle.BattleViewConfig.CURSOR_SCALE;
 
 public class BattleRenderer {
-    private final BattleController battleController;
+    private final BattleEngine battleEngine;
     private final ShapeRenderer shapeRenderer;
     private final SpriteBatch batch;
     private final BitmapFont font;
@@ -42,8 +40,7 @@ public class BattleRenderer {
             String unitPath="Units/"+townFolder+"/"+unitName+"_spritesheet.png";
 
             Texture tex=new Texture(Gdx.files.internal(unitPath));
-
-            TextureRegion region=new TextureRegion(tex);
+            TextureRegion region = createStaticUnitRegion(type, tex);
             unitTextures.put(type, region);
         }
         for (CursorType cursorType:CursorType.values()){
@@ -55,10 +52,18 @@ public class BattleRenderer {
         }
     }
 
+    private TextureRegion createStaticUnitRegion(UnitType type, Texture texture) {
+        return switch (type) {
+            case PIKEMAN -> new TextureRegion(texture, 0, 7 * 125, 125, 125);
+            case ARCHER -> new TextureRegion(texture, 0, 6 * 125, 125, 125);
+            case GRIFFIN -> new TextureRegion(texture, 0, 0, 155, 155);
+        };
+    }
+
     public BattleRenderer(
-        BattleController battleController
+        BattleEngine battleEngine
     ) {
-        this.battleController = battleController;
+        this.battleEngine = battleEngine;
         this.shapeRenderer = new ShapeRenderer();
         this.batch = new SpriteBatch();
         this.font = new BitmapFont();
@@ -70,7 +75,7 @@ public class BattleRenderer {
     }
 
     private void drawCustomCursor() {
-        CursorType cursorType = Cursor.getCustomCursor(battleController);
+        CursorType cursorType = Cursor.getCustomCursor(battleEngine);
         if (cursorType == CursorType.NONE) {
             Gdx.graphics.setSystemCursor(com.badlogic.gdx.graphics.Cursor.SystemCursor.Arrow);
             return;
@@ -131,7 +136,7 @@ public class BattleRenderer {
     }
 
     private void drawBattlefield() {
-        BattleField field = battleController.getState().getField();
+        BattleField field = battleEngine.getState().getField();
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         Gdx.gl.glLineWidth(1.2f);
@@ -148,8 +153,8 @@ public class BattleRenderer {
 
     private void drawUnits() {
         batch.begin();
-        drawArmySprites(battleController.getState().getPlayerOne().getArmy());
-        drawArmySprites(battleController.getState().getPlayerTwo().getArmy());
+        drawArmySprites(battleEngine.getState().getPlayerOne().getArmy());
+        drawArmySprites(battleEngine.getState().getPlayerTwo().getArmy());
         batch.end();
 
         drawUnitCountBadgeBackgrounds();
@@ -158,38 +163,28 @@ public class BattleRenderer {
 
     private void drawArmySprites(Army army) {
         for (UnitStack unit : army.getUnits()) {
-            drawUnitSprite(unit);
+            if (unit.isAlive()) {
+                drawUnitSprite(unit);
+            }
         }
     }
 
     private void drawUnitSprite(UnitStack unit) {
-
         float hexHeight = BattleViewConfig.HEX_HEIGHT;
         float hexWidth = BattleViewConfig.HEX_WIDTH;
-
-        SpriteCoordinate coordinate = unit.nextFrame();
-        int x = coordinate.x;
-        int y = coordinate.y;
-        int squareLength = coordinate.size;
         float dx = 0;
-        TextureRegion texture = new TextureRegion(unitTextures.get(unit.getType()), x, y, squareLength, squareLength); //
-        Directions direction = Directions.RIGHT;
+        TextureRegion texture = new TextureRegion(unitTextures.get(unit.getType()));
+        int spriteSize = texture.getRegionWidth();
+
         if (unit.getOwner() == Player.PLAYER_TWO) {
-            direction = Directions.LEFT;
-        }
-        if (unit.isMoving()) {
-            direction = unit.getMovementDirection();
-        }
-
-        if (direction == Directions.LEFT) {
             texture.flip(true, false);
-            dx += squareLength - hexWidth/2f;
+            dx += spriteSize - hexWidth / 2f;
         }
 
-        float size = squareLength*1.5f;
+        float size = spriteSize * 1.5f;
 
         Vector2 center = BattlefieldGeometry.positionToScreen(unit.getPosition());
-        batch.draw(texture, unit.deltaX + center.x - hexHeight/2f - dx, unit.deltaY + center.y - hexHeight/4f, size, size);
+        batch.draw(texture, center.x - hexHeight / 2f - dx, center.y - hexHeight / 4f, size, size);
     }
 
     private void drawUnitCountBadgeBackgrounds() {
@@ -198,14 +193,14 @@ public class BattleRenderer {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0.05f, 0.04f, 0.03f, 0.9f);
-        drawArmyCountBadgeBackgrounds(battleController.getState().getPlayerOne().getArmy());
-        drawArmyCountBadgeBackgrounds(battleController.getState().getPlayerTwo().getArmy());
+        drawArmyCountBadgeBackgrounds(battleEngine.getState().getPlayerOne().getArmy());
+        drawArmyCountBadgeBackgrounds(battleEngine.getState().getPlayerTwo().getArmy());
         shapeRenderer.end();
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(0.85f, 0.78f, 0.45f, 1f);
-        drawArmyCountBadgeBackgrounds(battleController.getState().getPlayerOne().getArmy());
-        drawArmyCountBadgeBackgrounds(battleController.getState().getPlayerTwo().getArmy());
+        drawArmyCountBadgeBackgrounds(battleEngine.getState().getPlayerOne().getArmy());
+        drawArmyCountBadgeBackgrounds(battleEngine.getState().getPlayerTwo().getArmy());
         shapeRenderer.end();
 
         Gdx.gl.glDisable(GL20.GL_BLEND);
@@ -232,8 +227,8 @@ public class BattleRenderer {
     private void drawUnitCountBadgeTexts() {
         batch.begin();
         font.setColor(Color.WHITE);
-        drawArmyCountBadgeTexts(battleController.getState().getPlayerOne().getArmy());
-        drawArmyCountBadgeTexts(battleController.getState().getPlayerTwo().getArmy());
+        drawArmyCountBadgeTexts(battleEngine.getState().getPlayerOne().getArmy());
+        drawArmyCountBadgeTexts(battleEngine.getState().getPlayerTwo().getArmy());
         batch.end();
     }
 
@@ -270,7 +265,7 @@ public class BattleRenderer {
     }
 
     private void drawActiveUnitHighlight() {
-        UnitStack activeUnit = battleController.getActiveUnit();
+        UnitStack activeUnit = battleEngine.getActiveUnit();
         if (activeUnit == null || !activeUnit.isAlive()) {
             return;
         }
@@ -286,12 +281,12 @@ public class BattleRenderer {
     }
 
     private void drawMovementRange() {
-        UnitStack activeUnit = battleController.getActiveUnit();
+        UnitStack activeUnit = battleEngine.getActiveUnit();
         if (activeUnit == null || !activeUnit.isAlive()) {
             return;
         }
 
-        BattleState state = battleController.getState();
+        BattleState state = battleEngine.getState();
         BattleField field = state.getField();
 
         Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -303,7 +298,7 @@ public class BattleRenderer {
             for (int col = 0; col < field.getWidth(); col++) {
                 Position target = new Position(col, row);
 
-                if (battleController.findUnitAt(target)!=null) {
+                if (battleEngine.findUnitAt(target)!=null) {
                     continue;
                 }
 

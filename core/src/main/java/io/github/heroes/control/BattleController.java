@@ -1,0 +1,70 @@
+package io.github.heroes.control;
+
+import io.github.heroes.model.combat.ActionResult;
+import io.github.heroes.model.combat.BattleAction;
+import io.github.heroes.model.combat.BattleEngine;
+import io.github.heroes.model.combat.BattlePathFinder;
+import io.github.heroes.model.combat.DefendAction;
+import io.github.heroes.model.combat.MoveAction;
+import io.github.heroes.model.combat.MoveAndAttackAction;
+import io.github.heroes.model.combat.WaitAction;
+import io.github.heroes.model.state.BattleField;
+import io.github.heroes.model.state.Position;
+import io.github.heroes.model.state.UnitStack;
+
+public class BattleController {
+    private final BattleEngine battleEngine;
+
+    public BattleController(BattleEngine battleEngine) {
+        this.battleEngine = battleEngine;
+    }
+
+    public ActionResult onHexClicked(
+        Position clickedPosition,
+        Position nearestPosition
+    ) {
+        if (battleEngine.getState().isFinished()) return ActionResult.failure();
+
+        UnitStack clickedUnit = battleEngine.findUnitAt(clickedPosition);
+        UnitStack attackUnit = battleEngine.getActiveUnit();
+        if (clickedUnit != null) {
+            if (clickedUnit.getOwner()==attackUnit.getOwner() || nearestPosition == null){
+                return ActionResult.failure();
+            }
+            return performAction(new MoveAndAttackAction(attackUnit,nearestPosition,clickedUnit));
+        }
+
+        return performAction(new MoveAction(attackUnit, clickedPosition));
+    }
+
+    public ActionResult onDefendClicked() {
+        UnitStack activeUnit = battleEngine.getActiveUnit();
+        if (activeUnit == null) return ActionResult.failure();
+
+        return performAction(new DefendAction(activeUnit));
+    }
+
+    public ActionResult onWaitClicked() {
+        UnitStack activeUnit = battleEngine.getActiveUnit();
+        if (activeUnit == null) return ActionResult.failure();
+
+        return performAction(new WaitAction(activeUnit));
+    }
+
+
+    private ActionResult performAction(BattleAction action) {
+        return battleEngine.performAction(action);
+    }
+
+    public BattleField getField() {
+        return battleEngine.getState().getField();
+    }
+
+    public UnitStack findUnitAt(Position position) {
+        return battleEngine.findUnitAt(position);
+    }
+
+    private boolean canReach(UnitStack unit, Position targetPosition) {
+        return BattlePathFinder.canReach(battleEngine.getState(), unit, targetPosition);
+    }
+}

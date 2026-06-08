@@ -1,8 +1,6 @@
 package io.github.heroes.view.Battle;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
@@ -13,34 +11,41 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import io.github.heroes.combat.BattlePathFinder;
-import io.github.heroes.combat.BattleController;
-import io.github.heroes.control.BattleScreenController;
-import io.github.heroes.model.*;
+import io.github.heroes.model.combat.ActionResult;
+import io.github.heroes.model.combat.BattleEvent;
+import io.github.heroes.model.combat.BattleEngine;
+import io.github.heroes.control.BattleController;
+import io.github.heroes.model.state.BattleField;
 import io.github.heroes.view.Main;
+import io.github.heroes.view.Battle.InputHandler.BattleInputHandler;
 import io.github.heroes.view.Screens.LobbyScreen;
 import io.github.heroes.view.Screens.VictoryScreen;
-import io.github.heroes.view.ui.BattleActionPanel;
-import io.github.heroes.view.ui.UnitInfoPopup;
 
 public class BattleScreen extends ScreenAdapter {
     private final Main game;
-    private final BattleController battleController;
-    private final BattlePathFinder battlePathFinder;
+    private final BattleEngine battleEngine;
     private final BattleRenderer battleRenderer;
     private final Stage stage;
-    private Stage actionPanelStage;
     private final Skin skin;
+    private final UnitInfoPopup unitInfoPopup;
+    private final BattleController battleController;
+    private final BattleInputHandler battleInputHandler;
     private BattleActionPanel actionPanel;
-    private UnitInfoPopup unitInfoPopup;
 
-    public BattleScreen(Main game, BattleController battleController) {
+    public BattleScreen(Main game, BattleEngine battleEngine) {
         this.game = game;
-        this.battleController = battleController;
-        this.battlePathFinder = new BattlePathFinder();
-        this.battleRenderer = new BattleRenderer(battleController);
+        this.battleEngine = battleEngine;
+        this.battleRenderer = new BattleRenderer(battleEngine);
         stage = new Stage(new ScreenViewport());
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+        unitInfoPopup = new UnitInfoPopup(skin);
+        battleController = new BattleController(battleEngine);
+        battleInputHandler = new BattleInputHandler(
+            battleController,
+            unitInfoPopup,
+            this,
+            () -> game.setScreen(new LobbyScreen(game))
+        );
 
         setupUI();
         setupInput();
@@ -56,52 +61,32 @@ public class BattleScreen extends ScreenAdapter {
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new LobbyScreen(game));
+                battleInputHandler.onExitClicked();
             }
         });
         table.add(backButton).pad(20);
 
-        actionPanel = new BattleActionPanel(battleController);
+        actionPanel = new BattleActionPanel(
+            battleEngine.getTurnQueueOrder(),
+            battleInputHandler::onDefendClicked,
+            battleInputHandler::onWaitClicked
+        );
         actionPanel.addTo(stage);
 
-        setupUnitInfoPopup();
-    }
-
-    private void setupUnitInfoPopup() {
-        unitInfoPopup = new UnitInfoPopup(skin);
         unitInfoPopup.addTo(stage);
     }
 
     private void setupInput() {
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(stage);
-        multiplexer.addProcessor(new InputAdapter() {
-            @Override
-            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-                float worldY = Gdx.graphics.getHeight() - screenY;
-
-                if (button == Input.Buttons.LEFT) {
-                    if (BattleScreenController.handleLeftBattlefieldClick(screenX, worldY, battleController)) {
-                        finishTurn();
-                    }
-                    return true;
-                }
-
-                return false;
-            }
-        });
+        multiplexer.addProcessor(battleInputHandler);
         Gdx.input.setInputProcessor(multiplexer);
     }
 
     public void render(float delta) {
         Gdx.gl.glClearColor(0.1f, 0.4f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
-            float worldY = Gdx.graphics.getHeight() - Gdx.input.getY();
-            handleRightBattlefieldClick(Gdx.input.getX(), worldY);
-        } else {
-            hideUnitInfoPopup();
-        }
+        battleInputHandler.update();
 
         battleRenderer.render();
 
@@ -112,7 +97,7 @@ public class BattleScreen extends ScreenAdapter {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
-        BattleField field = battleController.getState().getField();
+        BattleField field = battleEngine.getState().getField();
         BattleViewConfig.updateDimensions(width, height, field.getWidth(), field.getHeight());
     }
 
@@ -122,31 +107,19 @@ public class BattleScreen extends ScreenAdapter {
         battleRenderer.dispose();
     }
 
+    public void setBattleInputEnabled(boolean enabled) {
+        battleInputHandler.setBattleInputEnabled(enabled);
+        actionPanel.setBattleInputEnabled(enabled);
+    }
 
-    private void handleRightBattlefieldClick(float x, float y) {
-        UnitStack unit = BattleScreenController.findUnitUnderCursor(x, y, battleController);
-        if (unit == null) {
-            hideUnitInfoPopup();
-            return;
+    public void handleActionResult(ActionResult result) {
+        if (result.successful()) {
+            actionPanel.updateQueueButtons(battleEngine.getTurnQueueOrder());
         }
-
-        showUnitInfoPopup(unit);
-    }
-
-    private void showUnitInfoPopup(UnitStack unit) {
-        unitInfoPopup.show(unit);
-    }
-
-    private void hideUnitInfoPopup() {
-        unitInfoPopup.hide();
-    }
-
-    private void finishTurn() {
-        if (battleController.getState().isFinished()) {
+        if (battleEngine.getState().isFinished()){
             game.setScreen(new VictoryScreen(game));
             return;
         }
-
-        actionPanel.updateQueueButtons();
+        setBattleInputEnabled(true);
     }
 }

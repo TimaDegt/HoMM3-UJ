@@ -1,8 +1,8 @@
 package io.github.heroes.view.Battle;
 
 import com.badlogic.gdx.math.Vector2;
-import io.github.heroes.model.BattleField;
-import io.github.heroes.model.Position;
+import io.github.heroes.model.state.BattleField;
+import io.github.heroes.model.state.Position;
 
 public class BattlefieldGeometry {
     public static Vector2 positionToScreen(Position position) {
@@ -38,6 +38,30 @@ public class BattlefieldGeometry {
         }
 
         return null;
+    }
+
+    public static Position findNearestNeighbor(
+        Position targetPosition,
+        float screenX,
+        float screenY,
+        BattleField field
+    ) {
+        Position nearestPosition = null;
+        float nearestDistance = Float.MAX_VALUE;
+
+        for (Position neighbor : getNeighbors(targetPosition)) {
+            if (!field.isInside(neighbor)) {
+                continue;
+            }
+
+            float distance = positionToScreen(neighbor).dst(screenX, screenY);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestPosition = neighbor;
+            }
+        }
+
+        return nearestPosition;
     }
 
     public static Position[] getNeighbors(Position position) {
