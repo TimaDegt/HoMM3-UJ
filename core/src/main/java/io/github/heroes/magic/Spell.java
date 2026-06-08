@@ -24,7 +24,7 @@ public abstract class Spell {
     public int getLvl() {
         return lvl;
     }
-    public MagicSchool getSchool() {
+    public MagicSchool getMagicSchool() {
         return school;
     }
 
@@ -41,4 +41,5 @@ public abstract class Spell {
     }
 
     public abstract void cast(Hero caster, UnitStack target);
+
 }
