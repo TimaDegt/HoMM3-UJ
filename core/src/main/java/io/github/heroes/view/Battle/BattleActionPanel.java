@@ -21,7 +21,8 @@ public class BattleActionPanel {
     private final List<ImageButton> battleActionButtons;
     private final Runnable onDefendClicked;
     private final Runnable onWaitClicked;
-
+    private final Runnable onSurrenderClicked;
+    private final Runnable onRetreatClicked;
     private enum ActionButtonType {
         SURRENDER,
         RETREAT,
@@ -39,7 +40,9 @@ public class BattleActionPanel {
     public BattleActionPanel(
         List<TurnQueueEntry> turnQueue,
         Runnable onDefendClicked,
-        Runnable onWaitClicked
+        Runnable onWaitClicked,
+        Runnable onSurrenderClicked,
+        Runnable onRetreatClicked
     ) {
         this.group = new Group();
         this.panelBackground = new Texture("Combat/FullPanel.png");
@@ -47,6 +50,8 @@ public class BattleActionPanel {
         this.battleActionButtons = new ArrayList<>();
         this.onDefendClicked = onDefendClicked;
         this.onWaitClicked = onWaitClicked;
+        this.onSurrenderClicked = onSurrenderClicked;
+        this.onRetreatClicked = onRetreatClicked;
 
         Image backgroundActor = new Image(panelBackground);
         float scale = Gdx.graphics.getWidth() / 800f;
@@ -168,7 +173,7 @@ public class BattleActionPanel {
     }
 
     private boolean isEnabledActionButton(ActionButtonType type) {
-        return type == ActionButtonType.DEFENCE || type == ActionButtonType.WAIT;
+        return type == ActionButtonType.DEFENCE || type == ActionButtonType.WAIT || type == ActionButtonType.SURRENDER || type == ActionButtonType.RETREAT;
     }
 
     public void setBattleInputEnabled(boolean enabled) {
@@ -192,6 +197,24 @@ public class BattleActionPanel {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     onWaitClicked.run();
+                }
+            });
+        }
+
+        if (type == ActionButtonType.SURRENDER) {
+            button.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    onSurrenderClicked.run();
+                }
+            });
+        }
+
+        if (type == ActionButtonType.RETREAT) {
+            button.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    onRetreatClicked.run();
                 }
             });
         }

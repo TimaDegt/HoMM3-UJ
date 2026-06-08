@@ -57,19 +57,13 @@ public class BattleScreen extends ScreenAdapter {
         table.top().right();
         stage.addActor(table);
 
-        TextButton backButton = new TextButton("Back to lobby", skin);
-        backButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                battleInputHandler.onExitClicked();
-            }
-        });
-        table.add(backButton).pad(20);
 
         actionPanel = new BattleActionPanel(
             battleEngine.getTurnQueueOrder(),
             battleInputHandler::onDefendClicked,
-            battleInputHandler::onWaitClicked
+            battleInputHandler::onWaitClicked,
+            () -> game.setScreen(new LobbyScreen(game)),
+            () -> game.setScreen(new LobbyScreen(game))
         );
         actionPanel.addTo(stage);
 
