@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.model.combat.BattlePathFinder;
 import io.github.heroes.combat.cursor.Cursor;
@@ -23,6 +24,8 @@ import java.util.Map;
 import static io.github.heroes.view.Battle.BattleViewConfig.CURSOR_SCALE;
 
 public class BattleRenderer {
+    private static final float ACTION_ANIMATION_DURATION = 3f;
+
     private final BattleEngine battleEngine;
     private final ShapeRenderer shapeRenderer;
     private final SpriteBatch batch;
@@ -32,6 +35,8 @@ public class BattleRenderer {
     private final Map<CursorType, TextureRegion> cursorTextures;
 
     private TextureRegion background;
+    private float actionAnimationTime;
+    private Runnable actionAnimationFinished;
 
     private void initGraphics(){
         for(UnitType type:UnitType.values()){
@@ -95,7 +100,7 @@ public class BattleRenderer {
         }
     }
 
-    public void render() {
+    public void render(float delta) {
         batch.begin();
         if (background != null) {
             batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -107,8 +112,30 @@ public class BattleRenderer {
         drawActiveUnitHighlight();
         drawUnits();
         drawCustomCursor();
+        updateActionAnimation(delta);
     }
 
+    //part for timur
+    public void playActionAnimation(ActionResult result, Runnable onFinished) {
+        if (result == null) throw new IllegalArgumentException("Action result cannot be null");
+        if (onFinished == null) throw new IllegalArgumentException("Completion callback cannot be null");
+
+        actionAnimationTime = ACTION_ANIMATION_DURATION;
+        actionAnimationFinished = onFinished;
+    }
+
+    private void updateActionAnimation(float delta) {
+        if (actionAnimationFinished == null) return;
+
+        actionAnimationTime -= delta;
+        if (actionAnimationTime > 0) return;
+
+        Runnable onFinished = actionAnimationFinished;
+        actionAnimationFinished = null;
+        actionAnimationTime = 0;
+        onFinished.run();
+    }
+//
     public void dispose() {
         shapeRenderer.dispose();
         batch.dispose();
