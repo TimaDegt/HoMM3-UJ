@@ -49,7 +49,7 @@ public class BattlefieldGeometry {
         Position nearestPosition = null;
         float nearestDistance = Float.MAX_VALUE;
 
-        for (Position neighbor : getNeighbors(targetPosition)) {
+        for (Position neighbor : targetPosition.neighbors()) {
             if (!field.isInside(neighbor)) {
                 continue;
             }
@@ -62,30 +62,5 @@ public class BattlefieldGeometry {
         }
 
         return nearestPosition;
-    }
-
-    public static Position[] getNeighbors(Position position) {
-        int x = position.x();
-        int y = position.y();
-
-        if (y % 2 == 0) {
-            return new Position[] {
-                new Position(x + 1, y),
-                new Position(x - 1, y),
-                new Position(x, y + 1),
-                new Position(x - 1, y + 1),
-                new Position(x, y - 1),
-                new Position(x - 1, y - 1)
-            };
-        }
-
-        return new Position[] {
-            new Position(x + 1, y),
-            new Position(x - 1, y),
-            new Position(x + 1, y + 1),
-            new Position(x, y + 1),
-            new Position(x + 1, y - 1),
-            new Position(x, y - 1)
-        };
     }
 }

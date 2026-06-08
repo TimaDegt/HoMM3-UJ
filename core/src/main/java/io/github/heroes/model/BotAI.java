@@ -1,6 +1,5 @@
 package io.github.heroes.model;
 
-import io.github.heroes.control.BattleController;
 import io.github.heroes.model.combat.*;
 import io.github.heroes.model.state.Army;
 import io.github.heroes.model.state.BattleState;
@@ -8,19 +7,12 @@ import io.github.heroes.model.state.Position;
 import io.github.heroes.model.state.UnitStack;
 
 public class BotAI {
-    private final BattleController battleController;
-
-    public BotAI(BattleController battleController, BattlePathFinder pathFinder) {
-        this.battleController = battleController;
-    }
-
-    public BattleAction takeTurn() {
-        UnitStack activeUnit = battleController.getActiveUnit();
+    public BattleAction takeTurn(BattleState state) {
+        UnitStack activeUnit = state.getActiveUnit();
         if (activeUnit == null || !activeUnit.isAlive()) return null;
-        UnitStack target = findNearestEnemy(activeUnit);
+        UnitStack target = findNearestEnemy(state, activeUnit);
         if (target == null) return null;
 
-        BattleState state = battleController.getState();
         Position attackPos = null;
 
         for (int row = 0; row < state.getField().getHeight(); row++) {
@@ -28,7 +20,7 @@ public class BotAI {
                 Position p = new Position(col, row);
 
                 if (BattlePathFinder.canReach(state, activeUnit, p) &&
-                    (!isOccupied(p) || p.equals(activeUnit.getPosition()))) {
+                    (!isOccupied(state, p) || p.equals(activeUnit.getPosition()))) {
 
                     if (isAdjacent(p, target.getPosition())) {
                         attackPos = p;
@@ -48,7 +40,7 @@ public class BotAI {
             for (int col = 0; col < state.getField().getWidth(); col++) {
                 Position p = new Position(col, row);
 
-                if (BattlePathFinder.canReach(state, activeUnit, p) && !isOccupied(p)) {
+                if (BattlePathFinder.canReach(state, activeUnit, p) && !isOccupied(state, p)) {
                     double dist = calculateGridDistance(p, target.getPosition());
                     if (dist < minDistance) {
                         minDistance = dist;
@@ -62,8 +54,8 @@ public class BotAI {
         return new MoveAction(activeUnit, bestMovePos);
     }
 
-    private UnitStack findNearestEnemy(UnitStack botUnit) {
-        Army enemies = battleController.getState().getPlayerOne().getArmy();
+    private UnitStack findNearestEnemy(BattleState state, UnitStack botUnit) {
+        Army enemies = state.getPlayerOne().getArmy();
         UnitStack nearest = null;
         double minDist = Double.MAX_VALUE;
 
@@ -84,21 +76,15 @@ public class BotAI {
     }
 
     private boolean isAdjacent(Position p1, Position p2) {
-        int[][] evenRowDirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}};
-        int[][] oddRowDirs  = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {1, -1}, {1, 1}};
-        int[][] dirs = (p1.y() % 2 == 0) ? evenRowDirs : oddRowDirs;
-
-        for (int[] dir : dirs) {
-            if (p1.x() + dir[0] == p2.x() && p1.y() + dir[1] == p2.y()) {
-                return true;
-            }
+        for (Position neighbor : p1.neighbors()) {
+            if (neighbor.equals(p2)) return true;
         }
         return false;
     }
 
-    private boolean isOccupied(Position position) {
-        return isOccupiedByArmy(position, battleController.getState().getPlayerOne().getArmy()) ||
-            isOccupiedByArmy(position, battleController.getState().getPlayerTwo().getArmy());
+    private boolean isOccupied(BattleState state, Position position) {
+        return isOccupiedByArmy(position, state.getPlayerOne().getArmy()) ||
+            isOccupiedByArmy(position, state.getPlayerTwo().getArmy());
     }
 
     private boolean isOccupiedByArmy(Position position, Army army) {

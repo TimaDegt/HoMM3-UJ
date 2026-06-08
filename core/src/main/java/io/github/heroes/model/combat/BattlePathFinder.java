@@ -5,7 +5,6 @@ import io.github.heroes.model.state.BattleField;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Position;
 import io.github.heroes.model.state.UnitStack;
-import io.github.heroes.view.Battle.BattlefieldGeometry;
 
 import java.util.*;
 
@@ -37,8 +36,7 @@ public class BattlePathFinder {
             Position current = queue.remove();
             int currentDistance = distances.get(current);
 
-            Position[] neighbors = BattlefieldGeometry.getNeighbors(current);
-            for (Position neighbor : neighbors) {
+            for (Position neighbor : current.neighbors()) {
                 if (!field.isInside(neighbor) || visited.contains(neighbor)) {
                     continue;
                 }
@@ -78,8 +76,7 @@ public class BattlePathFinder {
         while (!queue.isEmpty()) {
             Position current = queue.remove();
 
-            Position[] neighbors = BattlefieldGeometry.getNeighbors(current);
-            for (Position neighbor : neighbors) {
+            for (Position neighbor : current.neighbors()) {
                 if (!field.isInside(neighbor) || visited.contains(neighbor)) {
                     continue;
                 }

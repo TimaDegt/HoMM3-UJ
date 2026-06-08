@@ -20,7 +20,7 @@ public class BattleController {
 
     public BattleController(BattleEngine battleEngine) {
         this.battleEngine = battleEngine;
-        this.botAI = new BotAI(this, new BattlePathFinder());
+        this.botAI = new BotAI();
     }
 
     public ActionResult onHexClicked(
@@ -72,7 +72,7 @@ public class BattleController {
         UnitStack activeUnit = battleEngine.getActiveUnit();
         if (!battleEngine.getState().isCurrentPlayerBot(activeUnit)) return ActionResult.failure();
 
-        BattleAction action = botAI.takeTurn();
+        BattleAction action = botAI.takeTurn(battleEngine.getState());
         if (action == null) return ActionResult.failure();
 
         return performAction(action);
