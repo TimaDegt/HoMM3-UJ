@@ -16,7 +16,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import io.github.heroes.model.Player;
+import io.github.heroes.model.state.Player;
+import io.github.heroes.view.Main;
 
 public class VictoryScreen extends ScreenAdapter {
     private final Main game;

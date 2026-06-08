@@ -12,7 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.heroes.model.combat.ActionResult;
-import io.github.heroes.model.combat.BattleEvent;
 import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.control.BattleController;
 import io.github.heroes.model.state.BattleField;
@@ -116,25 +115,10 @@ public class BattleScreen extends ScreenAdapter {
         if (result.successful()) {
             actionPanel.updateQueueButtons(battleEngine.getTurnQueueOrder());
         }
-        if (battleEngine.getState().isFinished()){
-            Player winner = null;
-            if (battleController.getState().getPlayerOne().getArmy().getAliveUnits().isEmpty()) {
-                winner = Player.PLAYER_TWO;
-            } else if (battleController.getState().getPlayerTwo().getArmy().getAliveUnits().isEmpty()) {
-                winner = Player.PLAYER_ONE;
-            }
-            game.setScreen(new VictoryScreen(game, winner));
-            return; 
+        if (battleEngine.getState().isFinished()) {
+            game.setScreen(new VictoryScreen(game, battleEngine.getState().getWinner()));
+            return;
         }
-        showUnitInfoPopup(unit);
+        setBattleInputEnabled(true);
     }
-
-    private void showUnitInfoPopup(UnitStack unit) {
-        unitInfoPopup.show(unit);
-    }
-
-    private void hideUnitInfoPopup() {
-        unitInfoPopup.hide();
-    }
-
 }

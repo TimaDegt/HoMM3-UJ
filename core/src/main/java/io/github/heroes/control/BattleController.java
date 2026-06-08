@@ -9,6 +9,7 @@ import io.github.heroes.model.combat.MoveAction;
 import io.github.heroes.model.combat.MoveAndAttackAction;
 import io.github.heroes.model.combat.WaitAction;
 import io.github.heroes.model.state.BattleField;
+import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Position;
 import io.github.heroes.model.state.UnitStack;
 
@@ -52,8 +53,16 @@ public class BattleController {
     }
 
 
-    private ActionResult performAction(BattleAction action) {
+    public ActionResult performAction(BattleAction action) {
         return battleEngine.performAction(action);
+    }
+
+    public BattleState getState() {
+        return battleEngine.getState();
+    }
+
+    public UnitStack getActiveUnit() {
+        return battleEngine.getActiveUnit();
     }
 
     public BattleField getField() {

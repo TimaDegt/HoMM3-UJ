@@ -8,7 +8,7 @@ public class MagicArrowSpell extends Spell {
     private static final int DAMAGE_PER_SPELL_POWER = 10;
 
     public MagicArrowSpell() {
-        super("Magic Arrow", 5);
+        super("Magic Arrow", 5, 1, MagicSchool.WIND);
     }
 
     @Override
@@ -20,6 +20,6 @@ public class MagicArrowSpell extends Spell {
         int damage = BASE_DAMAGE + caster.getSpellPower() * DAMAGE_PER_SPELL_POWER;
 
         target.takeDamage(damage);
-        caster.spendMana(getManaCost());
+        caster.spendMana(getManaCost(caster));
     }
 }

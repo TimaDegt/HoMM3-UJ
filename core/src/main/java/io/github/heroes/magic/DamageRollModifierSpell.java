@@ -1,7 +1,7 @@
 package io.github.heroes.magic;
 
-import io.github.heroes.model.Hero;
-import io.github.heroes.model.UnitStack;
+import io.github.heroes.model.state.Hero;
+import io.github.heroes.model.state.UnitStack;
 
 public class DamageRollModifierSpell extends Spell {
     private final boolean isBless;

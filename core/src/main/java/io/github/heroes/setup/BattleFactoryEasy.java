@@ -1,21 +1,21 @@
 package io.github.heroes.setup;
 
-import io.github.heroes.combat.BattleController;
-import io.github.heroes.model.Army;
-import io.github.heroes.model.BattleField;
-import io.github.heroes.model.BattlePlayer;
-import io.github.heroes.model.BattleState;
-import io.github.heroes.model.Hero;
-import io.github.heroes.model.Player;
-import io.github.heroes.model.Position;
-import io.github.heroes.model.UnitStack;
-import io.github.heroes.model.UnitType;
+import io.github.heroes.model.combat.BattleEngine;
+import io.github.heroes.model.state.Army;
+import io.github.heroes.model.state.BattleField;
+import io.github.heroes.model.state.BattlePlayer;
+import io.github.heroes.model.state.BattleState;
+import io.github.heroes.model.state.Hero;
+import io.github.heroes.model.state.Player;
+import io.github.heroes.model.state.Position;
+import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.UnitType;
 
 public class BattleFactoryEasy {
     private BattleFactoryEasy() {
     }
 
-    public static BattleController createDemoBattle() {
+    public static BattleEngine createDemoBattle() {
         BattleField field = new BattleField(15, 11);
 
         Army playerOneArmy = new Army();
@@ -39,6 +39,6 @@ public class BattleFactoryEasy {
         );
 
         BattleState state = new BattleState(field, playerOne, playerTwo, true);
-        return new BattleController(state);
+        return new BattleEngine(state);
     }
 }

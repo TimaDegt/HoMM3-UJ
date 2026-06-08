@@ -1,13 +1,13 @@
 package io.github.heroes.model;
 
-import io.github.heroes.combat.BattleController;
-import io.github.heroes.combat.BattlePathFinder;
-import io.github.heroes.combat.MoveAction;
-import io.github.heroes.combat.MoveAndAttackAction;
-import io.github.heroes.model.Army;
-import io.github.heroes.model.BattleState;
-import io.github.heroes.model.Position;
-import io.github.heroes.model.UnitStack;
+import io.github.heroes.control.BattleController;
+import io.github.heroes.model.combat.BattlePathFinder;
+import io.github.heroes.model.combat.MoveAction;
+import io.github.heroes.model.combat.MoveAndAttackAction;
+import io.github.heroes.model.state.Army;
+import io.github.heroes.model.state.BattleState;
+import io.github.heroes.model.state.Position;
+import io.github.heroes.model.state.UnitStack;
 
 public class BotAI {
     private final BattleController battleController;

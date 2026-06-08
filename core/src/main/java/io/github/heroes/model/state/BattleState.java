@@ -1,7 +1,5 @@
 package io.github.heroes.model.state;
 
-import io.github.heroes.combat.TurnQueue;
-
 public class BattleState {
     private final BattleField field;
     private final BattlePlayer playerOne;

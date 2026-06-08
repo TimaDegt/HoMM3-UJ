@@ -10,6 +10,16 @@ public class UnitStack {
     private final Player owner;
     private boolean defending;
 
+    private final int maxCount;
+    private int topUnitHp;
+    private final int maxHp;
+
+    private int bonusAttack = 0;
+    private int bonusDefense = 0;
+    private int bonusSpeed = 0;
+
+    private boolean isBlessed = false;
+    private boolean isCursed = false;
 
     private void validatePositiveValue(int val) {
         if (val < 0) throw new IllegalArgumentException("Value cannot be negative");
@@ -22,6 +32,9 @@ public class UnitStack {
         this.position = position;
         this.owner = owner;
         this.defending = false;
+        this.maxCount = count;
+        this.maxHp = type.maxHp;
+        this.topUnitHp = type.maxHp;
     }
 
     public UnitType getType() {
@@ -65,9 +78,76 @@ public class UnitStack {
             if (currentHp == 0)currentHp=type.maxHp;
             count = (totalHp - damage - currentHp)/type.maxHp + 1;
         }
+        topUnitHp = currentHp;
     }
 
     public void changePosition(Position newPosition){
         position=newPosition;
+    }
+
+    public void addAttackBuff(int amount) {
+        this.bonusAttack += amount;
+    }
+
+    public void addDefenseBuff(int amount) {
+        this.bonusDefense += amount;
+    }
+
+    public void addSpeedBuff(int amount) {
+        this.bonusSpeed += amount;
+    }
+
+    public void lockDamageToMaximum() {
+        this.isBlessed = true;
+        this.isCursed = false;
+    }
+
+    public void lockDamageToMinimum() {
+        this.isCursed = true;
+        this.isBlessed = false;
+    }
+
+    public void clearAllBuffsAndDebuffs() {
+        this.bonusAttack = 0;
+        this.bonusDefense = 0;
+        this.bonusSpeed = 0;
+        this.isBlessed = false;
+        this.isCursed = false;
+    }
+
+    public void heal(int amount) {
+        if (count <= 0) return;
+        topUnitHp += amount;
+
+        if (topUnitHp > maxHp) {
+            topUnitHp = maxHp;
+        }
+    }
+
+    public void resurrect(int totalHpToRestore) {
+        if (count == maxCount && topUnitHp == maxHp) return;
+
+        int missingHpOnTopUnit = maxHp - topUnitHp;
+
+        if (totalHpToRestore <= missingHpOnTopUnit) {
+            topUnitHp += totalHpToRestore;
+            return;
+        }
+
+        totalHpToRestore -= missingHpOnTopUnit;
+        topUnitHp = maxHp;
+
+        int unitsToResurrect = totalHpToRestore / maxHp;
+        int remainderHp = totalHpToRestore % maxHp;
+
+        count += unitsToResurrect;
+
+        if (count >= maxCount) {
+            count = maxCount;
+            topUnitHp = maxHp;
+        } else if (remainderHp > 0) {
+            count++;
+            topUnitHp = remainderHp;
+        }
     }
 }
