@@ -1,7 +1,6 @@
 package io.github.heroes.model;
 
-import io.github.heroes.model.anim.AnimParams;
-import io.github.heroes.model.anim.SpriteCoordinate;
+import io.github.heroes.anim.AnimParams;
 
 import static io.github.heroes.model.CastleType.*;
 

@@ -1,4 +1,4 @@
-package io.github.heroes.model.anim;
+package io.github.heroes.anim;
 
 public class SpriteCoordinate {
     public int x;

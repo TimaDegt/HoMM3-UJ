@@ -16,8 +16,8 @@ import io.github.heroes.combat.BattlePathFinder;
 import io.github.heroes.combat.cursor.Cursor;
 import io.github.heroes.combat.cursor.CursorType;
 import io.github.heroes.model.*;
-import io.github.heroes.model.anim.SpriteCoordinate;
-import io.github.heroes.model.anim.Directions;
+import io.github.heroes.anim.SpriteCoordinate;
+import io.github.heroes.anim.Directions;
 
 import java.util.HashMap;
 import java.util.Map;

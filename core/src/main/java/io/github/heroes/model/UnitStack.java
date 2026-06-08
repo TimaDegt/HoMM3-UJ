@@ -1,11 +1,10 @@
 package io.github.heroes.model;
 
 import com.badlogic.gdx.math.Vector2;
-import io.github.heroes.combat.BattlePathFinder;
-import io.github.heroes.model.anim.AnimParams;
-import io.github.heroes.model.anim.Animation;
-import io.github.heroes.model.anim.Directions;
-import io.github.heroes.model.anim.SpriteCoordinate;
+import io.github.heroes.anim.AnimParams;
+import io.github.heroes.anim.Animation;
+import io.github.heroes.anim.Directions;
+import io.github.heroes.anim.SpriteCoordinate;
 import io.github.heroes.view.BattlefieldGeometry;
 
 import java.util.ArrayList;

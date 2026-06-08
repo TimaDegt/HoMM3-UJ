@@ -29,4 +29,10 @@ public abstract class Spell {
     }
 
     public abstract void cast(Hero caster, UnitStack target);
+
+    public int getLvl() {}
+    public int getManaCost(Hero caster) {}
+    public MagicSchool getMagicSchool() {}
+    public
+
 }

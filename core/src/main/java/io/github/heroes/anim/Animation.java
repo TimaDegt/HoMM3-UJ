@@ -1,6 +1,4 @@
-package io.github.heroes.model.anim;
-
-import com.badlogic.gdx.graphics.g3d.environment.AmbientCubemap;
+package io.github.heroes.anim;
 
 import static io.github.heroes.view.BattleViewConfig.ANIMATION_SPEED;
 
