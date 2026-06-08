@@ -23,6 +23,17 @@ public class UnitStack {
     private boolean defending;
     private Animation animation;
 
+    private final int maxCount;
+    private int topUnitHp;
+    private final int maxHp;
+
+    private int bonusAttack = 0;
+    private int bonusDefense = 0;
+    private int bonusSpeed = 0;
+
+    private boolean isBlessed = false;
+    private boolean isCursed = false;
+
     public float deltaX = 0;
     public float deltaY = 0;
     private float moving = 0;
@@ -42,6 +53,9 @@ public class UnitStack {
         this.owner = owner;
         this.defending = false;
         this.animation = new Animation(type.getAnimParams());
+        this.maxCount = count;
+        this.maxHp = type.maxHp;
+        this.topUnitHp = type.maxHp;
     }
 
     public UnitType getType() {
@@ -68,36 +82,41 @@ public class UnitStack {
         return count > 0;
     }
 
-    public boolean isDefending() {return defending;}
-
-    public void setDefending(boolean defending) {this.defending = defending;}
-
-    public void takeDamage(int damage){
-        validatePositiveValue(damage);
-
-        int totalHp = (count-1) * type.maxHp + currentHp;
-
-
-        if (totalHp<=damage){
-            currentHp=0;
-            count=0;
-            animation.startAnimation(AnimParams.AnimType.DEATH);
-        } else {
-            currentHp = (totalHp - damage)% type.maxHp;
-            if (currentHp == 0)currentHp=type.maxHp;
-            count = (totalHp - damage - currentHp)/type.maxHp + 1;
-            animation.startAnimation(AnimParams.AnimType.RECEIVEDMG);
-        }
-
+    public boolean isDefending() {
+        return defending;
     }
 
-    public void changePosition(Position newPosition){
+    public void setDefending(boolean defending) {
+        this.defending = defending;
+    }
+
+    public void takeDamage(int damage) {
+        validatePositiveValue(damage);
+
+        int totalHp = (count - 1) * type.maxHp + currentHp;
+
+
+        if (totalHp <= damage) {
+            currentHp = 0;
+            count = 0;
+            animation.startAnimation(AnimParams.AnimType.DEATH);
+        } else {
+            currentHp = (totalHp - damage) % type.maxHp;
+            if (currentHp == 0) currentHp = type.maxHp;
+            count = (totalHp - damage - currentHp) / type.maxHp + 1;
+            animation.startAnimation(AnimParams.AnimType.RECEIVEDMG);
+        }
+        topUnitHp = currentHp;
+    }
+
+    public void changePosition(Position newPosition) {
         this.position = newPosition;
     }
 
     private List<Position> path = new ArrayList<Position>();
+
     public SpriteCoordinate nextFrame() {
-        boolean tmp=false;
+        boolean tmp = false;
         if (!path.isEmpty()) {
             if (movedFrames == MOVEMENT_FRAMES) {
                 this.position = path.get(0);
@@ -124,23 +143,93 @@ public class UnitStack {
         }
         return animation.nextFrame();
     }
+
     public void initiateMovement(List<Position> path) {
         this.path = path;
         startAnimation(AnimParams.AnimType.MOVE);
     }
-    public void startAnimation(AnimParams.AnimType animType){
+
+    public void startAnimation(AnimParams.AnimType animType) {
         animation.startAnimation(animType);
     }
     public boolean isMoving() {
         return (!path.isEmpty()) && (movedFrames != MOVEMENT_FRAMES) && (movedFrames != 0);
     }
+
     public Directions getMovementDirection() {
         Vector2 nextPos = BattlefieldGeometry.positionToScreen(path.get(0));
         Vector2 currentPos = BattlefieldGeometry.positionToScreen(this.position);
         float dX = nextPos.x - currentPos.x;
         if (dX > 0) return Directions.RIGHT;
         if (dX < 0) return Directions.LEFT;
-        return (owner==Player.PLAYER_ONE) ? Directions.RIGHT : Directions.LEFT;
+        return (owner == Player.PLAYER_ONE) ? Directions.RIGHT : Directions.LEFT;
     }
+
+        public void addAttackBuff(int amount) {
+        this.bonusAttack += amount;
+    }
+
+    public void addDefenseBuff(int amount) {
+        this.bonusDefense += amount;
+    }
+
+    public void addSpeedBuff(int amount) {
+        this.bonusSpeed += amount;
+    }
+
+    public void lockDamageToMaximum() {
+        this.isBlessed = true;
+        this.isCursed = false;
+    }
+
+    public void lockDamageToMinimum() {
+        this.isCursed = true;
+        this.isBlessed = false;
+    }
+
+    public void clearAllBuffsAndDebuffs() {
+        this.bonusAttack = 0;
+        this.bonusDefense = 0;
+        this.bonusSpeed = 0;
+        this.isBlessed = false;
+        this.isCursed = false;
+    }
+    public void heal(int amount) {
+        if (count <= 0) return;
+        topUnitHp += amount;
+
+        if (topUnitHp > maxHp) {
+            topUnitHp = maxHp;
+        }
+    }
+
+    public void resurrect(int totalHpToRestore) {
+        if (count == maxCount && topUnitHp == maxHp) return;
+
+        int missingHpOnTopUnit = maxHp - topUnitHp;
+
+        if (totalHpToRestore <= missingHpOnTopUnit) {
+            topUnitHp += totalHpToRestore;
+            return;
+        }
+
+        totalHpToRestore -= missingHpOnTopUnit;
+        topUnitHp = maxHp;
+
+        int unitsToResurrect = totalHpToRestore / maxHp;
+        int remainderHp = totalHpToRestore % maxHp;
+
+        count += unitsToResurrect;
+
+        if (count >= maxCount) {
+            count = maxCount;
+            topUnitHp = maxHp;
+        } else if (remainderHp > 0) {
+            count++;
+            topUnitHp = remainderHp;
+        }
+
+    }
+
 
 }
