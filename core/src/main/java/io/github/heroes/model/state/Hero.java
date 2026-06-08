@@ -1,5 +1,7 @@
 package io.github.heroes.model.state;
 
+import io.github.heroes.magic.MagicSchool;
+
 public class Hero {
     private final String name;
     private int attack;
@@ -7,6 +9,8 @@ public class Hero {
     private int spellPower;
     private int knowledge;
     private int mana;
+    private int maxMana;
+    private boolean hasCastSpellThisRound = false;
 
     private void validatePositiveValue(int val) {
         if (val < 0) {
@@ -21,6 +25,9 @@ public class Hero {
         this.spellPower = spellPower;
         this.knowledge = knowledge;
         this.mana = knowledge * 10;
+        this.maxMana = 999;
+        this.hasCastSpellThisRound = false;
+
     }
 
     public String getName() {
@@ -52,6 +59,10 @@ public class Hero {
         mana = Math.max(0, mana - amount);
     }
 
+    public int getMagicSchoolLevel(MagicSchool school) {
+        return 0;
+    }
+
     public void increaseAttack(int val) {
         validatePositiveValue(val);
         attack += val;
@@ -76,5 +87,15 @@ public class Hero {
     public void increaseMana(int val) {
         validatePositiveValue(val);
         mana += val;
-    }}
+    }
+
+    public boolean hasCastSpellThisRound() {
+        return hasCastSpellThisRound;
+    }
+
+    public void setCastSpellThisRound(boolean cast) {
+        this.hasCastSpellThisRound = cast;
+    }
+
+}
 

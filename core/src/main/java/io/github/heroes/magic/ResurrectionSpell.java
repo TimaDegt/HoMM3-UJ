@@ -1,0 +1,25 @@
+package io.github.heroes.magic;
+
+import io.github.heroes.model.Hero;
+import io.github.heroes.model.UnitStack;
+
+public class ResurrectionSpell extends Spell {
+    private final int baseHp;
+    private final int hpPerSpellPower;
+
+    public ResurrectionSpell(String name, int manaCost, int lvl, MagicSchool school, int baseHp, int hpPerSpellPower) {
+        super(name, manaCost, lvl, school);
+        this.baseHp = baseHp;
+        this.hpPerSpellPower = hpPerSpellPower;
+    }
+
+    @Override
+    public void cast(Hero caster, UnitStack target) {
+        if (!canCast(caster)) return;
+        caster.spendMana(getManaCost(caster));
+
+        int restoreHp = baseHp + (caster.getSpellPower() * hpPerSpellPower);
+
+        target.resurrect(restoreHp);
+    }
+}

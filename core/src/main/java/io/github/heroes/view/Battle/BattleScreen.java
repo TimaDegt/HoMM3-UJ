@@ -117,9 +117,24 @@ public class BattleScreen extends ScreenAdapter {
             actionPanel.updateQueueButtons(battleEngine.getTurnQueueOrder());
         }
         if (battleEngine.getState().isFinished()){
-            game.setScreen(new VictoryScreen(game));
-            return;
+            Player winner = null;
+            if (battleController.getState().getPlayerOne().getArmy().getAliveUnits().isEmpty()) {
+                winner = Player.PLAYER_TWO;
+            } else if (battleController.getState().getPlayerTwo().getArmy().getAliveUnits().isEmpty()) {
+                winner = Player.PLAYER_ONE;
+            }
+            game.setScreen(new VictoryScreen(game, winner));
+            return; 
         }
-        setBattleInputEnabled(true);
+        showUnitInfoPopup(unit);
     }
+
+    private void showUnitInfoPopup(UnitStack unit) {
+        unitInfoPopup.show(unit);
+    }
+
+    private void hideUnitInfoPopup() {
+        unitInfoPopup.hide();
+    }
+
 }
