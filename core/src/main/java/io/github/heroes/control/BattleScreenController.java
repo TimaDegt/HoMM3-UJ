@@ -7,7 +7,7 @@ import io.github.heroes.combat.MoveAction;
 import io.github.heroes.combat.MoveAndAttackAction;
 import io.github.heroes.model.Position;
 import io.github.heroes.model.UnitStack;
-import io.github.heroes.view.BattlefieldGeometry;
+import io.github.heroes.view.Battle.BattlefieldGeometry;
 
 public class BattleScreenController {
 

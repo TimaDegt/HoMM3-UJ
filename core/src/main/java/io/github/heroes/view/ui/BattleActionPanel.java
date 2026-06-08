@@ -11,7 +11,7 @@ import io.github.heroes.combat.DefendAction;
 import io.github.heroes.combat.TurnQueueEntry;
 import io.github.heroes.combat.WaitAction;
 import io.github.heroes.model.UnitStack;
-import io.github.heroes.view.BattleViewConfig;
+import io.github.heroes.view.Battle.BattleViewConfig;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;

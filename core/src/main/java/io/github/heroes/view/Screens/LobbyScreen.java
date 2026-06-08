@@ -1,4 +1,4 @@
-package io.github.heroes.view;
+package io.github.heroes.view.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
@@ -13,6 +13,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.heroes.setup.BattleFactory;
+import io.github.heroes.view.Battle.BattleScreen;
+import io.github.heroes.view.Main;
 
 public class LobbyScreen extends ScreenAdapter {
     private static final float BUTTON_WIDTH = 240f;

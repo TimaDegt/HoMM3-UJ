@@ -1,4 +1,4 @@
-package io.github.heroes.view;
+package io.github.heroes.view.Battle;
 
 import com.badlogic.gdx.math.Vector2;
 import io.github.heroes.model.BattleField;

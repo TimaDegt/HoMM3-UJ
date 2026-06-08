@@ -3,7 +3,6 @@ package io.github.heroes.combat;
 import io.github.heroes.model.BattleState;
 import io.github.heroes.model.Position;
 import io.github.heroes.model.UnitStack;
-import io.github.heroes.view.BattlefieldGeometry;
 
 import java.util.List;
 

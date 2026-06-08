@@ -7,10 +7,10 @@ import io.github.heroes.combat.BattlePathFinder;
 import io.github.heroes.control.BattleScreenController;
 import io.github.heroes.model.Position;
 import io.github.heroes.model.UnitStack;
-import io.github.heroes.view.BattlefieldGeometry;
+import io.github.heroes.view.Battle.BattlefieldGeometry;
 
-import static io.github.heroes.view.BattleViewConfig.ACTION_PANEL_BASE_HEIGHT;
-import static io.github.heroes.view.BattleViewConfig.ACTION_PANEL_SCALE;
+import static io.github.heroes.view.Battle.BattleViewConfig.ACTION_PANEL_BASE_HEIGHT;
+import static io.github.heroes.view.Battle.BattleViewConfig.ACTION_PANEL_SCALE;
 
 public class Cursor {
     private static UnitStack getHoveredUnit(float mouseX, float mouseY, BattleController battleController) {

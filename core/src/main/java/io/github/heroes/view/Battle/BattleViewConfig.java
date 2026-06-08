@@ -1,4 +1,4 @@
-package io.github.heroes.view;
+package io.github.heroes.view.Battle;
 
 public class BattleViewConfig {
     public static final float SCREEN_WIDTH_MARGIN = 0.95f;

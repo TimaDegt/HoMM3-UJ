@@ -1,4 +1,4 @@
-package io.github.heroes.view;
+package io.github.heroes.view.Battle;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -17,6 +17,9 @@ import io.github.heroes.combat.BattlePathFinder;
 import io.github.heroes.combat.BattleController;
 import io.github.heroes.control.BattleScreenController;
 import io.github.heroes.model.*;
+import io.github.heroes.view.Main;
+import io.github.heroes.view.Screens.LobbyScreen;
+import io.github.heroes.view.Screens.VictoryScreen;
 import io.github.heroes.view.ui.BattleActionPanel;
 import io.github.heroes.view.ui.UnitInfoPopup;
 

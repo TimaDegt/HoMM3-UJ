@@ -1,18 +1,17 @@
 package io.github.heroes.model;
 
 import com.badlogic.gdx.math.Vector2;
-import io.github.heroes.combat.BattlePathFinder;
 import io.github.heroes.model.anim.AnimParams;
 import io.github.heroes.model.anim.Animation;
 import io.github.heroes.model.anim.Directions;
 import io.github.heroes.model.anim.SpriteCoordinate;
-import io.github.heroes.view.BattlefieldGeometry;
+import io.github.heroes.view.Battle.BattlefieldGeometry;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.heroes.view.BattleViewConfig.MOVEMENT_FRAMES;
-import static io.github.heroes.view.BattleViewConfig.MOVEMENT_SPEED;
+import static io.github.heroes.view.Battle.BattleViewConfig.MOVEMENT_FRAMES;
+import static io.github.heroes.view.Battle.BattleViewConfig.MOVEMENT_SPEED;
 
 public class UnitStack {
     private final UnitType type;

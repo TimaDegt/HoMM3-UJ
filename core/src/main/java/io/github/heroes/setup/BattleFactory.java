@@ -10,7 +10,6 @@ import io.github.heroes.model.Player;
 import io.github.heroes.model.Position;
 import io.github.heroes.model.UnitStack;
 import io.github.heroes.model.UnitType;
-import io.github.heroes.view.BattlefieldGeometry;
 
 public class BattleFactory {
     private BattleFactory() {

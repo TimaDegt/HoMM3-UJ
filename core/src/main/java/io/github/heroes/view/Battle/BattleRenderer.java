@@ -1,4 +1,4 @@
-package io.github.heroes.view;
+package io.github.heroes.view.Battle;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -22,7 +22,7 @@ import io.github.heroes.model.anim.Directions;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.github.heroes.view.BattleViewConfig.CURSOR_SCALE;
+import static io.github.heroes.view.Battle.BattleViewConfig.CURSOR_SCALE;
 
 public class BattleRenderer {
     private final BattleController battleController;

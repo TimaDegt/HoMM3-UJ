@@ -1,4 +1,4 @@
-package io.github.heroes.view;
+package io.github.heroes.view.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import io.github.heroes.view.Main;
 
 public class VictoryScreen extends ScreenAdapter {
     private final Main game;
