@@ -140,7 +140,14 @@ public class BattleScreen extends ScreenAdapter {
 
     private void finishTurn() {
         if (battleController.getState().isFinished()) {
-            game.setScreen(new VictoryScreen(game));
+            Player winner = null;
+            if (battleController.getState().getPlayerOne().getArmy().getAliveUnits().isEmpty()) {
+                winner = Player.PLAYER_TWO;
+            } else if (battleController.getState().getPlayerTwo().getArmy().getAliveUnits().isEmpty()) {
+                winner = Player.PLAYER_ONE;
+            }
+
+            game.setScreen(new VictoryScreen(game, winner));
             return;
         }
 

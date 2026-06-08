@@ -1,15 +1,18 @@
 package io.github.heroes.model;
 
+import io.github.heroes.combat.TurnQueue;
+
 public class BattleState {
     private final BattleField field;
     private final BattlePlayer playerOne;
     private final BattlePlayer playerTwo;
+    private final boolean isBot;
 
     private UnitStack activeUnit;
     private Player winner;
     private int round;
 
-    public BattleState(BattleField field, BattlePlayer playerOne, BattlePlayer playerTwo) {
+    public BattleState(BattleField field, BattlePlayer playerOne, BattlePlayer playerTwo, boolean isBot) {
         if (field == null) {
             throw new IllegalArgumentException("Field cannot be null");
         }
@@ -23,7 +26,13 @@ public class BattleState {
         this.field = field;
         this.playerOne = playerOne;
         this.playerTwo = playerTwo;
+        this.isBot = isBot;
         this.round = 1;
+    }
+
+    public boolean isCurrentPlayerBot(UnitStack activeUnit) {
+        if (activeUnit == null) return false;
+        return this.isBot && activeUnit.getOwner() == Player.PLAYER_TWO;
     }
 
     public BattleField getField() {
