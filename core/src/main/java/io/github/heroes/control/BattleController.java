@@ -1,5 +1,6 @@
 package io.github.heroes.control;
 
+import io.github.heroes.model.BotAI;
 import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.model.combat.BattleAction;
 import io.github.heroes.model.combat.BattleEngine;
@@ -15,9 +16,11 @@ import io.github.heroes.model.state.UnitStack;
 
 public class BattleController {
     private final BattleEngine battleEngine;
+    private final BotAI botAI;
 
     public BattleController(BattleEngine battleEngine) {
         this.battleEngine = battleEngine;
+        this.botAI = new BotAI(this, new BattlePathFinder());
     }
 
     public ActionResult onHexClicked(
@@ -63,6 +66,16 @@ public class BattleController {
 
     public UnitStack getActiveUnit() {
         return battleEngine.getActiveUnit();
+    }
+
+    public ActionResult onReadyForNextAction() {
+        UnitStack activeUnit = battleEngine.getActiveUnit();
+        if (!battleEngine.getState().isCurrentPlayerBot(activeUnit)) return ActionResult.failure();
+
+        BattleAction action = botAI.takeTurn();
+        if (action == null) return ActionResult.failure();
+
+        return performAction(action);
     }
 
     public BattleField getField() {

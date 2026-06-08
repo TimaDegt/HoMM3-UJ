@@ -48,6 +48,7 @@ public class BattleScreen extends ScreenAdapter {
 
         setupUI();
         setupInput();
+        requestNextAction();
     }
 
     private void setupUI() {
@@ -87,7 +88,7 @@ public class BattleScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         battleInputHandler.update();
 
-        battleRenderer.render();
+        battleRenderer.render(delta);
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
@@ -112,13 +113,33 @@ public class BattleScreen extends ScreenAdapter {
     }
 
     public void handleActionResult(ActionResult result) {
-        if (result.successful()) {
-            actionPanel.updateQueueButtons(battleEngine.getTurnQueueOrder());
+        if (!result.successful()) {
+            setBattleInputEnabled(true);
+            return;
         }
+
+        setBattleInputEnabled(false);
+        battleRenderer.playActionAnimation(result, this::onActionAnimationFinished);
+    }
+
+    private void onActionAnimationFinished() {
+        actionPanel.updateQueueButtons(battleEngine.getTurnQueueOrder());
+
         if (battleEngine.getState().isFinished()) {
             game.setScreen(new VictoryScreen(game, battleEngine.getState().getWinner()));
             return;
         }
+
+        requestNextAction();
+    }
+
+    private void requestNextAction() {
+        ActionResult nextResult = battleController.onReadyForNextAction();
+        if (nextResult.successful()) {
+            handleActionResult(nextResult);
+            return;
+        }
+
         setBattleInputEnabled(true);
     }
 }
