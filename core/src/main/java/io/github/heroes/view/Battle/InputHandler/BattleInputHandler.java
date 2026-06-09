@@ -7,7 +7,7 @@ import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.control.BattleController;
 import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 import io.github.heroes.view.Battle.BattleScreen;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 import io.github.heroes.view.Battle.UnitInfoPopup;

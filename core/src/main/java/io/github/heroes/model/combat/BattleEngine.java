@@ -1,13 +1,18 @@
 package io.github.heroes.model.combat;
 
 import io.github.heroes.model.combat.unit.action.*;
-import io.github.heroes.model.combat.user.action.AffectPositionAction;
+import io.github.heroes.model.combat.user.action.AffectPositionUserAction;
+import io.github.heroes.model.combat.user.action.CastSpellUserAction;
+import io.github.heroes.model.combat.user.action.DefendUserAction;
+import io.github.heroes.model.combat.user.action.NoOpUserAction;
+import io.github.heroes.model.combat.user.action.OpenSpellBookUserAction;
 import io.github.heroes.model.combat.user.action.UserAction;
+import io.github.heroes.model.combat.user.action.WaitUserAction;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Hero;
 import io.github.heroes.model.state.Player;
 import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,26 +89,26 @@ public class BattleEngine {
         UnitStack activeUnit = getActiveUnit();
         if (activeUnit == null) return null;
 
-        if (action instanceof AffectPositionAction affectPositionAction) {
+        if (action instanceof AffectPositionUserAction affectPositionAction) {
             return resolvePositionAction(activeUnit, affectPositionAction);
         }
-        if (action instanceof io.github.heroes.model.combat.user.action.DefendAction) {
+        if (action instanceof DefendUserAction) {
             return new DefendAction(activeUnit);
         }
-        if (action instanceof io.github.heroes.model.combat.user.action.WaitAction) {
+        if (action instanceof WaitUserAction) {
             return new WaitAction(activeUnit);
         }
-        if (action instanceof io.github.heroes.model.combat.user.action.CastSpellAction castSpellAction) {
+        if (action instanceof CastSpellUserAction castSpellAction) {
             return new CastSpellAction(
                 getActiveHero(activeUnit),
                 castSpellAction.getSpell(),
                 castSpellAction.getTarget()
             );
         }
-        if (action instanceof io.github.heroes.model.combat.user.action.OpenSpellBookAction) {
+        if (action instanceof OpenSpellBookUserAction) {
             return new OpenSpellBookAction(getActiveHero(activeUnit).getSpellBook());
         }
-        if (action instanceof io.github.heroes.model.combat.user.action.NoAction) {
+        if (action instanceof NoOpUserAction) {
             return new NoAction();
         }
         return null;
@@ -111,24 +116,14 @@ public class BattleEngine {
 
     private BattleAction resolvePositionAction(
         UnitStack activeUnit,
-        AffectPositionAction action
+        AffectPositionUserAction action
     ) {
         Position affectedPosition = action.getAffectedPosition();
         UnitStack target = findUnitAt(affectedPosition);
 
-        if (target == null) {
-            return new MoveAction(activeUnit, affectedPosition);
-        }
-        if (target.getOwner() == activeUnit.getOwner()) {
-            return null;
-        }
-        if (activeUnit.canFire()) {
-            return new ShootAction(activeUnit, target);
-        }
-
-        Position attackPosition = action.getNearestPosition();
-        if (attackPosition == null) return null;
-        return new MoveAndAttackAction(activeUnit, attackPosition, target);
+        if (target == null) return new MoveAction(activeUnit, affectedPosition);
+        if (target.getOwner() == activeUnit.getOwner()) return null;
+        return activeUnit.createAttackAction(target, action.getNearestPosition());
     }
 
     private Hero getActiveHero(UnitStack activeUnit) {

@@ -1,7 +1,7 @@
 package io.github.heroes.magic;
 
 import io.github.heroes.model.state.Hero;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 public class MagicArrowSpell extends Spell {
     private static final int BASE_DAMAGE = 30;

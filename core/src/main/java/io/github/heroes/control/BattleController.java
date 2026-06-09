@@ -3,15 +3,15 @@ package io.github.heroes.control;
 import io.github.heroes.model.BotAI;
 import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.model.combat.BattleEngine;
-import io.github.heroes.model.combat.user.action.AffectPositionAction;
-import io.github.heroes.model.combat.user.action.DefendAction;
-import io.github.heroes.model.combat.user.action.OpenSpellBookAction;
+import io.github.heroes.model.combat.user.action.AffectPositionUserAction;
+import io.github.heroes.model.combat.user.action.DefendUserAction;
+import io.github.heroes.model.combat.user.action.OpenSpellBookUserAction;
 import io.github.heroes.model.combat.user.action.UserAction;
-import io.github.heroes.model.combat.user.action.WaitAction;
+import io.github.heroes.model.combat.user.action.WaitUserAction;
 import io.github.heroes.model.state.BattleField;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 public class BattleController {
     private final BattleEngine battleEngine;
@@ -26,19 +26,19 @@ public class BattleController {
         Position clickedPosition,
         Position nearestPosition
     ) {
-        return performAction(new AffectPositionAction(clickedPosition, nearestPosition));
+        return performAction(new AffectPositionUserAction(clickedPosition, nearestPosition));
     }
 
     public ActionResult onDefendClicked() {
-        return performAction(new DefendAction());
+        return performAction(new DefendUserAction());
     }
 
     public ActionResult onWaitClicked() {
-        return performAction(new WaitAction());
+        return performAction(new WaitUserAction());
     }
 
     public ActionResult onSpellBookClicked() {
-        return performAction(new OpenSpellBookAction());
+        return performAction(new OpenSpellBookUserAction());
     }
 
 

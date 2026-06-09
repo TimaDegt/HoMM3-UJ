@@ -1,7 +1,7 @@
 package io.github.heroes.magic;
 
 import io.github.heroes.model.state.Hero;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 public abstract class Spell {
     private final int lvl;

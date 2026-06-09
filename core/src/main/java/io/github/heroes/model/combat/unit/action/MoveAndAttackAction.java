@@ -5,7 +5,7 @@ import io.github.heroes.model.combat.BattlePathFinder;
 import io.github.heroes.model.combat.CombatResolver;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +34,9 @@ public class MoveAndAttackAction implements BattleAction {
         if (!target.isAlive()) throw new IllegalStateException("Cannot attack dead unit");
         if (state.getActiveUnit() != attacker) throw new IllegalStateException("Only active unit can attack");
         if (!state.getField().isInside(attackPosition)) throw new IllegalStateException("Attack position is outside the battlefield");
+        if (!isAdjacent(attackPosition, target.getPosition())) {
+            throw new IllegalStateException("Attack position must be adjacent to target");
+        }
 
         if (!attackPosition.equals(attacker.getPosition()) &&
             (state.getPlayerOne().getArmy().isPositionOccupied(attackPosition)
@@ -53,5 +56,12 @@ public class MoveAndAttackAction implements BattleAction {
         events.addAll(combatResolver.attack(state, attacker, target));
         attacker.changePosition(attackPosition);
         return events;
+    }
+
+    private boolean isAdjacent(Position first, Position second) {
+        for (Position neighbor : second.neighbors()) {
+            if (neighbor.equals(first)) return true;
+        }
+        return false;
     }
 }
