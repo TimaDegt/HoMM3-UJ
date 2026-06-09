@@ -2,7 +2,6 @@ package io.github.heroes.view.Battle;
 
 import com.badlogic.gdx.math.Vector2;
 import io.github.heroes.model.snapshot.BattleSnapshot;
-import io.github.heroes.model.snapshot.UnitSnapshot;
 import io.github.heroes.model.state.Position;
 
 public class BattlefieldGeometry {
@@ -48,19 +47,14 @@ public class BattlefieldGeometry {
     public static Position findNearestNeighbor(
         Position targetPosition,
         float screenX,
-        float screenY,
-        BattleSnapshot battle
+        float screenY
     ) {
-        UnitSnapshot activeUnit = battle.activeUnit();
-        if (activeUnit == null) return null;
+        if (targetPosition == null) return null;
 
         Position nearestPosition = null;
         float nearestDistance = Float.MAX_VALUE;
 
         for (Position neighbor : targetPosition.neighbors()) {
-            if (!battle.isInside(neighbor)) continue;
-            if (!activeUnit.position().equals(neighbor) && battle.isPositionOccupied(neighbor)) continue;
-
             float distance = positionToScreen(neighbor).dst(screenX, screenY);
             if (distance < nearestDistance) {
                 nearestDistance = distance;

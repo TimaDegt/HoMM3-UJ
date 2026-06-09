@@ -94,25 +94,56 @@ public class BattleEngine {
         return BattlePathFinder.findReachablePositions(state, getActiveUnit());
     }
 
-    public boolean canActiveUnitReach(Position position) {
+    public BattleActionPreview previewAction(
+        Position targetPosition,
+        Position attackFromPosition
+    ) {
         UnitStack activeUnit = getActiveUnit();
-        return position != null
-            && activeUnit != null
-            && BattlePathFinder.canReach(state, activeUnit, position);
-    }
+        if (state.isFinished()
+            || activeUnit == null
+            || !activeUnit.isAlive()
+            || !state.getField().isInside(targetPosition)) {
+            return BattleActionPreview.INVALID;
+        }
 
-    public boolean activeUnitSupportsRangedAttack() {
-        UnitStack activeUnit = getActiveUnit();
-        return activeUnit != null && activeUnit.supportsRangedAttack();
-    }
-
-    public boolean canActiveUnitAttackWithoutMoving(Position targetPosition) {
-        UnitStack activeUnit = getActiveUnit();
         UnitStack target = findUnitAt(targetPosition);
-        return activeUnit != null
-            && target != null
-            && target.getOwner() != activeUnit.getOwner()
-            && activeUnit.canAttackWithoutMoving(target);
+        if (target == null) {
+            return BattlePathFinder.canReach(state, activeUnit, targetPosition)
+                ? BattleActionPreview.MOVE
+                : BattleActionPreview.INVALID;
+        }
+        if (target.getOwner() == activeUnit.getOwner()) {
+            return BattleActionPreview.ALLY;
+        }
+        if (activeUnit.canAttackWithoutMoving(target)) {
+            return BattleActionPreview.RANGED_ATTACK;
+        }
+        if (canMeleeAttackFrom(activeUnit, target, attackFromPosition)) {
+            return BattleActionPreview.MELEE_ATTACK;
+        }
+        if (activeUnit.supportsRangedAttack()) {
+            return BattleActionPreview.RANGED_ATTACK_UNAVAILABLE;
+        }
+        return BattleActionPreview.INVALID;
+    }
+
+    private boolean canMeleeAttackFrom(
+        UnitStack activeUnit,
+        UnitStack target,
+        Position attackFromPosition
+    ) {
+        if (!state.getField().isInside(attackFromPosition)) return false;
+        if (!isAdjacent(attackFromPosition, target.getPosition())) return false;
+        if (!attackFromPosition.equals(activeUnit.getPosition())
+            && isPositionOccupied(attackFromPosition)) return false;
+        return BattlePathFinder.canReach(state, activeUnit, attackFromPosition);
+    }
+
+    private boolean isAdjacent(Position first, Position second) {
+        for (Position neighbor : second.neighbors()) {
+            if (neighbor.equals(first)) return true;
+        }
+        return false;
     }
 
     private BattleAction resolveAction(UserAction action) {

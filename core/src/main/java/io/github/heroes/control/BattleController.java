@@ -2,6 +2,7 @@ package io.github.heroes.control;
 
 import io.github.heroes.model.BotAI;
 import io.github.heroes.model.combat.ActionResult;
+import io.github.heroes.model.combat.BattleActionPreview;
 import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.model.combat.user.action.AffectPositionUserAction;
 import io.github.heroes.model.combat.user.action.CastSpellUserAction;
@@ -78,16 +79,11 @@ public class BattleController {
         return battleEngine.getReachablePositions();
     }
 
-    public boolean canActiveUnitReach(Position position) {
-        return battleEngine.canActiveUnitReach(position);
-    }
-
-    public boolean activeUnitSupportsRangedAttack() {
-        return battleEngine.activeUnitSupportsRangedAttack();
-    }
-
-    public boolean canActiveUnitAttackWithoutMoving(Position targetPosition) {
-        return battleEngine.canActiveUnitAttackWithoutMoving(targetPosition);
+    public BattleActionPreview previewAction(
+        Position targetPosition,
+        Position attackFromPosition
+    ) {
+        return battleEngine.previewAction(targetPosition, attackFromPosition);
     }
 
     public boolean isPositionOccupied(Position position) {
