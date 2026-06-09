@@ -1,8 +1,5 @@
 package io.github.heroes.model.state;
 
-
-import io.github.heroes.anim.Animation;
-
 public class UnitStack {
     private final UnitType type;
     private int count;
@@ -22,8 +19,6 @@ public class UnitStack {
     private boolean isBlessed = false;
     private boolean isCursed = false;
 
-    private final Animation animationEngine;
-
     private void validatePositiveValue(int val) {
         if (val < 0) throw new IllegalArgumentException("Value cannot be negative");
     }
@@ -38,11 +33,6 @@ public class UnitStack {
         this.maxCount = count;
         this.maxHp = type.maxHp;
         this.topUnitHp = type.maxHp;
-        this.animationEngine = new Animation(this.type.getAnimParams());
-    }
-
-    public Animation getAnimationEngine() {
-        return animationEngine;
     }
 
     public UnitType getType() {
