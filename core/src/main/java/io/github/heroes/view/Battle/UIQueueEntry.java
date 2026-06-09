@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import io.github.heroes.model.combat.TurnQueueEntry;
 import io.github.heroes.model.state.Player;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 public class UIQueueEntry extends Stack {
     private final Image icon;

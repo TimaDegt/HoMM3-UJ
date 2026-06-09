@@ -1,17 +1,18 @@
-package io.github.heroes.model.combat;
+package io.github.heroes.model.combat.unit.action;
 
+import io.github.heroes.model.combat.BattleEvent;
+import io.github.heroes.model.state.unit.stack.ArcherUnitStack;
 import io.github.heroes.model.state.BattleState;
-import io.github.heroes.model.state.Player;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ShootAction implements BattleAction {
-    private final UnitStack shooter;
+    private final ArcherUnitStack shooter;
     private final UnitStack target;
 
-    public ShootAction(UnitStack shooter, UnitStack target) {
+    public ShootAction(ArcherUnitStack shooter, UnitStack target) {
         if (shooter == null) throw new IllegalArgumentException("Shooter cannot be null");
         if (target == null) throw new IllegalArgumentException("Target cannot be null");
 
@@ -44,16 +45,7 @@ public class ShootAction implements BattleAction {
         if (!target.isAlive()) {
             events.add(new BattleEvent.UnitDied(target, target.getPosition()));
         }
-
-        updateWinner(state);
         return events;
     }
 
-    private void updateWinner(BattleState state) {
-        if (state.getPlayerOne().isDefeated()) {
-            state.setWinner(Player.PLAYER_TWO);
-        } else if (state.getPlayerTwo().isDefeated()) {
-            state.setWinner(Player.PLAYER_ONE);
-        }
-    }
 }

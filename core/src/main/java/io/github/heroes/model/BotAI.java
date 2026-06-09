@@ -1,17 +1,24 @@
 package io.github.heroes.model;
 
-import io.github.heroes.model.combat.*;
+import io.github.heroes.model.combat.BattlePathFinder;
+import io.github.heroes.model.combat.user.action.AffectPositionUserAction;
+import io.github.heroes.model.combat.user.action.DefendUserAction;
+import io.github.heroes.model.combat.user.action.UserAction;
 import io.github.heroes.model.state.Army;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 public class BotAI {
-    public BattleAction takeTurn(BattleState state) {
+    public UserAction takeTurn(BattleState state) {
         UnitStack activeUnit = state.getActiveUnit();
         if (activeUnit == null || !activeUnit.isAlive()) return null;
         UnitStack target = findNearestEnemy(state, activeUnit);
         if (target == null) return null;
+
+        if (activeUnit.canAttackWithoutMoving(target)) {
+            return new AffectPositionUserAction(target.getPosition(), null);
+        }
 
         Position attackPos = null;
 
@@ -31,7 +38,9 @@ public class BotAI {
             if (attackPos != null) break;
         }
 
-        if (attackPos != null) return new MoveAndAttackAction(activeUnit, attackPos, target);
+        if (attackPos != null) {
+            return new AffectPositionUserAction(target.getPosition(), attackPos);
+        }
 
         Position bestMovePos = activeUnit.getPosition();
         double minDistance = Double.MAX_VALUE;
@@ -50,8 +59,8 @@ public class BotAI {
             }
         }
 
-        if (bestMovePos.equals(activeUnit.getPosition()))return new DefendAction(activeUnit);
-        return new MoveAction(activeUnit, bestMovePos);
+        if (bestMovePos.equals(activeUnit.getPosition())) return new DefendUserAction();
+        return new AffectPositionUserAction(bestMovePos, null);
     }
 
     private UnitStack findNearestEnemy(BattleState state, UnitStack botUnit) {

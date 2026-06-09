@@ -1,31 +1,25 @@
 package io.github.heroes.view.Battle.Render;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import io.github.heroes.view.Battle.animation.Animation;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 import io.github.heroes.view.Battle.animation.FrameData;
 import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.model.combat.BattleEvent;
-import io.github.heroes.model.combat.BattlePathFinder;
 import io.github.heroes.combat.cursor.Cursor;
 import io.github.heroes.combat.cursor.CursorType;
 import io.github.heroes.model.state.*;
 import io.github.heroes.view.Battle.BattleViewConfig;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
-import io.github.heroes.view.Battle.Render.FieldRenderer;
-import io.github.heroes.view.Battle.Render.UnitBadgeRenderer;
 import io.github.heroes.view.Battle.animation.BattleAnimationPlayer;
-import io.github.heroes.view.Battle.animation.FrameData;
+import io.github.heroes.view.spellBook.SpellBookDisplay;
 
 import java.util.*;
 
@@ -47,6 +41,8 @@ public class BattleRenderer {
     private TextureRegion background;
     private Runnable actionAnimationFinished;
 
+    private final SpellBookDisplay spellBookRenderer;
+
     private void initGraphics(){
         for(UnitType type:UnitType.values()){
             String townFolder=type.getCastleType().getName();
@@ -66,14 +62,6 @@ public class BattleRenderer {
         }
     }
 
-    private TextureRegion createStaticUnitRegion(UnitType type, Texture texture) {
-        return switch (type) {
-            case PIKEMAN -> new TextureRegion(texture, 0, 7 * 125, 125, 125);
-            case ARCHER -> new TextureRegion(texture, 0, 6 * 125, 125, 125);
-            case GRIFFIN -> new TextureRegion(texture, 0, 0, 155, 155);
-        };
-    }
-
     public BattleRenderer(
         BattleEngine battleEngine,
         BattleAnimationPlayer animationPlayer
@@ -87,6 +75,8 @@ public class BattleRenderer {
         this.glyphLayout = new GlyphLayout();
         this.unitTextures = new HashMap<>();
         this.cursorTextures = new HashMap<>();
+
+        this.spellBookRenderer = new SpellBookDisplay();
 
         loadTextures();
     }
@@ -122,10 +112,15 @@ public class BattleRenderer {
         boolean noAnimations = allAnimationsFinished();
         fieldRenderer.render(noAnimations);
         drawUnits();
+        updateActionAnimation(delta);
+        if (spellBookRenderer.isActive()) {
+            batch.begin();
+            spellBookRenderer.render(batch);
+            batch.end();
+        }
         if (noAnimations) {
             drawCustomCursor();
         }
-        updateActionAnimation(delta);
     }
 
 
@@ -152,6 +147,8 @@ public class BattleRenderer {
             } else if (event instanceof BattleEvent.UnitDied death) {
                 UnitStack unit = death.unit();
                 animationPlayer.getAnimationEngine(unit).startDeath();
+            } else if (event instanceof BattleEvent.OpenSpellBook openBook) {
+                spellBookRenderer.setActive(true);
             } else {
                 this.events.remove(0);
                 continue;
@@ -169,11 +166,13 @@ public class BattleRenderer {
         for (UnitStack unit : battleEngine.getState().getPlayerTwo().getArmy().getUnits()) {
             allAnimationsFinished &= animationPlayer.getAnimationEngine(unit).finished();
         }
+        allAnimationsFinished &= !spellBookRenderer.isAnimating();
         return allAnimationsFinished;
     }
 
     private void updateActionAnimation(float delta) {
         if (actionAnimationFinished == null) return;
+        if (spellBookRenderer.isActive()) return;
 
         if (!allAnimationsFinished()) {
             for (UnitStack unit : battleEngine.getState().getPlayerOne().getArmy().getUnits()) {

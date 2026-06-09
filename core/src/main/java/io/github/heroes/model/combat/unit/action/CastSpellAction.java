@@ -1,10 +1,10 @@
-package io.github.heroes.model.combat;
+package io.github.heroes.model.combat.unit.action;
 
 import io.github.heroes.magic.Spell;
+import io.github.heroes.model.combat.BattleEvent;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Hero;
-import io.github.heroes.model.state.Player;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,6 @@ public class CastSpellAction implements BattleAction {
     @Override
     public List<BattleEvent> execute(BattleState state) {
         if (state == null) throw new IllegalArgumentException("State cannot be null");
-
         if (!target.isAlive()) throw new IllegalStateException("Cannot cast spell on dead unit");
 
         int hpBefore = totalHp(target);
@@ -45,20 +44,11 @@ public class CastSpellAction implements BattleAction {
             events.add(new BattleEvent.UnitDied(target, target.getPosition()));
         }
 
-        updateWinner(state);
         return events;
     }
 
     private int totalHp(UnitStack unit) {
         if (!unit.isAlive()) return 0;
         return (unit.getCount() - 1) * unit.getMaxHp() + unit.getCurrentHp();
-    }
-
-    private void updateWinner(BattleState state) {
-        if (state.getPlayerOne().isDefeated()) {
-            state.setWinner(Player.PLAYER_TWO);
-        } else if (state.getPlayerTwo().isDefeated()) {
-            state.setWinner(Player.PLAYER_ONE);
-        }
     }
 }

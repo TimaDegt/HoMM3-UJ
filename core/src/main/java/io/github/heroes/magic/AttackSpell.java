@@ -1,9 +1,7 @@
 package io.github.heroes.magic;
 
 import io.github.heroes.model.state.Hero;
-import io.github.heroes.model.state.UnitStack;
-
-import java.util.List;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 public class AttackSpell extends Spell {
     private final int[] baseDamage;

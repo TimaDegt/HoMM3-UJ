@@ -1,6 +1,6 @@
 package io.github.heroes.model.combat;
 
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 public class TurnQueueEntry {
     private final UnitStack unitStack;
