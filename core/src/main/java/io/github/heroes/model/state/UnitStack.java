@@ -2,10 +2,6 @@ package io.github.heroes.model.state;
 
 
 import io.github.heroes.anim.Animation;
-import io.github.heroes.magic.MagicSchool;
-
-import java.util.EnumMap;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class UnitStack {
     private final UnitType type;
@@ -14,8 +10,6 @@ public class UnitStack {
     private Position position;
     private final Player owner;
     private boolean defending;
-    private boolean isRanged;
-    private int ammo;
 
     private final int maxCount;
     private int topUnitHp;
@@ -26,8 +20,9 @@ public class UnitStack {
     private int bonusSpeed = 0;
 
     private boolean isBlessed = false;
-    private final EnumMap<MagicSchool, Integer> magicSchoolLevels = new EnumMap<>(MagicSchool.class);
     private boolean isCursed = false;
+
+    private final Animation animationEngine;
 
     private void validatePositiveValue(int val) {
         if (val < 0) throw new IllegalArgumentException("Value cannot be negative");
@@ -43,8 +38,13 @@ public class UnitStack {
         this.maxCount = count;
         this.maxHp = type.maxHp;
         this.topUnitHp = type.maxHp;
+        this.animationEngine = new Animation(this.type.getAnimParams());
         this.isRanged = isRanged;
         this.ammo = ammo;
+    }
+
+    public Animation getAnimationEngine() {
+        return animationEngine;
     }
 
     public int getAmmo() {

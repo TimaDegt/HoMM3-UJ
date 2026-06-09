@@ -1,4 +1,4 @@
-package io.github.heroes.anim;
+package io.github.heroes.view.Battle.animation;
 
 public class AnimParams {
     private final int spriteSize;
@@ -73,6 +73,7 @@ public class AnimParams {
         }
         return 0;
     }
+
     public int currentLength(AnimType animType) {
         if (animType == AnimType.IDLE) {
             return 0;
@@ -100,6 +101,7 @@ public class AnimParams {
         }
         return 0;
     }
+
     public int getSize() {
         return spriteSize;
     }

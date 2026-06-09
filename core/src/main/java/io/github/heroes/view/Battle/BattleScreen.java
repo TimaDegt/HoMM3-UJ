@@ -4,25 +4,25 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.control.BattleController;
 import io.github.heroes.model.state.BattleField;
+import io.github.heroes.view.Battle.Render.BattleRenderer;
 import io.github.heroes.view.Main;
 import io.github.heroes.view.Battle.InputHandler.BattleInputHandler;
+import io.github.heroes.view.Battle.animation.BattleAnimationPlayer;
 import io.github.heroes.view.Screens.LobbyScreen;
 import io.github.heroes.view.Screens.VictoryScreen;
 
 public class BattleScreen extends ScreenAdapter {
     private final Main game;
     private final BattleEngine battleEngine;
+    private final BattleAnimationPlayer animationPlayer;
     private final BattleRenderer battleRenderer;
     private final Stage stage;
     private final Skin skin;
@@ -34,7 +34,8 @@ public class BattleScreen extends ScreenAdapter {
     public BattleScreen(Main game, BattleEngine battleEngine) {
         this.game = game;
         this.battleEngine = battleEngine;
-        this.battleRenderer = new BattleRenderer(battleEngine);
+        this.animationPlayer = new BattleAnimationPlayer();
+        this.battleRenderer = new BattleRenderer(battleEngine, animationPlayer);
         stage = new Stage(new ScreenViewport());
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
         unitInfoPopup = new UnitInfoPopup(skin);
@@ -101,6 +102,7 @@ public class BattleScreen extends ScreenAdapter {
         stage.dispose();
         skin.dispose();
         battleRenderer.dispose();
+        animationPlayer.clear();
     }
 
     public void setBattleInputEnabled(boolean enabled) {

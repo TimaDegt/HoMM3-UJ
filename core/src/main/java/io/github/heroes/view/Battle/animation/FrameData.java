@@ -1,4 +1,4 @@
-package io.github.heroes.anim;
+package io.github.heroes.view.Battle.animation;
 
 public class FrameData {
     private int x;
@@ -8,6 +8,7 @@ public class FrameData {
     private float dy;
     private boolean flipX = false;
     private boolean isMoving = false;
+
     public FrameData(int x, int y, int size) {
         this.x = x;
         this.y = y;
@@ -15,6 +16,7 @@ public class FrameData {
         this.dx = 0;
         this.dy = 0;
     }
+
     public FrameData(int x, int y, int size, float dx, float dy, boolean flipX, boolean isMoving) {
         this.x = x;
         this.y = y;
@@ -24,6 +26,7 @@ public class FrameData {
         this.flipX = flipX;
         this.isMoving = isMoving;
     }
+
     public int getX() {return x;}
     public int getY() {return y;}
     public int getSize() {return size;}

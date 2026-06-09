@@ -1,13 +1,13 @@
-package io.github.heroes.anim;
+package io.github.heroes.view.Battle.animation;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import io.github.heroes.model.state.Position;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 
 import java.util.List;
 
-import static io.github.heroes.view.Battle.BattleViewConfig.*;
+import static io.github.heroes.view.Battle.BattleViewConfig.ANIMATION_SPEED;
+import static io.github.heroes.view.Battle.BattleViewConfig.MOVEMENT_SPEED;
 
 public class Animation {
     private final AnimParams params;
@@ -20,14 +20,14 @@ public class Animation {
     }
 
     public boolean finished() {
-        return
-                animType == AnimParams.AnimType.IDLE ||
-                animType == AnimParams.AnimType.DEAD;
+        return animType == AnimParams.AnimType.IDLE
+            || animType == AnimParams.AnimType.DEAD;
     }
 
     List<Position> movementPath = null;
+
     public void startMovement(List<Position> path) {
-        if (path == null || path.size()<1) {
+        if (path == null || path.size() < 1) {
             throw new IllegalArgumentException("path must be non-empty");
         }
         if (path.size() == 1) return;
@@ -35,14 +35,17 @@ public class Animation {
         this.animType = AnimParams.AnimType.MOVE;
         this.frameIndex = 0;
     }
+
     public void startAttack() {
         this.animType = AnimParams.AnimType.ATTACK;
         this.frameIndex = 0;
     }
+
     public void startReceiveDamage() {
         this.animType = AnimParams.AnimType.RECEIVEDMG;
         this.frameIndex = 0;
     }
+
     public void startDeath() {
         this.animType = AnimParams.AnimType.DEATH;
         this.frameIndex = 0;
@@ -51,10 +54,12 @@ public class Animation {
     public boolean isBusy() {
         return animType != AnimParams.AnimType.IDLE;
     }
+
     public void setFree() {
         animType = AnimParams.AnimType.IDLE;
         frameIndex = 0f;
     }
+
     public FrameData nextFrame() {
         int coordinate = params.currentCoordinate(animType);
         int length = params.currentLength(animType);
@@ -74,7 +79,7 @@ public class Animation {
             );
         }
         int floorIndex = 0;
-        while (floorIndex+1 <= frameIndex) ++floorIndex;
+        while (floorIndex + 1 <= frameIndex) ++floorIndex;
         float dx = 0f, dy = 0f;
         boolean flipX = false;
         if (animType == AnimParams.AnimType.MOVE) {
@@ -83,20 +88,22 @@ public class Animation {
             Vector2 currentPos = BattlefieldGeometry.positionToScreen(currentTile);
             Vector2 nextPos = BattlefieldGeometry.positionToScreen(nextTile);
             if (nextPos.x < currentPos.x) flipX = true;
-            dx = (nextPos.x - currentPos.x)*floorIndex/(1f*length) + currentPos.x;
-            dy = (nextPos.y - currentPos.y)*floorIndex/(1f*length) + currentPos.y;
+            dx = (nextPos.x - currentPos.x) * floorIndex / (1f * length) + currentPos.x;
+            dy = (nextPos.y - currentPos.y) * floorIndex / (1f * length) + currentPos.y;
         }
         return new FrameData(
-                size * floorIndex,
-                coordinate,
-                size,
-                dx,
-                dy,
-                flipX,
-                true);
+            size * floorIndex,
+            coordinate,
+            size,
+            dx,
+            dy,
+            flipX,
+            true
+        );
     }
+
     public void updatik(float delta) {
-        frameIndex += delta / (animType== AnimParams.AnimType.MOVE ? MOVEMENT_SPEED : ANIMATION_SPEED);
+        frameIndex += delta / (animType == AnimParams.AnimType.MOVE ? MOVEMENT_SPEED : ANIMATION_SPEED);
         int length = params.currentLength(animType);
         if (frameIndex >= length) {
             if (animType == AnimParams.AnimType.DEATH) {
@@ -117,5 +124,4 @@ public class Animation {
             frameIndex = 0f;
         }
     }
-
 }
