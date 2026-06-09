@@ -1,5 +1,6 @@
 package io.github.heroes.model.combat;
 
+import com.badlogic.gdx.Gdx;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Player;
 import io.github.heroes.model.state.UnitStack;
@@ -18,6 +19,7 @@ public class CombatResolver {
         if (attacker.getOwner() == target.getOwner()) throw new IllegalStateException("Cannot attack allied unit");
 
         int damage = calculateDamage(state, attacker, target);
+        Gdx.app.log("DEBUG", "Taking " + damage + " damage");
         target.takeDamage(damage);
 
         List<BattleEvent> events = new ArrayList<>();
@@ -39,9 +41,11 @@ public class CombatResolver {
     private int calculateDamage(BattleState state, UnitStack attacker, UnitStack target) {
         int attackerAttack = attacker.getAttack()
             + getHeroAttack(state, attacker.getOwner());
+        Gdx.app.log("ATK DEBUG", attacker.getAttack() + " " + getHeroAttack(state, attacker.getOwner()));
 
         int targetDefense = target.getDefense()
             + getHeroDefense(state, target.getOwner());
+        Gdx.app.log("DEF DEBUG", target.getDefense() + " " + getHeroDefense(state, target.getOwner()));
 
         if (target.isDefending()) {
             targetDefense = (int) Math.round(targetDefense * 1.2);
@@ -52,7 +56,7 @@ public class CombatResolver {
         double multiplier;
 
         if (difference >= 0) {
-            multiplier = 1.0 + difference * 0.5;
+            multiplier = 1.0 + difference * 0.05;
         } else {
             multiplier = 1.0 + difference * 0.025;
         }
