@@ -21,10 +21,14 @@ public class BattleFactoryEasy {
         Army playerOneArmy = new Army();
         playerOneArmy.addUnit(new UnitStack(UnitType.PIKEMAN, 2, new Position(1, 5), Player.PLAYER_ONE));
         playerOneArmy.addUnit(new UnitStack(UnitType.ARCHER, 1, new Position(1, 3), Player.PLAYER_ONE));
+        playerOneArmy.addUnit(new UnitStack(UnitType.ARCHER, 1, new Position(1, 7), Player.PLAYER_ONE));
+        playerOneArmy.addUnit(new UnitStack(UnitType.ARCHER, 10, new Position(1, 9), Player.PLAYER_ONE));
+        playerOneArmy.addUnit(new UnitStack(UnitType.ARCHER, 2, new Position(1, 1), Player.PLAYER_ONE));
 
         Army playerTwoArmy = new Army();
         playerTwoArmy.addUnit(new UnitStack(UnitType.GRIFFIN, 2, new Position(13, 5), Player.PLAYER_TWO));
         playerTwoArmy.addUnit(new UnitStack(UnitType.ARCHER, 2, new Position(13, 3), Player.PLAYER_TWO));
+        playerTwoArmy.addUnit(new UnitStack(UnitType.GRIFFIN, 2, new Position(13, 7), Player.PLAYER_TWO));
 
         BattlePlayer playerOne = new BattlePlayer(
             Player.PLAYER_ONE,

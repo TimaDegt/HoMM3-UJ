@@ -1,7 +1,7 @@
-package io.github.heroes.model.combat;
+package io.github.heroes.model.combat.unit.action;
 
+import io.github.heroes.model.combat.BattleEvent;
 import io.github.heroes.model.state.BattleState;
-import io.github.heroes.model.state.Player;
 import io.github.heroes.model.state.UnitStack;
 
 import java.util.ArrayList;
@@ -44,16 +44,7 @@ public class ShootAction implements BattleAction {
         if (!target.isAlive()) {
             events.add(new BattleEvent.UnitDied(target, target.getPosition()));
         }
-
-        updateWinner(state);
         return events;
     }
 
-    private void updateWinner(BattleState state) {
-        if (state.getPlayerOne().isDefeated()) {
-            state.setWinner(Player.PLAYER_TWO);
-        } else if (state.getPlayerTwo().isDefeated()) {
-            state.setWinner(Player.PLAYER_ONE);
-        }
-    }
 }

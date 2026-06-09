@@ -1,5 +1,8 @@
-package io.github.heroes.model.combat;
+package io.github.heroes.model.combat.unit.action;
 
+import io.github.heroes.model.combat.BattleEvent;
+import io.github.heroes.model.combat.BattlePathFinder;
+import io.github.heroes.model.combat.CombatResolver;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Position;
 import io.github.heroes.model.state.UnitStack;
@@ -34,9 +37,9 @@ public class MoveAndAttackAction implements BattleAction {
 
         if (!attackPosition.equals(attacker.getPosition()) &&
             (state.getPlayerOne().getArmy().isPositionOccupied(attackPosition)
-            || state.getPlayerTwo().getArmy().isPositionOccupied(attackPosition))) return List.of();
+                || state.getPlayerTwo().getArmy().isPositionOccupied(attackPosition))) return List.of();
 
-        if (!BattlePathFinder.canReach(state, attacker, attackPosition))return List.of();
+        if (!BattlePathFinder.canReach(state, attacker, attackPosition)) return List.of();
         Position startPosition = attacker.getPosition();
         List<Position> path = BattlePathFinder.findPath(state, startPosition, attackPosition);
 

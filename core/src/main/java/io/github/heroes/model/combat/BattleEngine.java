@@ -1,6 +1,10 @@
 package io.github.heroes.model.combat;
 
+import io.github.heroes.model.combat.unit.action.*;
+import io.github.heroes.model.combat.user.action.AffectPositionAction;
+import io.github.heroes.model.combat.user.action.UserAction;
 import io.github.heroes.model.state.BattleState;
+import io.github.heroes.model.state.Player;
 import io.github.heroes.model.state.Position;
 import io.github.heroes.model.state.UnitStack;
 
@@ -19,24 +23,28 @@ public class BattleEngine {
         this.turnQueue = new TurnQueue(state);
     }
 
-    public ActionResult performAction(BattleAction action) {
+    public ActionResult performAction(UserAction action) {
         if (action == null) return ActionResult.failure();
         if (state.isFinished()) return ActionResult.failure();
 
-        UnitStack previousUnit = state.getActiveUnit();
+        BattleAction battleAction = resolveAction(action);
+        if (battleAction == null) return ActionResult.failure();
+
         List<BattleEvent> events;
         try {
-            events = new ArrayList<>(action.execute(state));
+            events = new ArrayList<>(battleAction.execute(state));
         } catch (IllegalArgumentException | IllegalStateException exception) {
             return ActionResult.failure();
         }
 
         if (events.isEmpty())return ActionResult.failure();
 
+        updateWinner();
+
         if (state.isFinished()) {
             events.add(new BattleEvent.BattleFinished(state.getWinner()));
         } else {
-            if (action instanceof WaitAction) turnQueue.waitCurrentUnit();
+            if (battleAction instanceof WaitAction) turnQueue.waitCurrentUnit();
             else turnQueue.nextTurn();
         }
 
@@ -49,10 +57,6 @@ public class BattleEngine {
 
     public UnitStack getActiveUnit() {
         return state.getActiveUnit();
-    }
-
-    public int getRound() {
-        return state.getRound();
     }
 
     public List<TurnQueueEntry> getTurnQueueOrder() {
@@ -73,5 +77,61 @@ public class BattleEngine {
 
     public Set<Position> getReachablePositions() {
         return BattlePathFinder.findReachablePositions(state, getActiveUnit());
+    }
+
+    private BattleAction resolveAction(UserAction action) {
+        UnitStack activeUnit = getActiveUnit();
+        if (activeUnit == null) return null;
+
+        if (action instanceof AffectPositionAction affectPositionAction) {
+            return resolvePositionAction(activeUnit, affectPositionAction);
+        }
+        if (action instanceof io.github.heroes.model.combat.user.action.DefendAction) {
+            return new DefendAction(activeUnit);
+        }
+        if (action instanceof io.github.heroes.model.combat.user.action.WaitAction) {
+            return new WaitAction(activeUnit);
+        }
+        if (action instanceof io.github.heroes.model.combat.user.action.CastSpellAction castSpellAction) {
+            return new CastSpellAction(
+                castSpellAction.getCaster(),
+                castSpellAction.getSpell(),
+                castSpellAction.getTarget()
+            );
+        }
+        if (action instanceof io.github.heroes.model.combat.user.action.NoAction) {
+            return new NoAction();
+        }
+        return null;
+    }
+
+    private BattleAction resolvePositionAction(
+        UnitStack activeUnit,
+        AffectPositionAction action
+    ) {
+        Position affectedPosition = action.getAffectedPosition();
+        UnitStack target = findUnitAt(affectedPosition);
+
+        if (target == null) {
+            return new MoveAction(activeUnit, affectedPosition);
+        }
+        if (target.getOwner() == activeUnit.getOwner()) {
+            return null;
+        }
+        if (activeUnit.canFire()) {
+            return new ShootAction(activeUnit, target);
+        }
+
+        Position attackPosition = action.getNearestPosition();
+        if (attackPosition == null) return null;
+        return new MoveAndAttackAction(activeUnit, attackPosition, target);
+    }
+
+    private void updateWinner() {
+        if (state.getPlayerOne().isDefeated()) {
+            state.setWinner(Player.PLAYER_TWO);
+        } else if (state.getPlayerTwo().isDefeated()) {
+            state.setWinner(Player.PLAYER_ONE);
+        }
     }
 }

@@ -32,7 +32,6 @@ public class CombatResolver {
             events.add(new BattleEvent.UnitDied(target, target.getPosition()));
         }
 
-        updateWinner(state);
         return events;
     }
 
@@ -70,13 +69,5 @@ public class CombatResolver {
     private int getHeroDefense(BattleState state, Player owner) {
         if (owner == Player.PLAYER_ONE) return state.getPlayerOne().getHero().getDefense();
         return state.getPlayerTwo().getHero().getDefense();
-    }
-
-    private void updateWinner(BattleState state) {
-        if (state.getPlayerOne().isDefeated()) {
-            state.setWinner(Player.PLAYER_TWO);
-        } else if (state.getPlayerTwo().isDefeated()) {
-            state.setWinner(Player.PLAYER_ONE);
-        }
     }
 }

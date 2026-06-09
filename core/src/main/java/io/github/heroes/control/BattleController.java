@@ -1,7 +1,13 @@
 package io.github.heroes.control;
 
 import io.github.heroes.model.BotAI;
-import io.github.heroes.model.combat.*;
+import io.github.heroes.model.combat.ActionResult;
+import io.github.heroes.model.combat.BattleEngine;
+import io.github.heroes.model.combat.user.action.AffectPositionAction;
+import io.github.heroes.model.combat.user.action.DefendAction;
+import io.github.heroes.model.combat.user.action.NoAction;
+import io.github.heroes.model.combat.user.action.UserAction;
+import io.github.heroes.model.combat.user.action.WaitAction;
 import io.github.heroes.model.state.BattleField;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Position;
@@ -20,32 +26,15 @@ public class BattleController {
         Position clickedPosition,
         Position nearestPosition
     ) {
-        if (battleEngine.getState().isFinished()) return ActionResult.failure();
-
-        UnitStack clickedUnit = battleEngine.findUnitAt(clickedPosition);
-        UnitStack attackUnit = battleEngine.getActiveUnit();
-        if (clickedUnit != null) {
-            if (clickedUnit.getOwner()==attackUnit.getOwner() || nearestPosition == null){
-                return ActionResult.failure();
-            }
-            return performAction(new MoveAndAttackAction(attackUnit,nearestPosition,clickedUnit));
-        }
-
-        return performAction(new MoveAction(attackUnit, clickedPosition));
+        return performAction(new AffectPositionAction(clickedPosition, nearestPosition));
     }
 
     public ActionResult onDefendClicked() {
-        UnitStack activeUnit = battleEngine.getActiveUnit();
-        if (activeUnit == null) return ActionResult.failure();
-
-        return performAction(new DefendAction(activeUnit));
+        return performAction(new DefendAction());
     }
 
     public ActionResult onWaitClicked() {
-        UnitStack activeUnit = battleEngine.getActiveUnit();
-        if (activeUnit == null) return ActionResult.failure();
-
-        return performAction(new WaitAction(activeUnit));
+        return performAction(new WaitAction());
     }
 
     public ActionResult onSpellBookClicked() {
@@ -53,7 +42,7 @@ public class BattleController {
     }
 
 
-    public ActionResult performAction(BattleAction action) {
+    public ActionResult performAction(UserAction action) {
         return battleEngine.performAction(action);
     }
 
@@ -61,15 +50,12 @@ public class BattleController {
         return battleEngine.getState();
     }
 
-    public UnitStack getActiveUnit() {
-        return battleEngine.getActiveUnit();
-    }
-
     public ActionResult onReadyForNextAction() {
-        UnitStack activeUnit = battleEngine.getActiveUnit();
-        if (!battleEngine.getState().isCurrentPlayerBot(activeUnit)) return ActionResult.failure();
+        if (!battleEngine.getState().isCurrentPlayerBot(battleEngine.getActiveUnit())) {
+            return ActionResult.failure();
+        }
 
-        BattleAction action = botAI.takeTurn(battleEngine.getState());
+        UserAction action = botAI.takeTurn(battleEngine.getState());
         if (action == null) return ActionResult.failure();
 
         return performAction(action);
@@ -83,7 +69,4 @@ public class BattleController {
         return battleEngine.findUnitAt(position);
     }
 
-    private boolean canReach(UnitStack unit, Position targetPosition) {
-        return BattlePathFinder.canReach(battleEngine.getState(), unit, targetPosition);
-    }
 }
