@@ -13,7 +13,7 @@ public class TurnQueueEntry {
         this.wait=wait;
     }
 
-    public void setWait(boolean wait){ this.wait=wait;}
+    void setWait(boolean wait){ this.wait=wait;}
 
     public UnitStack getUnitStack() {
         return unitStack;
@@ -23,5 +23,7 @@ public class TurnQueueEntry {
         return round;
     }
 
-    public boolean gatWait() {return wait;}
+    public boolean isWaiting() {return wait;}
+
+    public boolean gatWait() {return isWaiting();}
 }

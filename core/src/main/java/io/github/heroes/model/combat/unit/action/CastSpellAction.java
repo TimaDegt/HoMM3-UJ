@@ -1,7 +1,8 @@
 package io.github.heroes.model.combat.unit.action;
 
-import io.github.heroes.magic.Spell;
+import io.github.heroes.model.magic.Spell;
 import io.github.heroes.model.combat.BattleEvent;
+import io.github.heroes.model.snapshot.UnitSnapshot;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Hero;
 import io.github.heroes.model.state.unit.stack.UnitStack;
@@ -28,6 +29,7 @@ public class CastSpellAction implements BattleAction {
     public List<BattleEvent> execute(BattleState state) {
         if (state == null) throw new IllegalArgumentException("State cannot be null");
         if (!target.isAlive()) throw new IllegalStateException("Cannot cast spell on dead unit");
+        if (!spell.canCast(caster)) throw new IllegalStateException("Not enough mana to cast spell");
 
         int hpBefore = totalHp(target);
         spell.cast(caster, target);
@@ -35,13 +37,13 @@ public class CastSpellAction implements BattleAction {
 
         List<BattleEvent> events = new ArrayList<>();
         events.add(new BattleEvent.UnitDamaged(
-            target,
+            UnitSnapshot.from(target),
             damage,
             target.getCount(),
             target.getCurrentHp()
         ));
         if (!target.isAlive()) {
-            events.add(new BattleEvent.UnitDied(target, target.getPosition()));
+            events.add(new BattleEvent.UnitDied(UnitSnapshot.from(target), target.getPosition()));
         }
 
         return events;

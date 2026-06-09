@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import io.github.heroes.model.combat.TurnQueueEntry;
+import io.github.heroes.model.snapshot.TurnQueueEntrySnapshot;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -39,7 +39,7 @@ public class BattleActionPanel {
     }
 
     public BattleActionPanel(
-        List<TurnQueueEntry> turnQueue,
+        List<TurnQueueEntrySnapshot> turnQueue,
         Runnable onDefendClicked,
         Runnable onWaitClicked,
         Runnable onSpellBookClicked,
@@ -66,7 +66,7 @@ public class BattleActionPanel {
         updateQueueButtons(turnQueue);
     }
 
-    public void updateQueueButtons(List<TurnQueueEntry> queue) {
+    public void updateQueueButtons(List<TurnQueueEntrySnapshot> queue) {
         for (UIQueueEntry entry : queueEntries) {
             entry.remove();
         }
@@ -83,9 +83,9 @@ public class BattleActionPanel {
 
             queueData.add(queue.get(curr_index));
 
-            if (curr_index < queue.size() - 1 && queue.get(curr_index).getRound() != queue.get(curr_index + 1).getRound()) {
+            if (curr_index < queue.size() - 1 && queue.get(curr_index).round() != queue.get(curr_index + 1).round()) {
                 if (queueData.size() < BattleViewConfig.ACTION_PANEL_QUEUE_BUTTON_COUNT) {
-                    queueData.add(queue.get(curr_index).getRound() + 1);
+                    queueData.add(queue.get(curr_index).round() + 1);
                 }
             }
             curr_index++;
@@ -106,7 +106,7 @@ public class BattleActionPanel {
             if (data instanceof Integer) {
                 entry = new UIQueueEntry((Integer) data);
             } else {
-                entry = new UIQueueEntry((TurnQueueEntry) data);
+                entry = new UIQueueEntry((TurnQueueEntrySnapshot) data);
             }
 
             entry.setBounds(qStartX + (i * qW), y, qW, btnH);

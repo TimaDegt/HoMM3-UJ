@@ -2,87 +2,81 @@ package io.github.heroes.view.Battle.Render;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import io.github.heroes.model.state.unit.stack.UnitStack;
-import io.github.heroes.view.Battle.animation.FrameData;
-import io.github.heroes.model.combat.ActionResult;
-import io.github.heroes.model.combat.BattleEngine;
-import io.github.heroes.model.combat.BattleEvent;
 import io.github.heroes.combat.cursor.Cursor;
 import io.github.heroes.combat.cursor.CursorType;
-import io.github.heroes.model.state.*;
+import io.github.heroes.control.BattleController;
+import io.github.heroes.model.combat.ActionResult;
+import io.github.heroes.model.combat.BattleEvent;
+import io.github.heroes.model.snapshot.UnitSnapshot;
+import io.github.heroes.model.state.Player;
+import io.github.heroes.model.state.UnitType;
 import io.github.heroes.view.Battle.BattleViewConfig;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 import io.github.heroes.view.Battle.animation.BattleAnimationPlayer;
+import io.github.heroes.view.Battle.animation.FrameData;
 import io.github.heroes.view.spellBook.SpellBookDisplay;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static io.github.heroes.view.Battle.BattleViewConfig.CURSOR_SCALE;
 
 public class BattleRenderer {
-    private static final float ACTION_ANIMATION_DURATION = 1f;
-
-    private final BattleEngine battleEngine;
+    private final BattleController battleController;
     private final BattleAnimationPlayer animationPlayer;
     private final FieldRenderer fieldRenderer;
     private final UnitBadgeRenderer unitBadgeRenderer;
     private final SpriteBatch batch;
-    private final BitmapFont font;
-    private final GlyphLayout glyphLayout;
     private final Map<UnitType, TextureRegion> unitTextures;
     private final Map<CursorType, TextureRegion> cursorTextures;
+    private final SpellBookDisplay spellBookRenderer;
 
     private TextureRegion background;
     private Runnable actionAnimationFinished;
-
-    private final SpellBookDisplay spellBookRenderer;
-
-    private void initGraphics(){
-        for(UnitType type:UnitType.values()){
-            String townFolder=type.getCastleType().getName();
-            String unitName=type.getName();
-            String unitPath="Units/"+townFolder+"/"+unitName+"_spritesheet.png";
-
-            Texture tex=new Texture(Gdx.files.internal(unitPath));
-            TextureRegion region = new TextureRegion(tex);//createStaticUnitRegion(type, tex);
-            unitTextures.put(type, region);
-        }
-        for (CursorType cursorType:CursorType.values()){
-            if (cursorType == CursorType.NONE) continue;
-            String path = "Icons/Cursors/"+cursorType.getName()+".png";
-            Texture tex=new Texture(Gdx.files.internal(path));
-            TextureRegion region=new TextureRegion(tex);
-            cursorTextures.put(cursorType, region);
-        }
-    }
+    private List<BattleEvent> events;
 
     public BattleRenderer(
-        BattleEngine battleEngine,
+        BattleController battleController,
         BattleAnimationPlayer animationPlayer
     ) {
-        this.battleEngine = battleEngine;
+        this.battleController = battleController;
         this.animationPlayer = animationPlayer;
-        this.fieldRenderer = new FieldRenderer(battleEngine);
-        this.unitBadgeRenderer = new UnitBadgeRenderer(battleEngine, animationPlayer);
+        this.fieldRenderer = new FieldRenderer(battleController);
+        this.unitBadgeRenderer = new UnitBadgeRenderer(battleController, animationPlayer);
         this.batch = new SpriteBatch();
-        this.font = new BitmapFont();
-        this.glyphLayout = new GlyphLayout();
         this.unitTextures = new HashMap<>();
         this.cursorTextures = new HashMap<>();
-
         this.spellBookRenderer = new SpellBookDisplay();
 
         loadTextures();
     }
 
+    private void initGraphics() {
+        for (UnitType type : UnitType.values()) {
+            String townFolder = type.getCastleType().getName();
+            String unitName = type.getName();
+            String unitPath = "Units/" + townFolder + "/" + unitName + "_spritesheet.png";
+
+            Texture texture = new Texture(Gdx.files.internal(unitPath));
+            unitTextures.put(type, new TextureRegion(texture));
+        }
+        for (CursorType cursorType : CursorType.values()) {
+            if (cursorType == CursorType.NONE) continue;
+            String path = "Icons/Cursors/" + cursorType.getName() + ".png";
+            Texture texture = new Texture(Gdx.files.internal(path));
+            cursorTextures.put(cursorType, new TextureRegion(texture));
+        }
+    }
+
     private void drawCustomCursor() {
-        CursorType cursorType = Cursor.getCustomCursor(battleEngine);
+        CursorType cursorType = Cursor.getCustomCursor(battleController);
         if (cursorType == CursorType.NONE) {
             Gdx.graphics.setSystemCursor(com.badlogic.gdx.graphics.Cursor.SystemCursor.Arrow);
             return;
@@ -92,14 +86,19 @@ public class BattleRenderer {
         float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
 
         TextureRegion regionToDraw = cursorTextures.get(cursorType);
+        if (regionToDraw == null) return;
 
-        if (regionToDraw != null) {
-            float scaledWidth = regionToDraw.getRegionWidth() * CURSOR_SCALE;
-            float scaledHeight = regionToDraw.getRegionHeight() * CURSOR_SCALE;
-            batch.begin();
-            batch.draw(regionToDraw, mouseX + cursorType.offX * CURSOR_SCALE, mouseY - scaledHeight + cursorType.offY * CURSOR_SCALE, scaledWidth, scaledHeight);
-            batch.end();
-        }
+        float scaledWidth = regionToDraw.getRegionWidth() * CURSOR_SCALE;
+        float scaledHeight = regionToDraw.getRegionHeight() * CURSOR_SCALE;
+        batch.begin();
+        batch.draw(
+            regionToDraw,
+            mouseX + cursorType.offX * CURSOR_SCALE,
+            mouseY - scaledHeight + cursorType.offY * CURSOR_SCALE,
+            scaledWidth,
+            scaledHeight
+        );
+        batch.end();
     }
 
     public void render(float delta) {
@@ -118,52 +117,43 @@ public class BattleRenderer {
             spellBookRenderer.render(batch);
             batch.end();
         }
-        if (noAnimations) {
-            drawCustomCursor();
-        }
+        if (noAnimations) drawCustomCursor();
     }
 
-
-    private List<BattleEvent> events;
     public void playActionAnimation(ActionResult result, Runnable onFinished) {
         if (result == null) throw new IllegalArgumentException("Action result cannot be null");
         if (onFinished == null) throw new IllegalArgumentException("Completion callback cannot be null");
 
-        this.events = new ArrayList<>
-            (result.events());
+        this.events = new ArrayList<>(result.events());
+        startNextEventAnimation();
+        actionAnimationFinished = onFinished;
+    }
 
-        while (!this.events.isEmpty()) {
-            BattleEvent event = this.events.get(0);
+    private void startNextEventAnimation() {
+        while (events != null && !events.isEmpty()) {
+            BattleEvent event = events.get(0);
 
             if (event instanceof BattleEvent.UnitMoved move) {
-                UnitStack unit = move.unit();
-                animationPlayer.getAnimationEngine(unit).startMovement(move.path());
+                animationPlayer.getAnimationEngine(move.unit()).startMovement(move.path());
             } else if (event instanceof BattleEvent.UnitAttacked attack) {
-                UnitStack unit = attack.attacker();
-                animationPlayer.getAnimationEngine(unit).startAttack();
-            } else if (event instanceof BattleEvent.UnitDamaged receive) {
-                UnitStack unit = receive.unit();
-                animationPlayer.getAnimationEngine(unit).startReceiveDamage();
+                animationPlayer.getAnimationEngine(attack.attacker()).startAttack();
+            } else if (event instanceof BattleEvent.UnitDamaged damaged) {
+                animationPlayer.getAnimationEngine(damaged.unit()).startReceiveDamage();
             } else if (event instanceof BattleEvent.UnitDied death) {
-                UnitStack unit = death.unit();
-                animationPlayer.getAnimationEngine(unit).startDeath();
-            } else if (event instanceof BattleEvent.OpenSpellBook openBook) {
+                animationPlayer.getAnimationEngine(death.unit()).startDeath();
+            } else if (event instanceof BattleEvent.OpenSpellBook) {
                 spellBookRenderer.setActive(true);
             } else {
-                this.events.remove(0);
+                events.remove(0);
                 continue;
             }
             break;
         }
-        actionAnimationFinished = onFinished;
     }
 
     private boolean allAnimationsFinished() {
         boolean allAnimationsFinished = true;
-        for (UnitStack unit : battleEngine.getState().getPlayerOne().getArmy().getUnits()) {
-            allAnimationsFinished &= animationPlayer.getAnimationEngine(unit).finished();
-        }
-        for (UnitStack unit : battleEngine.getState().getPlayerTwo().getArmy().getUnits()) {
+        for (UnitSnapshot unit : battleController.getBattleSnapshot().units()) {
             allAnimationsFinished &= animationPlayer.getAnimationEngine(unit).finished();
         }
         allAnimationsFinished &= !spellBookRenderer.isAnimating();
@@ -175,39 +165,14 @@ public class BattleRenderer {
         if (spellBookRenderer.isActive()) return;
 
         if (!allAnimationsFinished()) {
-            for (UnitStack unit : battleEngine.getState().getPlayerOne().getArmy().getUnits()) {
-                animationPlayer.getAnimationEngine(unit).updatik(delta);
-            }
-            for (UnitStack unit : battleEngine.getState().getPlayerTwo().getArmy().getUnits()) {
+            for (UnitSnapshot unit : battleController.getBattleSnapshot().units()) {
                 animationPlayer.getAnimationEngine(unit).updatik(delta);
             }
             return;
         }
-        if (!this.events.isEmpty()) {
-            this.events.remove(0);
-        }
-        while (!this.events.isEmpty()) {
-            BattleEvent event = this.events.get(0);
-
-            if (event instanceof BattleEvent.UnitMoved move) {
-                UnitStack unit = move.unit();
-                animationPlayer.getAnimationEngine(unit).startMovement(move.path());
-            } else if (event instanceof BattleEvent.UnitAttacked attack) {
-                UnitStack unit = attack.attacker();
-                animationPlayer.getAnimationEngine(unit).startAttack();
-            } else if (event instanceof BattleEvent.UnitDamaged receive) {
-                UnitStack unit = receive.unit();
-                animationPlayer.getAnimationEngine(unit).startReceiveDamage();
-            } else if (event instanceof BattleEvent.UnitDied death) {
-                UnitStack unit = death.unit();
-                animationPlayer.getAnimationEngine(unit).startDeath();
-            } else {
-                events.remove(0);
-                continue;
-            }
-            break;
-        }
-        if (!this.events.isEmpty()) return;
+        if (events != null && !events.isEmpty()) events.remove(0);
+        startNextEventAnimation();
+        if (events != null && !events.isEmpty()) return;
 
         Runnable onFinished = actionAnimationFinished;
         actionAnimationFinished = null;
@@ -234,40 +199,27 @@ public class BattleRenderer {
     private void loadTextures() {
         initGraphics();
 
-        int bgId= MathUtils.random(0,9);
-        String bgPath="Battlefields/"+bgId+".png";
-        Texture bgTex=new Texture(bgPath);
-        this.background=new TextureRegion(bgTex);
+        int backgroundId = MathUtils.random(0, 9);
+        String backgroundPath = "Battlefields/" + backgroundId + ".png";
+        background = new TextureRegion(new Texture(backgroundPath));
     }
 
-
-    private Army getAllUnitsSortedByY() {
-        Army p1 = battleEngine.getState().getPlayerOne().getArmy();
-        Army p2 = battleEngine.getState().getPlayerTwo().getArmy();
-        List<UnitStack> allUnits = new ArrayList<>();
-        allUnits.addAll(p1.getUnits());
-        allUnits.addAll(p2.getUnits());
-        allUnits.sort(new Comparator<UnitStack>() {
-            @Override
-            public int compare(UnitStack u1, UnitStack u2) {
-                return Integer.compare(
-                    u2.getPosition().y(),
-                    u1.getPosition().y()
-                );
-            }
-        });
-        return new Army(allUnits);
+    private List<UnitSnapshot> getAllUnitsSortedByY() {
+        List<UnitSnapshot> allUnits = new ArrayList<>(battleController.getBattleSnapshot().units());
+        allUnits.sort(Comparator.comparingInt((UnitSnapshot unit) -> unit.position().y()).reversed());
+        return allUnits;
     }
+
     private void drawUnits() {
         batch.begin();
-        drawArmySprites(getAllUnitsSortedByY());
+        drawUnitSprites(getAllUnitsSortedByY());
         batch.end();
         unitBadgeRenderer.render();
     }
 
-    private void drawArmySprites(Army army) {
-        for (UnitStack unit : army.getUnits()) {
-            if (unit.isAlive()
+    private void drawUnitSprites(List<UnitSnapshot> units) {
+        for (UnitSnapshot unit : units) {
+            if (unit.alive()
                 || hasPendingVisualEvent(unit)
                 || animationPlayer.getAnimationEngine(unit).isDead()) {
                 drawUnitSprite(unit);
@@ -275,20 +227,22 @@ public class BattleRenderer {
         }
     }
 
-    private boolean hasPendingVisualEvent(UnitStack unit) {
+    private boolean hasPendingVisualEvent(UnitSnapshot unit) {
         if (events == null) return false;
         for (BattleEvent event : events) {
             if (event instanceof BattleEvent.UnitAttacked attack
-                && (attack.attacker() == unit || attack.target() == unit)) {
+                && (attack.attacker().id() == unit.id() || attack.target().id() == unit.id())) {
                 return true;
             }
-            if (event instanceof BattleEvent.UnitDamaged damaged && damaged.unit() == unit) return true;
-            if (event instanceof BattleEvent.UnitDied died && died.unit() == unit) return true;
+            if (event instanceof BattleEvent.UnitDamaged damaged
+                && damaged.unit().id() == unit.id()) return true;
+            if (event instanceof BattleEvent.UnitDied died
+                && died.unit().id() == unit.id()) return true;
         }
         return false;
     }
 
-    private void drawUnitSprite(UnitStack unit) {
+    private void drawUnitSprite(UnitSnapshot unit) {
         float hexHeight = BattleViewConfig.HEX_HEIGHT;
         float hexWidth = BattleViewConfig.HEX_WIDTH;
         float dx = 0;
@@ -300,12 +254,18 @@ public class BattleRenderer {
         dx += frameData.getDx();
         dy += frameData.getDy();
 
-        TextureRegion texture = new TextureRegion(unitTextures.get(unit.getType()), x, y, squareLength, squareLength);
+        TextureRegion texture = new TextureRegion(
+            unitTextures.get(unit.type()),
+            x,
+            y,
+            squareLength,
+            squareLength
+        );
         int spriteSize = texture.getRegionWidth();
 
         boolean flipX = frameData.isMoving()
             ? frameData.isFlipX()
-            : unit.getOwner() == Player.PLAYER_TWO;
+            : unit.owner() == Player.PLAYER_TWO;
         if (flipX) {
             texture.flip(true, false);
             dx -= spriteSize - hexWidth / 2f;
@@ -314,11 +274,16 @@ public class BattleRenderer {
         float size = spriteSize * 1.4f;
 
         if (frameData.isMoving()) {
-            batch.draw(texture, - hexHeight / 2f + dx, - hexHeight / 4f + dy, size, size);
+            batch.draw(texture, -hexHeight / 2f + dx, -hexHeight / 4f + dy, size, size);
             return;
         }
-        Vector2 center = BattlefieldGeometry.positionToScreen(unit.getPosition());
-        batch.draw(texture, center.x - hexHeight / 2f + dx, center.y - hexHeight / 4f + dy, size, size);
+        Vector2 center = BattlefieldGeometry.positionToScreen(unit.position());
+        batch.draw(
+            texture,
+            center.x - hexHeight / 2f + dx,
+            center.y - hexHeight / 4f + dy,
+            size,
+            size
+        );
     }
-
 }

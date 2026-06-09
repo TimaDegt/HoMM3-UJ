@@ -127,9 +127,9 @@ public class LobbyScreen extends ScreenAdapter {
                     lobbyMusic.stop();
                 }
                 if (currentGameMode == GameMode.LOCAL_1V1) {
-                    game.setScreen(new BattleScreen(game, BattleFactory1v1.createDemoBattle()));
+                    game.setScreen(new BattleScreen(game, BattleFactory1v1.createDemoController()));
                 } else {
-                    game.setScreen(new BattleScreen(game, BattleFactoryEasy.createDemoBattle()));
+                    game.setScreen(new BattleScreen(game, BattleFactoryEasy.createDemoController()));
                 }
             }
         });

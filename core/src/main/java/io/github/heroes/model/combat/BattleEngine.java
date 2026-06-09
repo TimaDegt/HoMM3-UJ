@@ -8,6 +8,8 @@ import io.github.heroes.model.combat.user.action.NoOpUserAction;
 import io.github.heroes.model.combat.user.action.OpenSpellBookUserAction;
 import io.github.heroes.model.combat.user.action.UserAction;
 import io.github.heroes.model.combat.user.action.WaitUserAction;
+import io.github.heroes.model.snapshot.BattleSnapshot;
+import io.github.heroes.model.snapshot.TurnQueueEntrySnapshot;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Hero;
 import io.github.heroes.model.state.Player;
@@ -65,8 +67,14 @@ public class BattleEngine {
         return state.getActiveUnit();
     }
 
-    public List<TurnQueueEntry> getTurnQueueOrder() {
-        return turnQueue.getQueue();
+    public List<TurnQueueEntrySnapshot> getTurnQueueOrder() {
+        return turnQueue.getQueue().stream()
+            .map(TurnQueueEntrySnapshot::from)
+            .toList();
+    }
+
+    public BattleSnapshot getSnapshot() {
+        return BattleSnapshot.from(state);
     }
 
     public boolean isPositionOccupied(Position position) {
@@ -75,6 +83,7 @@ public class BattleEngine {
     }
 
     public UnitStack findUnitAt(Position position) {
+        if (position == null) return null;
         UnitStack unit = state.getPlayerOne().getArmy().findUnitAtPosition(position);
         if (unit != null) return unit;
 
@@ -83,6 +92,13 @@ public class BattleEngine {
 
     public Set<Position> getReachablePositions() {
         return BattlePathFinder.findReachablePositions(state, getActiveUnit());
+    }
+
+    public boolean canActiveUnitReach(Position position) {
+        UnitStack activeUnit = getActiveUnit();
+        return position != null
+            && activeUnit != null
+            && BattlePathFinder.canReach(state, activeUnit, position);
     }
 
     private BattleAction resolveAction(UserAction action) {
@@ -99,10 +115,12 @@ public class BattleEngine {
             return new WaitAction(activeUnit);
         }
         if (action instanceof CastSpellUserAction castSpellAction) {
+            UnitStack target = findUnitAt(castSpellAction.getTargetPosition());
+            if (target == null) return null;
             return new CastSpellAction(
                 getActiveHero(activeUnit),
                 castSpellAction.getSpell(),
-                castSpellAction.getTarget()
+                target
             );
         }
         if (action instanceof OpenSpellBookUserAction) {

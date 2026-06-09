@@ -85,7 +85,8 @@ public class BattlePathFinder {
             target=prevPosition.get(target);
             path.add(target);
         }
-        return path.reversed();
+        Collections.reverse(path);
+        return path;
     }
 
     private static boolean isOccupied(BattleState state, Position position) {

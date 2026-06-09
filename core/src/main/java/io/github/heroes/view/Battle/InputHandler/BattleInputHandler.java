@@ -3,15 +3,14 @@ package io.github.heroes.view.Battle.InputHandler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.control.BattleController;
-import io.github.heroes.model.combat.BattleEngine;
+import io.github.heroes.model.combat.ActionResult;
+import io.github.heroes.model.snapshot.BattleSnapshot;
+import io.github.heroes.model.snapshot.UnitSnapshot;
 import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.unit.stack.UnitStack;
 import io.github.heroes.view.Battle.BattleScreen;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 import io.github.heroes.view.Battle.UnitInfoPopup;
-
 
 public class BattleInputHandler extends InputAdapter {
     private final BattleController battleController;
@@ -20,21 +19,18 @@ public class BattleInputHandler extends InputAdapter {
     private final Runnable exitBattle;
     private boolean battleInputEnabled = true;
     private final BattleScreen battleScreen;
-    private final BattleEngine battleEngine;
 
     public BattleInputHandler(
         BattleController battleController,
-        BattleEngine battleEngine,
         UnitInfoPopup unitInfoPopup,
         BattleScreen battleScreen,
         Runnable exitBattle
     ) {
         this.battleController = battleController;
-        this.battleEngine = battleEngine;
         this.unitInfoPopup = unitInfoPopup;
         this.exitBattle = exitBattle;
         this.actionResult = null;
-        this.battleScreen=battleScreen;
+        this.battleScreen = battleScreen;
     }
 
     @Override
@@ -44,22 +40,23 @@ public class BattleInputHandler extends InputAdapter {
         if (button == Input.Buttons.LEFT) {
             if (!battleInputEnabled) return true;
 
+            BattleSnapshot battle = battleController.getBattleSnapshot();
             Position clickedPosition = BattlefieldGeometry.screenToPosition(
                 screenX,
                 worldY,
-                battleController.getField()
+                battle
             );
             if (clickedPosition == null) return true;
 
-            Position nearestPosition = BattlefieldGeometry.findNearestNeighbor(
+            Position attackFromPosition = BattlefieldGeometry.findNearestNeighbor(
                 clickedPosition,
                 screenX,
                 worldY,
-                battleEngine
+                battle
             );
 
             setBattleInputEnabled(false);
-            actionResult = battleController.onHexClicked(clickedPosition, nearestPosition);
+            actionResult = battleController.onHexClicked(clickedPosition, attackFromPosition);
             battleScreen.handleActionResult(actionResult);
             return true;
         }
@@ -78,14 +75,14 @@ public class BattleInputHandler extends InputAdapter {
 
     public void onDefendClicked() {
         if (!battleInputEnabled) return;
-        battleInputEnabled=false;
+        battleInputEnabled = false;
         actionResult = battleController.onDefendClicked();
         battleScreen.handleActionResult(actionResult);
     }
 
     public void onWaitClicked() {
         if (!battleInputEnabled) return;
-        battleInputEnabled=false;
+        battleInputEnabled = false;
         actionResult = battleController.onWaitClicked();
         battleScreen.handleActionResult(actionResult);
     }
@@ -105,12 +102,9 @@ public class BattleInputHandler extends InputAdapter {
     }
 
     private void handleRightBattlefieldClick(float x, float y) {
-        Position position = BattlefieldGeometry.screenToPosition(
-            x,
-            y,
-            battleController.getField()
-        );
-        UnitStack unit = position == null ? null : battleController.findUnitAt(position);
+        BattleSnapshot battle = battleController.getBattleSnapshot();
+        Position position = BattlefieldGeometry.screenToPosition(x, y, battle);
+        UnitSnapshot unit = position == null ? null : battle.findUnitAt(position);
         if (unit == null) {
             unitInfoPopup.hide();
             return;
@@ -118,6 +112,4 @@ public class BattleInputHandler extends InputAdapter {
 
         unitInfoPopup.show(unit);
     }
-
-
 }

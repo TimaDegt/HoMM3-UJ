@@ -1,6 +1,7 @@
 package io.github.heroes.model.combat.unit.action;
 
 import io.github.heroes.model.combat.BattleEvent;
+import io.github.heroes.model.snapshot.UnitSnapshot;
 import io.github.heroes.model.combat.BattlePathFinder;
 import io.github.heroes.model.combat.CombatResolver;
 import io.github.heroes.model.state.BattleState;
@@ -48,7 +49,7 @@ public class MoveAndAttackAction implements BattleAction {
 
         List<BattleEvent> events = new ArrayList<>();
         events.add(new BattleEvent.UnitMoved(
-            attacker,
+            UnitSnapshot.from(attacker),
             startPosition,
             attackPosition,
             path

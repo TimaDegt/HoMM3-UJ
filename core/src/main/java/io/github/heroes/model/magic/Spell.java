@@ -1,4 +1,4 @@
-package io.github.heroes.magic;
+package io.github.heroes.model.magic;
 
 import io.github.heroes.model.state.Hero;
 import io.github.heroes.model.state.unit.stack.UnitStack;
@@ -37,7 +37,7 @@ public abstract class Spell {
     }
 
     public boolean canCast(Hero caster) {
-        return caster.getMana() >= manaCost;
+        return caster.getMana() >= getManaCost(caster);
     }
 
     public abstract void cast(Hero caster, UnitStack target);

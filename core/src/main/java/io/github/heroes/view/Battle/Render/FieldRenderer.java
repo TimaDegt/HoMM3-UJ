@@ -4,19 +4,19 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import io.github.heroes.model.combat.BattleEngine;
-import io.github.heroes.model.state.BattleField;
+import io.github.heroes.control.BattleController;
+import io.github.heroes.model.snapshot.BattleSnapshot;
+import io.github.heroes.model.snapshot.UnitSnapshot;
 import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.unit.stack.UnitStack;
 import io.github.heroes.view.Battle.BattleViewConfig;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 
 public class FieldRenderer {
-    private final BattleEngine battleEngine;
+    private final BattleController battleController;
     private final ShapeRenderer shapeRenderer;
 
-    public FieldRenderer(BattleEngine battleEngine) {
-        this.battleEngine = battleEngine;
+    public FieldRenderer(BattleController battleController) {
+        this.battleController = battleController;
         this.shapeRenderer = new ShapeRenderer();
     }
 
@@ -33,13 +33,13 @@ public class FieldRenderer {
     }
 
     private void drawBattlefield() {
-        BattleField field = battleEngine.getState().getField();
+        BattleSnapshot battle = battleController.getBattleSnapshot();
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         Gdx.gl.glLineWidth(1.2f);
         shapeRenderer.setColor(0.92f, 0.86f, 0.55f, 1.0f);
-        for (int row = 0; row < field.getHeight(); row++) {
-            for (int col = 0; col < field.getWidth(); col++) {
+        for (int row = 0; row < battle.fieldHeight(); row++) {
+            for (int col = 0; col < battle.fieldWidth(); col++) {
                 Vector2 center = BattlefieldGeometry.positionToScreen(new Position(col, row));
                 drawHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE);
             }
@@ -49,12 +49,10 @@ public class FieldRenderer {
     }
 
     private void drawActiveUnitHighlight() {
-        UnitStack activeUnit = battleEngine.getActiveUnit();
-        if (activeUnit == null || !activeUnit.isAlive()) {
-            return;
-        }
+        UnitSnapshot activeUnit = battleController.getBattleSnapshot().activeUnit();
+        if (activeUnit == null || !activeUnit.alive()) return;
 
-        Vector2 center = BattlefieldGeometry.positionToScreen(activeUnit.getPosition());
+        Vector2 center = BattlefieldGeometry.positionToScreen(activeUnit.position());
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         Gdx.gl.glLineWidth(3);
@@ -70,7 +68,7 @@ public class FieldRenderer {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0.08f, 0.08f, 0.08f, 0.45f);
-        for (Position target : battleEngine.getReachablePositions()) {
+        for (Position target : battleController.getReachablePositions()) {
             Vector2 center = BattlefieldGeometry.positionToScreen(target);
             drawFilledHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE - 2f);
         }
@@ -105,5 +103,4 @@ public class FieldRenderer {
             shapeRenderer.triangle(centerX, centerY, x[i], y[i], x[next], y[next]);
         }
     }
-
 }

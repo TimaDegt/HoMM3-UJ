@@ -9,20 +9,18 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import io.github.heroes.model.combat.ActionResult;
-import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.control.BattleController;
-import io.github.heroes.model.state.BattleField;
-import io.github.heroes.view.Battle.Render.BattleRenderer;
-import io.github.heroes.view.Main;
+import io.github.heroes.model.combat.ActionResult;
+import io.github.heroes.model.snapshot.BattleSnapshot;
 import io.github.heroes.view.Battle.InputHandler.BattleInputHandler;
+import io.github.heroes.view.Battle.Render.BattleRenderer;
 import io.github.heroes.view.Battle.animation.BattleAnimationPlayer;
+import io.github.heroes.view.Main;
 import io.github.heroes.view.Screens.LobbyScreen;
 import io.github.heroes.view.Screens.VictoryScreen;
 
 public class BattleScreen extends ScreenAdapter {
     private final Main game;
-    private final BattleEngine battleEngine;
     private final BattleAnimationPlayer animationPlayer;
     private final BattleRenderer battleRenderer;
     private final Stage stage;
@@ -33,18 +31,16 @@ public class BattleScreen extends ScreenAdapter {
     private BattleActionPanel actionPanel;
     private Music battleMusic;
 
-    public BattleScreen(Main game, BattleEngine battleEngine) {
+    public BattleScreen(Main game, BattleController battleController) {
         this.game = game;
-        this.battleEngine = battleEngine;
+        this.battleController = battleController;
         this.animationPlayer = new BattleAnimationPlayer();
-        this.battleRenderer = new BattleRenderer(battleEngine, animationPlayer);
+        this.battleRenderer = new BattleRenderer(battleController, animationPlayer);
         stage = new Stage(new ScreenViewport());
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
         unitInfoPopup = new UnitInfoPopup(skin);
-        battleController = new BattleController(battleEngine);
         battleInputHandler = new BattleInputHandler(
             battleController,
-            battleEngine,
             unitInfoPopup,
             this,
             this::exitToLobby
@@ -57,9 +53,7 @@ public class BattleScreen extends ScreenAdapter {
     }
 
     private void exitToLobby() {
-        if (battleMusic != null) {
-            battleMusic.stop();
-        }
+        if (battleMusic != null) battleMusic.stop();
         game.setScreen(new LobbyScreen(game));
     }
 
@@ -76,9 +70,8 @@ public class BattleScreen extends ScreenAdapter {
         table.top().right();
         stage.addActor(table);
 
-
         actionPanel = new BattleActionPanel(
-            battleEngine.getTurnQueueOrder(),
+            battleController.getTurnQueue(),
             battleInputHandler::onDefendClicked,
             battleInputHandler::onWaitClicked,
             battleInputHandler::onSpellBookClicked,
@@ -111,8 +104,13 @@ public class BattleScreen extends ScreenAdapter {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
-        BattleField field = battleEngine.getState().getField();
-        BattleViewConfig.updateDimensions(width, height, field.getWidth(), field.getHeight());
+        BattleSnapshot battle = battleController.getBattleSnapshot();
+        BattleViewConfig.updateDimensions(
+            width,
+            height,
+            battle.fieldWidth(),
+            battle.fieldHeight()
+        );
     }
 
     public void dispose() {
@@ -122,6 +120,7 @@ public class BattleScreen extends ScreenAdapter {
         }
         stage.dispose();
         skin.dispose();
+        unitInfoPopup.dispose();
         battleRenderer.dispose();
         animationPlayer.clear();
     }
@@ -141,13 +140,12 @@ public class BattleScreen extends ScreenAdapter {
     }
 
     private void onActionAnimationFinished() {
-        actionPanel.updateQueueButtons(battleEngine.getTurnQueueOrder());
+        actionPanel.updateQueueButtons(battleController.getTurnQueue());
 
-        if (battleEngine.getState().isFinished()) {
-            if (battleMusic != null) {
-                battleMusic.stop();
-            }
-            game.setScreen(new VictoryScreen(game, battleEngine.getState().getWinner()));
+        BattleSnapshot battle = battleController.getBattleSnapshot();
+        if (battle.isFinished()) {
+            if (battleMusic != null) battleMusic.stop();
+            game.setScreen(new VictoryScreen(game, battle.winner()));
             return;
         }
 
