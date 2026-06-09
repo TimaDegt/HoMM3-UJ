@@ -1,5 +1,7 @@
 package io.github.heroes.model.state;
 
+import com.badlogic.gdx.Gdx;
+
 import java.util.concurrent.ThreadLocalRandom;
 
 public class UnitStack {
@@ -217,6 +219,7 @@ public class UnitStack {
             }
             totalDamage += singleUnitDamage;
         }
+        Gdx.app.log("DEBUG", "Rolled " + totalDamage + " damage");
 
         return totalDamage;
     }

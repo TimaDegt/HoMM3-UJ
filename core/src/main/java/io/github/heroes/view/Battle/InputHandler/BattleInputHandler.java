@@ -35,7 +35,6 @@ public class BattleInputHandler extends InputAdapter {
         this.exitBattle = exitBattle;
         this.actionResult = null;
         this.battleScreen=battleScreen;
-
     }
 
     @Override
@@ -95,8 +94,6 @@ public class BattleInputHandler extends InputAdapter {
         if (!battleInputEnabled) return;
         actionResult = battleController.onSpellBookClicked();
         battleScreen.handleActionResult(actionResult);
-        //battleInputEnabled=false;
-        //actionResult = battleController.
     }
 
     public void onExitClicked() {

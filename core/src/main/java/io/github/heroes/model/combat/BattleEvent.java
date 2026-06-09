@@ -1,5 +1,6 @@
 package io.github.heroes.model.combat;
 
+import io.github.heroes.model.spellBook.SpellBook;
 import io.github.heroes.model.state.Player;
 import io.github.heroes.model.state.Position;
 import io.github.heroes.model.state.UnitStack;
@@ -31,6 +32,11 @@ public interface BattleEvent {
     }
 
     record UnitDefended(UnitStack unit) implements BattleEvent {
+    }
+    record OpenSpellBook(
+        SpellBook book
+    ) implements  BattleEvent {
+
     }
 
     record BattleFinished(Player winner) implements BattleEvent {
