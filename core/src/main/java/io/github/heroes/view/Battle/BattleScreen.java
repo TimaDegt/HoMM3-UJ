@@ -3,6 +3,7 @@ package io.github.heroes.view.Battle;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -30,6 +31,7 @@ public class BattleScreen extends ScreenAdapter {
     private final BattleController battleController;
     private final BattleInputHandler battleInputHandler;
     private BattleActionPanel actionPanel;
+    private Music battleMusic;
 
     public BattleScreen(Main game, BattleEngine battleEngine) {
         this.game = game;
@@ -45,12 +47,27 @@ public class BattleScreen extends ScreenAdapter {
             battleEngine,
             unitInfoPopup,
             this,
-            () -> game.setScreen(new LobbyScreen(game))
+            this::exitToLobby
         );
 
         setupUI();
         setupInput();
+        setupMusic();
         requestNextAction();
+    }
+
+    private void exitToLobby() {
+        if (battleMusic != null) {
+            battleMusic.stop();
+        }
+        game.setScreen(new LobbyScreen(game));
+    }
+
+    private void setupMusic() {
+        battleMusic = Gdx.audio.newMusic(Gdx.files.internal("sounds/secret.mp3"));
+        battleMusic.setLooping(true);
+        battleMusic.setVolume(0.5f);
+        battleMusic.play();
     }
 
     private void setupUI() {
@@ -65,8 +82,8 @@ public class BattleScreen extends ScreenAdapter {
             battleInputHandler::onDefendClicked,
             battleInputHandler::onWaitClicked,
             battleInputHandler::onSpellBookClicked,
-            () -> game.setScreen(new LobbyScreen(game)),
-            () -> game.setScreen(new LobbyScreen(game))
+            this::exitToLobby,
+            this::exitToLobby
         );
         actionPanel.addTo(stage);
 
@@ -99,6 +116,10 @@ public class BattleScreen extends ScreenAdapter {
     }
 
     public void dispose() {
+        if (battleMusic != null) {
+            battleMusic.stop();
+            battleMusic.dispose();
+        }
         stage.dispose();
         skin.dispose();
         battleRenderer.dispose();
@@ -123,6 +144,9 @@ public class BattleScreen extends ScreenAdapter {
         actionPanel.updateQueueButtons(battleEngine.getTurnQueueOrder());
 
         if (battleEngine.getState().isFinished()) {
+            if (battleMusic != null) {
+                battleMusic.stop();
+            }
             game.setScreen(new VictoryScreen(game, battleEngine.getState().getWinner()));
             return;
         }

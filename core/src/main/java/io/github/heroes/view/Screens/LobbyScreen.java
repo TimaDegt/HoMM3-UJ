@@ -2,6 +2,7 @@ package io.github.heroes.view.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -32,6 +33,7 @@ public class LobbyScreen extends ScreenAdapter {
     private final SpriteBatch batch;
     private final Texture background;
     private final Texture buttonTexture;
+    private Music lobbyMusic;
 
     public enum GameMode {
         DEMO("Mode: Demo AI"),
@@ -63,7 +65,15 @@ public class LobbyScreen extends ScreenAdapter {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+        setupMusic();
         setupUI();
+    }
+
+    private void setupMusic() {
+        lobbyMusic = Gdx.audio.newMusic(Gdx.files.internal("sounds/Kobza.mp3"));
+        lobbyMusic.setLooping(true);
+        lobbyMusic.setVolume(0.5f);
+        lobbyMusic.play();
     }
 
     private void setupUI() {
@@ -113,6 +123,9 @@ public class LobbyScreen extends ScreenAdapter {
         startButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if (lobbyMusic != null) {
+                    lobbyMusic.stop();
+                }
                 if (currentGameMode == GameMode.LOCAL_1V1) {
                     game.setScreen(new BattleScreen(game, BattleFactory1v1.createDemoBattle()));
                 } else {
@@ -165,7 +178,18 @@ public class LobbyScreen extends ScreenAdapter {
     }
 
     @Override
+    public void show() {
+        if (lobbyMusic != null && !lobbyMusic.isPlaying()) {
+            lobbyMusic.play();
+        }
+    }
+
+    @Override
     public void dispose() {
+        if (lobbyMusic != null) {
+            lobbyMusic.stop();
+            lobbyMusic.dispose();
+        }
         stage.dispose();
         skin.dispose();
         batch.dispose();
