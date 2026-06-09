@@ -3,8 +3,10 @@ package io.github.heroes.combat.cursor;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import io.github.heroes.model.combat.BattleEngine;
+import io.github.heroes.model.combat.BattleEvent;
 import io.github.heroes.model.combat.BattlePathFinder;
 import io.github.heroes.model.state.Position;
+import io.github.heroes.model.state.unit.stack.ArcherUnitStack;
 import io.github.heroes.model.state.unit.stack.UnitStack;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 
@@ -34,7 +36,7 @@ public class Cursor {
         if (hoveredUnit.getOwner() == activeUnit.getOwner()) {
             return CursorType.QUESTION;
         }
-        if (activeUnit.isRanged()) {
+        if (activeUnit instanceof ArcherUnitStack) {
             return CursorType.RANGER;
         }
 
