@@ -2,6 +2,10 @@ package io.github.heroes.model.state;
 
 
 import io.github.heroes.anim.Animation;
+import io.github.heroes.magic.MagicSchool;
+
+import java.util.EnumMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class UnitStack {
     private final UnitType type;
@@ -10,6 +14,8 @@ public class UnitStack {
     private Position position;
     private final Player owner;
     private boolean defending;
+    private boolean isRanged;
+    private int ammo;
 
     private final int maxCount;
     private int topUnitHp;
@@ -20,9 +26,8 @@ public class UnitStack {
     private int bonusSpeed = 0;
 
     private boolean isBlessed = false;
+    private final EnumMap<MagicSchool, Integer> magicSchoolLevels = new EnumMap<>(MagicSchool.class);
     private boolean isCursed = false;
-
-    private final Animation animationEngine;
 
     private void validatePositiveValue(int val) {
         if (val < 0) throw new IllegalArgumentException("Value cannot be negative");
@@ -38,11 +43,22 @@ public class UnitStack {
         this.maxCount = count;
         this.maxHp = type.maxHp;
         this.topUnitHp = type.maxHp;
-        this.animationEngine = new Animation(this.type.getAnimParams());
+        this.isRanged = isRanged;
+        this.ammo = ammo;
     }
 
-    public Animation getAnimationEngine() {
-        return animationEngine;
+    public int getAmmo() {
+        return ammo;
+    }
+    public boolean canFire() {
+        return ammo > 0 && isRanged;
+    }
+
+    public void fire() {
+        if(ammo>0)ammo--;
+    }
+    public boolean isRanged() {
+        return isRanged;
     }
 
     public UnitType getType() {
@@ -158,4 +174,44 @@ public class UnitStack {
             topUnitHp = remainderHp;
         }
     }
+    public boolean isBlessed() {
+        return isBlessed;
+    }
+    public boolean isCursed() {
+        return isCursed;
+    }
+    public int getBonusAttack(){
+        return this.bonusAttack;
+    }
+    public int getBonusDefense(){
+        return this.bonusDefense;
+    }
+    public int getBonusSpeed(){
+        return this.bonusSpeed;
+    }
+
+    public int calculateDamageRoll() {
+        if (!isAlive()) {
+            return 0;
+        }
+
+        int singleUnitDamage;
+        if (isBlessed) {
+            singleUnitDamage = type.maxDamage;
+        } else if (isCursed) {
+            singleUnitDamage = type.minDamage;
+        } else {
+            singleUnitDamage = ThreadLocalRandom.current().nextInt(
+                type.minDamage,
+                type.maxDamage + 1
+            );
+        }
+
+        return singleUnitDamage * count;
+    }
+    public int getSpeed() {
+        return Math.max(0, type.speed + bonusSpeed);
+    }
+
+
 }

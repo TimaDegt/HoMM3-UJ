@@ -48,7 +48,7 @@ public class UnitInfoPopup {
         addInfoRow("Defense", String.valueOf(unit.getType().defense));
         addInfoRow("Health", String.valueOf(unit.getType().maxHp));
         addInfoRow("Current health", String.valueOf(unit.getCurrentHp()));
-        addInfoRow("Speed", String.valueOf(unit.getType().speed));
+        addInfoRow("Speed", String.valueOf(unit.getSpeed()));
     }
 
     private void addInfoRow(String label, String value) {

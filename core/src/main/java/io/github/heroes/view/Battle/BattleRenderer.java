@@ -135,16 +135,16 @@ public class BattleRenderer {
 
             if (event instanceof BattleEvent.UnitMoved move) {
                 UnitStack unit = move.unit();
-                unit.getAnimationEngine().startMovement(move.path());
+                //unit.getAnimationEngine().startMovement(move.path());
             } else if (event instanceof BattleEvent.UnitAttacked attack) {
                 UnitStack unit = attack.attacker();
-                unit.getAnimationEngine().startAttack();
+                //unit.getAnimationEngine().startAttack();
             } else if (event instanceof BattleEvent.UnitDamaged receive) {
                 UnitStack unit = receive.unit();
-                unit.getAnimationEngine().startReceiveDamage();
+                //unit.getAnimationEngine().startReceiveDamage();
             } else if (event instanceof BattleEvent.UnitDied death) {
                 UnitStack unit = death.unit();
-                unit.getAnimationEngine().startDeath();
+                //unit.getAnimationEngine().startDeath();
             } else {
                 this.events.remove(0);
                 continue;
@@ -157,10 +157,10 @@ public class BattleRenderer {
     private boolean allAnimationsFinished() {
         boolean allAnimationsFinished = true;
         for (UnitStack unit : battleEngine.getState().getPlayerOne().getArmy().getUnits()) {
-            allAnimationsFinished &= unit.getAnimationEngine().finished();
+           // allAnimationsFinished &= unit.getAnimationEngine().finished();
         }
         for (UnitStack unit : battleEngine.getState().getPlayerTwo().getArmy().getUnits()) {
-            allAnimationsFinished &= unit.getAnimationEngine().finished();
+           // allAnimationsFinished &= unit.getAnimationEngine().finished();
         }
         return allAnimationsFinished;
     }
@@ -169,10 +169,10 @@ public class BattleRenderer {
 
         if (!allAnimationsFinished()) {
             for (UnitStack unit : battleEngine.getState().getPlayerOne().getArmy().getUnits()) {
-                unit.getAnimationEngine().updatik(delta);
+               // unit.getAnimationEngine().updatik(delta);
             }
             for (UnitStack unit : battleEngine.getState().getPlayerTwo().getArmy().getUnits()) {
-                unit.getAnimationEngine().updatik(delta);
+                //unit.getAnimationEngine().updatik(delta);
             }
             return;
         }
@@ -184,16 +184,16 @@ public class BattleRenderer {
 
             if (event instanceof BattleEvent.UnitMoved move) {
                 UnitStack unit = move.unit();
-                unit.getAnimationEngine().startMovement(move.path());
+            //    unit.getAnimationEngine().startMovement(move.path());
             } else if (event instanceof BattleEvent.UnitAttacked attack) {
                 UnitStack unit = attack.attacker();
-                unit.getAnimationEngine().startAttack();
+           //     unit.getAnimationEngine().startAttack();
             } else if (event instanceof BattleEvent.UnitDamaged receive) {
                 UnitStack unit = receive.unit();
-                unit.getAnimationEngine().startReceiveDamage();
+           //     unit.getAnimationEngine().startReceiveDamage();
             } else if (event instanceof BattleEvent.UnitDied death) {
                 UnitStack unit = death.unit();
-                unit.getAnimationEngine().startDeath();
+            //    unit.getAnimationEngine().startDeath();
             } else {
                 events.remove(0);
                 continue;

@@ -1,6 +1,7 @@
 package io.github.heroes.model.state;
 
 import io.github.heroes.magic.MagicSchool;
+import io.github.heroes.model.spellBook.SpellBook;
 
 public class Hero {
     private final String name;
@@ -11,6 +12,7 @@ public class Hero {
     private int mana;
     private int maxMana;
     private boolean hasCastSpellThisRound = false;
+    private final SpellBook spellBook;
 
     private void validatePositiveValue(int val) {
         if (val < 0) {
@@ -18,7 +20,7 @@ public class Hero {
         }
     }
 
-    public Hero(String name, int attack, int defense, int spellPower, int knowledge) {
+    public Hero(String name, int attack, int defense, int spellPower, int knowledge, SpellBook spellBook) {
         this.name = name;
         this.attack = attack;
         this.defense = defense;
@@ -27,7 +29,12 @@ public class Hero {
         this.mana = knowledge * 10;
         this.maxMana = 999;
         this.hasCastSpellThisRound = false;
+        this.spellBook = spellBook;
 
+    }
+
+    public SpellBook getSpellBook() {
+        return spellBook;
     }
 
     public String getName() {

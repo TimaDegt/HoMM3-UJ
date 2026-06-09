@@ -37,26 +37,39 @@ public class CombatResolver {
     }
 
     private int calculateDamage(BattleState state, UnitStack attacker, UnitStack target) {
-        int attackerAttack = attacker.getType().attack + getHeroAttack(state, attacker.getOwner());
-        int targetDefense = target.getType().defense + getHeroDefense(state, target.getOwner());
+        int attackerAttack = attacker.getType().attack
+            + getHeroAttack(state, attacker.getOwner())
+            + attacker.getBonusAttack();
+
+        int targetDefense = target.getType().defense
+            + getHeroDefense(state, target.getOwner())
+            + target.getBonusDefense();
+
         if (target.isDefending()) {
             targetDefense = (int) Math.round(targetDefense * 1.2);
         }
-
-        int baseDamage = attacker.getType().damage * attacker.getCount();
+        int singleUnitDamage;
+        if (attacker.isBlessed()) {
+            singleUnitDamage = attacker.getType().maxDamage;
+        } else if (attacker.isCursed()) {
+            singleUnitDamage = attacker.getType().minDamage;
+        } else {
+            int min = attacker.getType().minDamage;
+            int max = attacker.getType().maxDamage;
+            singleUnitDamage = min + (int)(Math.random() * ((max - min) + 1));
+        }
+        int baseDamage = singleUnitDamage * attacker.getCount();
 
         int difference = attackerAttack - targetDefense;
-
         double multiplier;
 
         if (difference >= 0) {
-            multiplier = 1.0 + difference * 0.05;
+            multiplier = 1.0 + difference * 0.5;
         } else {
             multiplier = 1.0 + difference * 0.025;
         }
-
         multiplier = Math.max(0.3, multiplier);
-        multiplier = Math.min(3, multiplier);
+        multiplier = Math.min(3.0, multiplier);
 
         return (int) Math.round(baseDamage * multiplier);
     }

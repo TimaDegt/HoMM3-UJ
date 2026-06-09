@@ -15,7 +15,7 @@ public class BattlePathFinder {
 
     public static boolean canReach(BattleState state, UnitStack unit, Position targetPosition) {
         int distance = findDistance(state, unit.getPosition(), targetPosition);
-        return distance >= 0 && distance <= unit.getType().speed;
+        return distance >= 0 && distance <= unit.getSpeed();
     }
 
     public static int findDistance(BattleState state, Position start, Position target) {

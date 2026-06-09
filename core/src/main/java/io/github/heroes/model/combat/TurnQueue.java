@@ -59,9 +59,9 @@ public class TurnQueue {
     }
 
     private int getSpeedPriority(TurnQueueEntry entry) {
-        if (entry.gatWait()) return entry.getUnitStack().getType().speed;
+        if (entry.gatWait()) return entry.getUnitStack().getSpeed();
 
-        return -entry.getUnitStack().getType().speed;
+        return -entry.getUnitStack().getSpeed();
     }
 
     private void buildQueue() {
