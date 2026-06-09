@@ -2,10 +2,7 @@ package io.github.heroes.control;
 
 import io.github.heroes.model.BotAI;
 import io.github.heroes.model.combat.*;
-import io.github.heroes.model.state.BattleField;
-import io.github.heroes.model.state.BattleState;
-import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.*;
 
 public class BattleController {
     private final BattleEngine battleEngine;
@@ -49,7 +46,11 @@ public class BattleController {
     }
 
     public ActionResult onSpellBookClicked() {
-        return performAction(new NoAction());
+        return performAction(new OpenSpellBookAction(
+            (battleEngine.getActiveUnit().getOwner() == Player.PLAYER_ONE)
+            ? battleEngine.getState().getPlayerOne().getHero().getSpellBook()
+            : battleEngine.getState().getPlayerTwo().getHero().getSpellBook()
+        ));
     }
 
 

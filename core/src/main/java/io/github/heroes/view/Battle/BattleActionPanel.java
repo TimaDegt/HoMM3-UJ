@@ -176,7 +176,7 @@ public class BattleActionPanel {
     }
 
     private boolean isEnabledActionButton(ActionButtonType type) {
-        return type == ActionButtonType.DEFENCE || type == ActionButtonType.WAIT || type == ActionButtonType.SURRENDER || type == ActionButtonType.RETREAT;
+        return type == ActionButtonType.DEFENCE || type == ActionButtonType.WAIT || type == ActionButtonType.SURRENDER || type == ActionButtonType.RETREAT || type == ActionButtonType.SPELL_BOOK;
     }
 
     public void setBattleInputEnabled(boolean enabled) {
@@ -218,6 +218,15 @@ public class BattleActionPanel {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     onRetreatClicked.run();
+                }
+            });
+        }
+
+        if (type == ActionButtonType.SPELL_BOOK) {
+            button.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    onSpellBookClicked.run();
                 }
             });
         }
