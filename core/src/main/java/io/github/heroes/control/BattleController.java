@@ -1,14 +1,7 @@
 package io.github.heroes.control;
 
 import io.github.heroes.model.BotAI;
-import io.github.heroes.model.combat.ActionResult;
-import io.github.heroes.model.combat.BattleAction;
-import io.github.heroes.model.combat.BattleEngine;
-import io.github.heroes.model.combat.BattlePathFinder;
-import io.github.heroes.model.combat.DefendAction;
-import io.github.heroes.model.combat.MoveAction;
-import io.github.heroes.model.combat.MoveAndAttackAction;
-import io.github.heroes.model.combat.WaitAction;
+import io.github.heroes.model.combat.*;
 import io.github.heroes.model.state.BattleField;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Position;
@@ -53,6 +46,10 @@ public class BattleController {
         if (activeUnit == null) return ActionResult.failure();
 
         return performAction(new WaitAction(activeUnit));
+    }
+
+    public ActionResult onSpellBookClicked() {
+        return performAction(new NoAction());
     }
 
 

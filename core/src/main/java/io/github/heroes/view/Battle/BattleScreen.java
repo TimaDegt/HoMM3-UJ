@@ -41,6 +41,7 @@ public class BattleScreen extends ScreenAdapter {
         battleController = new BattleController(battleEngine);
         battleInputHandler = new BattleInputHandler(
             battleController,
+            battleEngine,
             unitInfoPopup,
             this,
             () -> game.setScreen(new LobbyScreen(game))
@@ -62,6 +63,7 @@ public class BattleScreen extends ScreenAdapter {
             battleEngine.getTurnQueueOrder(),
             battleInputHandler::onDefendClicked,
             battleInputHandler::onWaitClicked,
+            battleInputHandler::onSpellBookClicked,
             () -> game.setScreen(new LobbyScreen(game)),
             () -> game.setScreen(new LobbyScreen(game))
         );
@@ -111,7 +113,6 @@ public class BattleScreen extends ScreenAdapter {
             setBattleInputEnabled(true);
             return;
         }
-
         setBattleInputEnabled(false);
         battleRenderer.playActionAnimation(result, this::onActionAnimationFinished);
     }

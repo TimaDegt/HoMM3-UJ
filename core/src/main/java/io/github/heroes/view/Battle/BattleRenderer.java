@@ -11,20 +11,22 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import io.github.heroes.anim.Animation;
+import io.github.heroes.anim.FrameData;
 import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.model.combat.BattleEngine;
+import io.github.heroes.model.combat.BattleEvent;
 import io.github.heroes.model.combat.BattlePathFinder;
 import io.github.heroes.combat.cursor.Cursor;
 import io.github.heroes.combat.cursor.CursorType;
 import io.github.heroes.model.state.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static io.github.heroes.view.Battle.BattleViewConfig.CURSOR_SCALE;
 
 public class BattleRenderer {
-    private static final float ACTION_ANIMATION_DURATION = 3f;
+    private static final float ACTION_ANIMATION_DURATION = 1f;
 
     private final BattleEngine battleEngine;
     private final ShapeRenderer shapeRenderer;
@@ -35,7 +37,6 @@ public class BattleRenderer {
     private final Map<CursorType, TextureRegion> cursorTextures;
 
     private TextureRegion background;
-    private float actionAnimationTime;
     private Runnable actionAnimationFinished;
 
     private void initGraphics(){
@@ -45,7 +46,7 @@ public class BattleRenderer {
             String unitPath="Units/"+townFolder+"/"+unitName+"_spritesheet.png";
 
             Texture tex=new Texture(Gdx.files.internal(unitPath));
-            TextureRegion region = createStaticUnitRegion(type, tex);
+            TextureRegion region = new TextureRegion(tex);//createStaticUnitRegion(type, tex);
             unitTextures.put(type, region);
         }
         for (CursorType cursorType:CursorType.values()){
@@ -108,31 +109,101 @@ public class BattleRenderer {
         batch.end();
 
         drawBattlefield();
-        drawMovementRange();
-        drawActiveUnitHighlight();
+        boolean noAnimations = allAnimationsFinished();
+        if (noAnimations) {
+            drawMovementRange();
+            drawActiveUnitHighlight();
+        }
         drawUnits();
-        drawCustomCursor();
+        if (noAnimations) {
+            drawCustomCursor();
+        }
         updateActionAnimation(delta);
     }
 
     //part for timur
+    private List<BattleEvent> events;
     public void playActionAnimation(ActionResult result, Runnable onFinished) {
         if (result == null) throw new IllegalArgumentException("Action result cannot be null");
         if (onFinished == null) throw new IllegalArgumentException("Completion callback cannot be null");
 
-        actionAnimationTime = ACTION_ANIMATION_DURATION;
+        this.events = new ArrayList<>
+            (result.events());
+
+        while (!this.events.isEmpty()) {
+            BattleEvent event = this.events.get(0);
+
+            if (event instanceof BattleEvent.UnitMoved move) {
+                UnitStack unit = move.unit();
+                unit.getAnimationEngine().startMovement(move.path());
+            } else if (event instanceof BattleEvent.UnitAttacked attack) {
+                UnitStack unit = attack.attacker();
+                unit.getAnimationEngine().startAttack();
+            } else if (event instanceof BattleEvent.UnitDamaged receive) {
+                UnitStack unit = receive.unit();
+                unit.getAnimationEngine().startReceiveDamage();
+            } else if (event instanceof BattleEvent.UnitDied death) {
+                UnitStack unit = death.unit();
+                unit.getAnimationEngine().startDeath();
+            } else {
+                this.events.remove(0);
+                continue;
+            }
+            break;
+        }
         actionAnimationFinished = onFinished;
     }
 
+    private boolean allAnimationsFinished() {
+        boolean allAnimationsFinished = true;
+        for (UnitStack unit : battleEngine.getState().getPlayerOne().getArmy().getUnits()) {
+            allAnimationsFinished &= unit.getAnimationEngine().finished();
+        }
+        for (UnitStack unit : battleEngine.getState().getPlayerTwo().getArmy().getUnits()) {
+            allAnimationsFinished &= unit.getAnimationEngine().finished();
+        }
+        return allAnimationsFinished;
+    }
     private void updateActionAnimation(float delta) {
         if (actionAnimationFinished == null) return;
 
-        actionAnimationTime -= delta;
-        if (actionAnimationTime > 0) return;
+        if (!allAnimationsFinished()) {
+            for (UnitStack unit : battleEngine.getState().getPlayerOne().getArmy().getUnits()) {
+                unit.getAnimationEngine().updatik(delta);
+            }
+            for (UnitStack unit : battleEngine.getState().getPlayerTwo().getArmy().getUnits()) {
+                unit.getAnimationEngine().updatik(delta);
+            }
+            return;
+        }
+        if (!this.events.isEmpty()) {
+            this.events.remove(0);
+        }
+        while (!this.events.isEmpty()) {
+            BattleEvent event = this.events.get(0);
+
+            if (event instanceof BattleEvent.UnitMoved move) {
+                UnitStack unit = move.unit();
+                unit.getAnimationEngine().startMovement(move.path());
+            } else if (event instanceof BattleEvent.UnitAttacked attack) {
+                UnitStack unit = attack.attacker();
+                unit.getAnimationEngine().startAttack();
+            } else if (event instanceof BattleEvent.UnitDamaged receive) {
+                UnitStack unit = receive.unit();
+                unit.getAnimationEngine().startReceiveDamage();
+            } else if (event instanceof BattleEvent.UnitDied death) {
+                UnitStack unit = death.unit();
+                unit.getAnimationEngine().startDeath();
+            } else {
+                events.remove(0);
+                continue;
+            }
+            break;
+        }
+        if (!this.events.isEmpty()) return;
 
         Runnable onFinished = actionAnimationFinished;
         actionAnimationFinished = null;
-        actionAnimationTime = 0;
         onFinished.run();
     }
 //
@@ -178,10 +249,26 @@ public class BattleRenderer {
         Gdx.gl.glLineWidth(1f);
     }
 
+    private Army getAllUnitsSortedByY() {
+        Army p1 = battleEngine.getState().getPlayerOne().getArmy();
+        Army p2 = battleEngine.getState().getPlayerTwo().getArmy();
+        List<UnitStack> allUnits = new ArrayList<>();
+        allUnits.addAll(p1.getUnits());
+        allUnits.addAll(p2.getUnits());
+        allUnits.sort(new Comparator<UnitStack>() {
+            @Override
+            public int compare(UnitStack u1, UnitStack u2) {
+                return Integer.compare(
+                    u2.getPosition().y(),
+                    u1.getPosition().y()
+                );
+            }
+        });
+        return new Army(allUnits);
+    }
     private void drawUnits() {
         batch.begin();
-        drawArmySprites(battleEngine.getState().getPlayerOne().getArmy());
-        drawArmySprites(battleEngine.getState().getPlayerTwo().getArmy());
+        drawArmySprites(getAllUnitsSortedByY());
         batch.end();
 
         drawUnitCountBadgeBackgrounds();
@@ -200,18 +287,30 @@ public class BattleRenderer {
         float hexHeight = BattleViewConfig.HEX_HEIGHT;
         float hexWidth = BattleViewConfig.HEX_WIDTH;
         float dx = 0;
-        TextureRegion texture = new TextureRegion(unitTextures.get(unit.getType()));
+        float dy = 0;
+        FrameData frameData = unit.getAnimationEngine().nextFrame();
+        int x = frameData.getX();
+        int y = frameData.getY();
+        int squareLength = frameData.getSize();
+        dx += frameData.getDx();
+        dy += frameData.getDy();
+
+        TextureRegion texture = new TextureRegion(unitTextures.get(unit.getType()), x, y, squareLength, squareLength);
         int spriteSize = texture.getRegionWidth();
 
-        if (unit.getOwner() == Player.PLAYER_TWO) {
+        if (frameData.isFlipX() || (unit.getOwner()==Player.PLAYER_TWO && !unit.getAnimationEngine().isBusy())) {
             texture.flip(true, false);
-            dx += spriteSize - hexWidth / 2f;
+            dx -= spriteSize - hexWidth / 2f;
         }
 
-        float size = spriteSize * 1.5f;
+        float size = spriteSize * 1.4f;
 
+        if (frameData.isMoving()) {
+            batch.draw(texture, - hexHeight / 2f + dx, - hexHeight / 4f + dy, size, size);
+            return;
+        }
         Vector2 center = BattlefieldGeometry.positionToScreen(unit.getPosition());
-        batch.draw(texture, center.x - hexHeight / 2f - dx, center.y - hexHeight / 4f, size, size);
+        batch.draw(texture, center.x - hexHeight / 2f + dx, center.y - hexHeight / 4f + dy, size, size);
     }
 
     private void drawUnitCountBadgeBackgrounds() {
@@ -279,13 +378,22 @@ public class BattleRenderer {
 
     private Vector2 getUnitCountBadgePosition(UnitStack unit) {
         Vector2 center = BattlefieldGeometry.positionToScreen(unit.getPosition());
-        float hexHeight = BattleViewConfig.HEX_HEIGHT;
-        float hexWidth = BattleViewConfig.HEX_WIDTH;
 
-        float badgeX = center.x + hexWidth/4f;//BattleViewConfig.UNIT_COUNT_BADGE_WIDTH / 2f;
-        float badgeY = center.y - hexHeight/4f;//spriteSize / 2f + BattleViewConfig.UNIT_COUNT_BADGE_Y_OFFSET;
+        float dx = 0;
+        float dy = 0;
+        FrameData frameData = unit.getAnimationEngine().nextFrame();
+        if (frameData.isMoving()) {
+            dx += frameData.getDx();
+            dy += frameData.getDy();
+        } else {
+            dx += center.x;
+            dy += center.y;
+        }
+
+        float badgeX = dx;
+        float badgeY = dy - 14*BattleViewConfig.HEX_HEIGHT/32f;
         if (unit.getOwner() == Player.PLAYER_TWO) {
-            badgeX-=3f*hexWidth/4f;
+            badgeX-=BattleViewConfig.UNIT_COUNT_BADGE_WIDTH;
         }
 
         return new Vector2(badgeX, badgeY);

@@ -23,6 +23,7 @@ public class BattleActionPanel {
     private final Runnable onWaitClicked;
     private final Runnable onSurrenderClicked;
     private final Runnable onRetreatClicked;
+    private final Runnable onSpellBookClicked;
     private enum ActionButtonType {
         SURRENDER,
         RETREAT,
@@ -41,6 +42,7 @@ public class BattleActionPanel {
         List<TurnQueueEntry> turnQueue,
         Runnable onDefendClicked,
         Runnable onWaitClicked,
+        Runnable onSpellBookClicked,
         Runnable onSurrenderClicked,
         Runnable onRetreatClicked
     ) {
@@ -50,6 +52,7 @@ public class BattleActionPanel {
         this.battleActionButtons = new ArrayList<>();
         this.onDefendClicked = onDefendClicked;
         this.onWaitClicked = onWaitClicked;
+        this.onSpellBookClicked = onSpellBookClicked;
         this.onSurrenderClicked = onSurrenderClicked;
         this.onRetreatClicked = onRetreatClicked;
 

@@ -27,7 +27,10 @@ public class Cursor {
         UnitStack hoveredUnit = getHoveredUnit(mouseX, mouseY, battleEngine);
         UnitStack activeUnit = battleEngine.getActiveUnit();
 
-        if (hoveredUnit == null) return CursorType.DEFAULT;
+        if (hoveredUnit == null) {
+            if (!BattlePathFinder.canReach(battleEngine.getState(),activeUnit,BattlefieldGeometry.screenToPosition(mouseX,mouseY,battleEngine.getState().getField()))) return CursorType.NOPE;
+            return CursorType.MOVE;
+        }
         if (hoveredUnit.getOwner() == activeUnit.getOwner()) {
             return CursorType.NOPE;
         }
@@ -36,12 +39,12 @@ public class Cursor {
             hoveredUnit.getPosition(),
             mouseX,
             mouseY,
-            battleEngine.getState().getField()
+            battleEngine
         );
         if (position == null) return CursorType.DEFAULT;
         if (battleEngine.isPositionOccupied(position)
                 && !position.equals(activeUnit.getPosition())) return CursorType.DEFAULT;
-        if (!BattlePathFinder.canReach(battleEngine.getState(), activeUnit, position ) ) return CursorType.DEFAULT;
+        if (!BattlePathFinder.canReach(battleEngine.getState(), activeUnit, position ) ) return CursorType.NOPE;
         Vector2 pos = BattlefieldGeometry.positionToScreen(position);
         Vector2 pos2 = BattlefieldGeometry.positionToScreen(hoveredUnit.getPosition());
         if (pos.y == pos2.y) {

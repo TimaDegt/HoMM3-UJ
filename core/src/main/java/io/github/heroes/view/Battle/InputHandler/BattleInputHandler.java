@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.control.BattleController;
+import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.model.state.Position;
 import io.github.heroes.model.state.UnitStack;
 import io.github.heroes.view.Battle.BattleScreen;
@@ -19,18 +20,22 @@ public class BattleInputHandler extends InputAdapter {
     private final Runnable exitBattle;
     private boolean battleInputEnabled = true;
     private final BattleScreen battleScreen;
+    private final BattleEngine battleEngine;
 
     public BattleInputHandler(
         BattleController battleController,
+        BattleEngine battleEngine,
         UnitInfoPopup unitInfoPopup,
         BattleScreen battleScreen,
         Runnable exitBattle
     ) {
         this.battleController = battleController;
+        this.battleEngine = battleEngine;
         this.unitInfoPopup = unitInfoPopup;
         this.exitBattle = exitBattle;
         this.actionResult = null;
         this.battleScreen=battleScreen;
+
     }
 
     @Override
@@ -51,7 +56,7 @@ public class BattleInputHandler extends InputAdapter {
                 clickedPosition,
                 screenX,
                 worldY,
-                battleController.getField()
+                battleEngine
             );
 
             setBattleInputEnabled(false);
@@ -84,6 +89,12 @@ public class BattleInputHandler extends InputAdapter {
         battleInputEnabled=false;
         actionResult = battleController.onWaitClicked();
         battleScreen.handleActionResult(actionResult);
+    }
+
+    public void onSpellBookClicked() {
+        if (!battleInputEnabled) return;
+        //battleInputEnabled=false;
+        //actionResult = battleController.
     }
 
     public void onExitClicked() {

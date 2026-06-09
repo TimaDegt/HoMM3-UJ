@@ -1,6 +1,7 @@
 package io.github.heroes.view.Battle;
 
 import com.badlogic.gdx.math.Vector2;
+import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.model.state.BattleField;
 import io.github.heroes.model.state.Position;
 
@@ -44,15 +45,16 @@ public class BattlefieldGeometry {
         Position targetPosition,
         float screenX,
         float screenY,
-        BattleField field
+        BattleEngine battleEngine
     ) {
         Position nearestPosition = null;
         float nearestDistance = Float.MAX_VALUE;
 
         for (Position neighbor : targetPosition.neighbors()) {
-            if (!field.isInside(neighbor)) {
+            if (!battleEngine.getState().getField().isInside(neighbor)) {
                 continue;
             }
+            if (!battleEngine.getActiveUnit().getPosition().equals(neighbor) && battleEngine.isPositionOccupied(neighbor)) continue;;
 
             float distance = positionToScreen(neighbor).dst(screenX, screenY);
             if (distance < nearestDistance) {

@@ -1,7 +1,7 @@
 package io.github.heroes.anim;
 
 public class AnimParams {
-    final int spriteSize;
+    private final int spriteSize;
     private final int deathAnimIndex;
     private final int deathAnimLength;
     private final int receiveDmgAnimIndex;
