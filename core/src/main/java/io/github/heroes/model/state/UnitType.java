@@ -1,8 +1,5 @@
 package io.github.heroes.model.state;
 
-import io.github.heroes.anim.AnimParams;
-import io.github.heroes.model.state.CastleType;
-
 import static io.github.heroes.model.state.CastleType.CASTLE;
 
 public enum UnitType {
@@ -12,17 +9,16 @@ public enum UnitType {
 
     GRIFFIN(25, 8, 8, 3, 6, 6, false, 0, "Griffin", CASTLE);
 
-    public final int maxHp;
-    public final int attack;
-    public final int defense;
-    public final int minDamage;
-    public final int maxDamage;
-    public final int speed;
+    private final int maxHp;
+    private final int attack;
+    private final int defense;
+    private final int minDamage;
+    private final int maxDamage;
+    private final int speed;
     private final boolean ranged;
     private final int ammo;
     private final String name;
     private final CastleType castleType;
-    private final AnimParams animParams;
 
     UnitType(
         int maxHp,
@@ -46,18 +42,16 @@ public enum UnitType {
         this.ammo = ammo;
         this.name = name;
         this.castleType = castleType;
-        this.animParams = null;
     }
 
     public String getName() { return name; }
     public CastleType getCastleType() { return castleType; }
-    public AnimParams getAnimParams() { return animParams; }
-
-    public boolean isRanged() {
-        return ranged;
-    }
-
-    public int getAmmo() {
-        return ammo;
-    }
+    public int getMaxHp() { return maxHp; }
+    public int getAttack() { return attack; }
+    public int getDefense() { return defense; }
+    public int getMinDamage() { return minDamage; }
+    public int getMaxDamage() { return maxDamage; }
+    public int getSpeed() { return speed; }
+    public boolean isRanged() { return ranged; }
+    public int getAmmo() { return ammo; }
 }

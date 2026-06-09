@@ -10,7 +10,7 @@ import java.util.List;
 public class SpellBook {
     private List<Spell> spells;
     private Hero ownr;
-    SpellBook(Hero hero) {
+    public SpellBook(Hero hero) {
         this.spells = new ArrayList<>();
         this.ownr = hero;
     }

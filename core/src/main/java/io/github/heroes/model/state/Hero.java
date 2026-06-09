@@ -20,7 +20,7 @@ public class Hero {
         }
     }
 
-    public Hero(String name, int attack, int defense, int spellPower, int knowledge, SpellBook spellBook) {
+    public Hero(String name, int attack, int defense, int spellPower, int knowledge) {
         this.name = name;
         this.attack = attack;
         this.defense = defense;
@@ -29,8 +29,7 @@ public class Hero {
         this.mana = knowledge * 10;
         this.maxMana = 999;
         this.hasCastSpellThisRound = false;
-        this.spellBook = spellBook;
-
+        this.spellBook = new SpellBook(this);
     }
 
     public SpellBook getSpellBook() {

@@ -1,6 +1,7 @@
 package io.github.heroes.setup;
 
 import io.github.heroes.model.combat.BattleEngine;
+import io.github.heroes.model.spellBook.SpellBook;
 import io.github.heroes.model.state.Army;
 import io.github.heroes.model.state.BattleField;
 import io.github.heroes.model.state.BattlePlayer;

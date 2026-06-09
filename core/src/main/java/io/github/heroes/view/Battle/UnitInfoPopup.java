@@ -44,9 +44,9 @@ public class UnitInfoPopup {
 
         addInfoRow("Unit", unit.getType().name());
         addInfoRow("Count", String.valueOf(unit.getCount()));
-        addInfoRow("Attack", String.valueOf(unit.getType().attack));
-        addInfoRow("Defense", String.valueOf(unit.getType().defense));
-        addInfoRow("Health", String.valueOf(unit.getType().maxHp));
+        addInfoRow("Attack", unit.getBaseAttack()+"("+unit.getAttack()+")");
+        addInfoRow("Defense", unit.getBaseDefense()+"("+unit.getDefense()+")");
+        addInfoRow("Health", String.valueOf(unit.getMaxHp()));
         addInfoRow("Current health", String.valueOf(unit.getCurrentHp()));
         addInfoRow("Speed", String.valueOf(unit.getSpeed()));
     }

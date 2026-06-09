@@ -52,7 +52,7 @@ public class BattleInputHandler extends InputAdapter {
             );
             if (clickedPosition == null) return true;
 
-            Position nearestPosotion = BattlefieldGeometry.findNearestNeighbor(
+            Position nearestPosition = BattlefieldGeometry.findNearestNeighbor(
                 clickedPosition,
                 screenX,
                 worldY,
@@ -60,7 +60,7 @@ public class BattleInputHandler extends InputAdapter {
             );
 
             setBattleInputEnabled(false);
-            actionResult = battleController.onHexClicked(clickedPosition, nearestPosotion);
+            actionResult = battleController.onHexClicked(clickedPosition, nearestPosition);
             battleScreen.handleActionResult(actionResult);
             return true;
         }
@@ -93,6 +93,8 @@ public class BattleInputHandler extends InputAdapter {
 
     public void onSpellBookClicked() {
         if (!battleInputEnabled) return;
+        actionResult = battleController.onSpellBookClicked();
+        battleScreen.handleActionResult(actionResult);
         //battleInputEnabled=false;
         //actionResult = battleController.
     }

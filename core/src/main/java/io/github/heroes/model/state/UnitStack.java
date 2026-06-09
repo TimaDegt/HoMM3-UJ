@@ -1,7 +1,6 @@
 package io.github.heroes.model.state;
 
-
-import io.github.heroes.anim.Animation;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class UnitStack {
     private final UnitType type;
@@ -15,6 +14,13 @@ public class UnitStack {
     private int topUnitHp;
     private final int maxHp;
 
+    private int maxDamage;
+    private int minDamage;
+
+    private final int speed;
+    private final int attack;
+    private final int defense;
+
     private int bonusAttack = 0;
     private int bonusDefense = 0;
     private int bonusSpeed = 0;
@@ -22,7 +28,8 @@ public class UnitStack {
     private boolean isBlessed = false;
     private boolean isCursed = false;
 
-    private final Animation animationEngine;
+    private final boolean isRanged;
+    private int ammo;
 
     private void validatePositiveValue(int val) {
         if (val < 0) throw new IllegalArgumentException("Value cannot be negative");
@@ -31,20 +38,20 @@ public class UnitStack {
     public UnitStack(UnitType type, int count, Position position, Player owner) {
         this.type = type;
         this.count = count;
-        this.currentHp = type.maxHp;
+        this.currentHp = type.getMaxHp();
         this.position = position;
         this.owner = owner;
         this.defending = false;
         this.maxCount = count;
-        this.maxHp = type.maxHp;
-        this.topUnitHp = type.maxHp;
-        this.animationEngine = new Animation(this.type.getAnimParams());
-        this.isRanged = isRanged;
-        this.ammo = ammo;
-    }
-
-    public Animation getAnimationEngine() {
-        return animationEngine;
+        this.maxHp = type.getMaxHp();
+        this.topUnitHp = type.getMaxHp();
+        this.isRanged = type.isRanged();
+        this.ammo = type.getAmmo();
+        this.minDamage = type.getMinDamage();
+        this.maxDamage = type.getMaxDamage();
+        this.speed = type.getSpeed();
+        this.attack = type.getAttack();
+        this.defense = type.getDefense();
     }
 
     public int getAmmo() {
@@ -55,7 +62,7 @@ public class UnitStack {
     }
 
     public void fire() {
-        if(ammo>0)ammo--;
+        if(ammo>0) ammo--;
     }
     public boolean isRanged() {
         return isRanged;
@@ -92,15 +99,15 @@ public class UnitStack {
     public void takeDamage(int damage){
         validatePositiveValue(damage);
 
-        int totalHp = (count-1) * type.maxHp + currentHp;
+        int totalHp = (count-1) * maxHp + currentHp;
 
         if (totalHp<=damage){
             currentHp=0;
             count=0;
         } else {
-            currentHp = (totalHp - damage)% type.maxHp;
-            if (currentHp == 0)currentHp=type.maxHp;
-            count = (totalHp - damage - currentHp)/type.maxHp + 1;
+            currentHp = (totalHp - damage) % maxHp;
+            if (currentHp == 0) currentHp = maxHp;
+            count = (totalHp - damage - currentHp) / maxHp + 1;
         }
         topUnitHp = currentHp;
     }
@@ -195,23 +202,31 @@ public class UnitStack {
             return 0;
         }
 
-        int singleUnitDamage;
-        if (isBlessed) {
-            singleUnitDamage = type.maxDamage;
-        } else if (isCursed) {
-            singleUnitDamage = type.minDamage;
-        } else {
-            singleUnitDamage = ThreadLocalRandom.current().nextInt(
-                type.minDamage,
-                type.maxDamage + 1
-            );
+        int totalDamage = 0;
+        for(int it = 0; it < count; it++) {
+            int singleUnitDamage;
+            if (isBlessed) {
+                singleUnitDamage = maxDamage;
+            } else if (isCursed) {
+                singleUnitDamage = minDamage;
+            } else {
+                singleUnitDamage = ThreadLocalRandom.current().nextInt(
+                    minDamage,
+                    maxDamage + 1
+                );
+            }
+            totalDamage += singleUnitDamage;
         }
 
-        return singleUnitDamage * count;
+        return totalDamage;
     }
     public int getSpeed() {
-        return Math.max(0, type.speed + bonusSpeed);
+        return Math.max(0, speed + bonusSpeed);
     }
-
+    public int getMaxHp() { return maxHp; }
+    public int getAttack() { return attack + bonusAttack; }
+    public int getDefense() { return defense + bonusDefense; }
+    public int getBaseAttack() { return attack; }
+    public int getBaseDefense() { return defense; }
 
 }

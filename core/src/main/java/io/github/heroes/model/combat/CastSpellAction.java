@@ -51,7 +51,7 @@ public class CastSpellAction implements BattleAction {
 
     private int totalHp(UnitStack unit) {
         if (!unit.isAlive()) return 0;
-        return (unit.getCount() - 1) * unit.getType().maxHp + unit.getCurrentHp();
+        return (unit.getCount() - 1) * unit.getMaxHp() + unit.getCurrentHp();
     }
 
     private void updateWinner(BattleState state) {

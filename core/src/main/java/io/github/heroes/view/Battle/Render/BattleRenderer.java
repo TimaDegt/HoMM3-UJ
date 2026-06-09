@@ -1,4 +1,4 @@
-package io.github.heroes.view.Battle;
+package io.github.heroes.view.Battle.Render;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -11,8 +11,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import io.github.heroes.anim.Animation;
-import io.github.heroes.anim.FrameData;
+import io.github.heroes.view.Battle.animation.Animation;
+import io.github.heroes.view.Battle.animation.FrameData;
 import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.model.combat.BattleEvent;
@@ -22,6 +22,8 @@ import io.github.heroes.combat.cursor.CursorType;
 import io.github.heroes.model.state.*;
 import io.github.heroes.view.Battle.BattleViewConfig;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
+import io.github.heroes.view.Battle.Render.FieldRenderer;
+import io.github.heroes.view.Battle.Render.UnitBadgeRenderer;
 import io.github.heroes.view.Battle.animation.BattleAnimationPlayer;
 import io.github.heroes.view.Battle.animation.FrameData;
 
@@ -261,15 +263,14 @@ public class BattleRenderer {
         batch.begin();
         drawArmySprites(getAllUnitsSortedByY());
         batch.end();
-
         unitBadgeRenderer.render();
     }
 
     private void drawArmySprites(Army army) {
         for (UnitStack unit : army.getUnits()) {
-            if (unit.isAlive()) {
+            //if (unit.isAlive()) {
                 drawUnitSprite(unit);
-            }
+            //}
         }
     }
 
