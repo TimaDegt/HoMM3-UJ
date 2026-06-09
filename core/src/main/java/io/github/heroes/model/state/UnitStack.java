@@ -219,7 +219,6 @@ public class UnitStack {
             }
             totalDamage += singleUnitDamage;
         }
-        Gdx.app.log("DEBUG", "Rolled " + totalDamage + " damage");
 
         return totalDamage;
     }

@@ -32,7 +32,10 @@ public class Cursor {
             return CursorType.MOVE;
         }
         if (hoveredUnit.getOwner() == activeUnit.getOwner()) {
-            return CursorType.NOPE;
+            return CursorType.QUESTION;
+        }
+        if (activeUnit.isRanged()) {
+            return CursorType.RANGER;
         }
 
         Position position = BattlefieldGeometry.findNearestNeighbor(
