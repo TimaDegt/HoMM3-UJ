@@ -34,6 +34,7 @@ public class BattleFactoryEasy {
         playerTwoArmy.addUnit(new DefaultUnitStack(UnitType.GRIFFIN, 2, new Position(13, 5), Player.PLAYER_TWO));
         playerTwoArmy.addUnit(new ArcherUnitStack(2, new Position(13, 3), Player.PLAYER_TWO));
         playerTwoArmy.addUnit(new DefaultUnitStack(UnitType.GRIFFIN, 2, new Position(13, 7), Player.PLAYER_TWO));
+        playerTwoArmy.addUnit(new DefaultUnitStack(UnitType.ANGEL, 2, new Position(13, 9), Player.PLAYER_TWO));
 
         BattlePlayer playerOne = new BattlePlayer(
             Player.PLAYER_ONE,
