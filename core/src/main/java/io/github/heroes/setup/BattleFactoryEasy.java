@@ -1,5 +1,6 @@
 package io.github.heroes.setup;
 
+import io.github.heroes.control.BattleController;
 import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.model.state.unit.stack.ArcherUnitStack;
 import io.github.heroes.model.state.Army;
@@ -16,6 +17,9 @@ public class BattleFactoryEasy {
     private BattleFactoryEasy() {
     }
 
+    public static BattleController createDemoController() {
+        return new BattleController(createDemoBattle());
+    }
     public static BattleEngine createDemoBattle() {
         BattleField field = new BattleField(15, 11);
 

@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import io.github.heroes.model.state.Position;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static io.github.heroes.view.Battle.BattleViewConfig.ANIMATION_SPEED;
@@ -35,7 +36,7 @@ public class Animation {
             throw new IllegalArgumentException("path must be non-empty");
         }
         if (path.size() == 1) return;
-        this.movementPath = path;
+        this.movementPath = new ArrayList<>(path);
         this.animType = AnimParams.AnimType.MOVE;
         this.frameIndex = 0;
     }

@@ -8,18 +8,18 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
-import io.github.heroes.model.combat.TurnQueueEntry;
+import io.github.heroes.model.snapshot.TurnQueueEntrySnapshot;
 import io.github.heroes.model.state.Player;
-import io.github.heroes.model.state.unit.stack.UnitStack;
+import io.github.heroes.model.snapshot.UnitSnapshot;
 
 public class UIQueueEntry extends Stack {
     private final Image icon;
     private final Image colorBar;
 
-    public UIQueueEntry(TurnQueueEntry entry) {
-        UnitStack unitStack = entry.getUnitStack();
-        int cnt = unitStack.getCount();
-        Player owner = unitStack.getOwner();
+    public UIQueueEntry(TurnQueueEntrySnapshot entry) {
+        UnitSnapshot unit = entry.unit();
+        int cnt = unit.count();
+        Player owner = unit.owner();
 
         Table gapContainer = new Table();
         gapContainer.pad(1.5f);
@@ -31,7 +31,7 @@ public class UIQueueEntry extends Stack {
 
         Table contentTable = new Table();
 
-        String iconPath = "Icons/" + unitStack.getType().getName() + ".png";
+        String iconPath = "Icons/" + unit.type().getName() + ".png";
         Texture iconTex = new Texture(iconPath);
         iconTex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         icon = new Image(iconTex);

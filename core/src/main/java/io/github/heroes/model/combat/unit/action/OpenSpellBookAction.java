@@ -17,7 +17,7 @@ public class OpenSpellBookAction implements BattleAction {
     @Override
     public List<BattleEvent> execute(BattleState state) {
         if (state == null) throw new IllegalArgumentException("State cannot be null");
-        return List.of(new BattleEvent.OpenSpellBook(spellBook));
+        return List.of(new BattleEvent.OpenSpellBook());
     }
 
     @Override

@@ -3,7 +3,6 @@ package io.github.heroes.model.state;
 import io.github.heroes.model.state.unit.stack.UnitStack;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class Army {
@@ -26,7 +25,7 @@ public class Army {
     }
 
     public List<UnitStack> getUnits() {
-        return Collections.unmodifiableList(units);
+        return List.copyOf(units);
     }
 
     public List<UnitStack> getAliveUnits() {

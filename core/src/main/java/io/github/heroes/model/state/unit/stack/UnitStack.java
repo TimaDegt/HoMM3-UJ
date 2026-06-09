@@ -1,6 +1,5 @@
 package io.github.heroes.model.state.unit.stack;
 
-import com.badlogic.gdx.Gdx;
 import io.github.heroes.model.combat.unit.action.BattleAction;
 import io.github.heroes.model.combat.unit.action.MoveAndAttackAction;
 import io.github.heroes.model.state.Player;
@@ -8,8 +7,12 @@ import io.github.heroes.model.state.Position;
 import io.github.heroes.model.state.UnitType;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class UnitStack {
+    private static final AtomicLong NEXT_ID = new AtomicLong();
+
+    private final long id;
     private final UnitType type;
     private int count;
     private int currentHp;
@@ -40,6 +43,7 @@ public abstract class UnitStack {
     }
 
     protected UnitStack(UnitType type, int count, Position position, Player owner) {
+        this.id = NEXT_ID.incrementAndGet();
         this.type = type;
         this.count = count;
         this.currentHp = type.getMaxHp();
@@ -62,8 +66,16 @@ public abstract class UnitStack {
         return new MoveAndAttackAction(this, attackPosition, target);
     }
 
+    public boolean supportsRangedAttack() {
+        return false;
+    }
+
     public boolean canAttackWithoutMoving(UnitStack target) {
         return false;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public UnitType getType() {
@@ -215,7 +227,6 @@ public abstract class UnitStack {
             }
             totalDamage += singleUnitDamage;
         }
-        Gdx.app.log("DEBUG", "Rolled " + totalDamage + " damage");
 
         return totalDamage;
     }

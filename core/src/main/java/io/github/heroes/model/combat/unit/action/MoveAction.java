@@ -1,6 +1,7 @@
 package io.github.heroes.model.combat.unit.action;
 
 import io.github.heroes.model.combat.BattleEvent;
+import io.github.heroes.model.snapshot.UnitSnapshot;
 import io.github.heroes.model.combat.BattlePathFinder;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Position;
@@ -25,13 +26,18 @@ public class MoveAction implements BattleAction {
         if (!unit.isAlive()) throw new IllegalStateException("Dead unit cannot move");
         if (state.getActiveUnit() != unit) throw new IllegalStateException("Only active unit can move");
         if (!state.getField().isInside(targetPosition)) throw new IllegalStateException("Target position is outside the battlefield");
+        if (!targetPosition.equals(unit.getPosition())
+            && (state.getPlayerOne().getArmy().isPositionOccupied(targetPosition)
+                || state.getPlayerTwo().getArmy().isPositionOccupied(targetPosition))) {
+            throw new IllegalStateException("Target position is occupied");
+        }
 
         if (!BattlePathFinder.canReach(state, unit, targetPosition)) return List.of();
         Position startPosition = unit.getPosition();
         List<Position> path = BattlePathFinder.findPath(state, startPosition, targetPosition);
         unit.changePosition(targetPosition);
         return List.of(new BattleEvent.UnitMoved(
-            unit,
+            UnitSnapshot.from(unit),
             startPosition,
             targetPosition,
             path

@@ -1,6 +1,6 @@
 package io.github.heroes.model.state;
 
-import io.github.heroes.magic.MagicSchool;
+import io.github.heroes.model.magic.MagicSchool;
 import io.github.heroes.model.spellBook.SpellBook;
 
 public class Hero {

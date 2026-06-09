@@ -1,6 +1,7 @@
 package io.github.heroes.model.combat.unit.action;
 
 import io.github.heroes.model.combat.BattleEvent;
+import io.github.heroes.model.snapshot.UnitSnapshot;
 import io.github.heroes.model.state.unit.stack.ArcherUnitStack;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.unit.stack.UnitStack;
@@ -24,6 +25,7 @@ public class ShootAction implements BattleAction {
     public List<BattleEvent> execute(BattleState state) {
         if (state == null) throw new IllegalArgumentException("State cannot be null");
         if (!shooter.isAlive()) throw new IllegalStateException("Shooter is dead");
+        if (state.getActiveUnit() != shooter) throw new IllegalStateException("Only active unit can shoot");
         if (!target.isAlive()) throw new IllegalStateException("Target is dead");
         if (shooter.getOwner() == target.getOwner()) throw new IllegalStateException("Cannot shoot allied unit");
         if (!shooter.canFire()) throw new IllegalStateException("Unit cannot shoot");
@@ -34,16 +36,16 @@ public class ShootAction implements BattleAction {
         target.takeDamage(damage);
 
         List<BattleEvent> events = new ArrayList<>();
-        events.add(new BattleEvent.UnitAttacked(shooter, target));
+        events.add(new BattleEvent.UnitAttacked(UnitSnapshot.from(shooter), UnitSnapshot.from(target)));
         events.add(new BattleEvent.UnitDamaged(
-            target,
+            UnitSnapshot.from(target),
             damage,
             target.getCount(),
             target.getCurrentHp()
         ));
 
         if (!target.isAlive()) {
-            events.add(new BattleEvent.UnitDied(target, target.getPosition()));
+            events.add(new BattleEvent.UnitDied(UnitSnapshot.from(target), target.getPosition()));
         }
         return events;
     }

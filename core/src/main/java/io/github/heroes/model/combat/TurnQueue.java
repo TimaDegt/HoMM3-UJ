@@ -96,6 +96,6 @@ public class TurnQueue {
 
     public List<TurnQueueEntry> getQueue() {
         if (queue.isEmpty()) return List.of();
-        return queue;
+        return List.copyOf(queue);
     }
 }

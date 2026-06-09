@@ -7,7 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import io.github.heroes.model.state.unit.stack.UnitStack;
+import io.github.heroes.model.snapshot.UnitSnapshot;
 
 public class UnitInfoPopup {
     private static final float POPUP_WIDTH = 320f;
@@ -45,7 +45,7 @@ public class UnitInfoPopup {
         stage.addActor(root);
     }
 
-    public void show(UnitStack unit) {
+    public void show(UnitSnapshot unit) {
         updateContent(unit);
         root.setVisible(true);
     }
@@ -58,7 +58,7 @@ public class UnitInfoPopup {
         popupBackground.dispose();
     }
 
-    private void updateContent(UnitStack unit) {
+    private void updateContent(UnitSnapshot unit) {
         contentTable.clear();
         contentTable.padTop(56f);
         contentTable.padLeft(26f);
@@ -66,13 +66,13 @@ public class UnitInfoPopup {
         contentTable.padBottom(28f);
         contentTable.defaults().left().pad(4);
 
-        addInfoRow("Unit", unit.getType().name());
-        addInfoRow("Count", String.valueOf(unit.getCount()));
-        addInfoRow("Attack", unit.getBaseAttack()+"("+unit.getAttack()+")");
-        addInfoRow("Defense", unit.getBaseDefense()+"("+unit.getDefense()+")");
-        addInfoRow("Health", String.valueOf(unit.getMaxHp()));
-        addInfoRow("Current health", String.valueOf(unit.getCurrentHp()));
-        addInfoRow("Speed", String.valueOf(unit.getSpeed()));
+        addInfoRow("Unit", unit.type().name());
+        addInfoRow("Count", String.valueOf(unit.count()));
+        addInfoRow("Attack", unit.baseAttack()+"("+unit.attack()+")");
+        addInfoRow("Defense", unit.baseDefense()+"("+unit.defense()+")");
+        addInfoRow("Health", String.valueOf(unit.maxHp()));
+        addInfoRow("Current health", String.valueOf(unit.currentHp()));
+        addInfoRow("Speed", String.valueOf(unit.speed()));
     }
 
     private void addInfoRow(String label, String value) {

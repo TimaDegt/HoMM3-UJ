@@ -1,44 +1,40 @@
 package io.github.heroes.model.combat;
 
-import io.github.heroes.model.spellBook.SpellBook;
+import io.github.heroes.model.snapshot.UnitSnapshot;
 import io.github.heroes.model.state.Player;
 import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.unit.stack.UnitStack;
 
 import java.util.List;
 
 public interface BattleEvent {
 
     record UnitMoved(
-        UnitStack unit,
+        UnitSnapshot unit,
         Position from,
         Position to,
         List<Position> path
-    ) implements BattleEvent {}
+    ) implements BattleEvent {
+        public UnitMoved {
+            path = List.copyOf(path);
+        }
+    }
 
-    record UnitAttacked(UnitStack attacker, UnitStack target) implements BattleEvent {}
+    record UnitAttacked(UnitSnapshot attacker, UnitSnapshot target) implements BattleEvent {}
 
-    record UnitWaited(UnitStack unit)implements BattleEvent{}
+    record UnitWaited(UnitSnapshot unit) implements BattleEvent {}
 
     record UnitDamaged(
-        UnitStack unit,
+        UnitSnapshot unit,
         int damage,
         int remainingCount,
         int remainingHp
-    ) implements BattleEvent {
-    }
+    ) implements BattleEvent {}
 
-    record UnitDied(UnitStack unit, Position position) implements BattleEvent {
-    }
+    record UnitDied(UnitSnapshot unit, Position position) implements BattleEvent {}
 
-    record UnitDefended(UnitStack unit) implements BattleEvent {
-    }
-    record OpenSpellBook(
-        SpellBook book
-    ) implements  BattleEvent {
+    record UnitDefended(UnitSnapshot unit) implements BattleEvent {}
 
-    }
+    record OpenSpellBook() implements BattleEvent {}
 
-    record BattleFinished(Player winner) implements BattleEvent {
-    }
+    record BattleFinished(Player winner) implements BattleEvent {}
 }
