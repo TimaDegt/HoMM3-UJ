@@ -37,26 +37,27 @@ public class CombatResolver {
     }
 
     private int calculateDamage(BattleState state, UnitStack attacker, UnitStack target) {
-        int attackerAttack = attacker.getType().attack + getHeroAttack(state, attacker.getOwner());
-        int targetDefense = target.getType().defense + getHeroDefense(state, target.getOwner());
+        int attackerAttack = attacker.getAttack()
+            + getHeroAttack(state, attacker.getOwner());
+
+        int targetDefense = target.getDefense()
+            + getHeroDefense(state, target.getOwner());
+
         if (target.isDefending()) {
             targetDefense = (int) Math.round(targetDefense * 1.2);
         }
-
-        int baseDamage = attacker.getType().damage * attacker.getCount();
+        int baseDamage = attacker.calculateDamageRoll();
 
         int difference = attackerAttack - targetDefense;
-
         double multiplier;
 
         if (difference >= 0) {
-            multiplier = 1.0 + difference * 0.05;
+            multiplier = 1.0 + difference * 0.5;
         } else {
             multiplier = 1.0 + difference * 0.025;
         }
-
         multiplier = Math.max(0.3, multiplier);
-        multiplier = Math.min(3, multiplier);
+        multiplier = Math.min(3.0, multiplier);
 
         return (int) Math.round(baseDamage * multiplier);
     }

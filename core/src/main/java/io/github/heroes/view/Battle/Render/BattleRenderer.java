@@ -1,19 +1,29 @@
 package io.github.heroes.view.Battle.Render;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import io.github.heroes.view.Battle.animation.Animation;
+import io.github.heroes.view.Battle.animation.FrameData;
 import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.model.combat.BattleEvent;
+import io.github.heroes.model.combat.BattlePathFinder;
 import io.github.heroes.combat.cursor.Cursor;
 import io.github.heroes.combat.cursor.CursorType;
 import io.github.heroes.model.state.*;
 import io.github.heroes.view.Battle.BattleViewConfig;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
+import io.github.heroes.view.Battle.Render.FieldRenderer;
+import io.github.heroes.view.Battle.Render.UnitBadgeRenderer;
 import io.github.heroes.view.Battle.animation.BattleAnimationPlayer;
 import io.github.heroes.view.Battle.animation.FrameData;
 
@@ -29,6 +39,8 @@ public class BattleRenderer {
     private final FieldRenderer fieldRenderer;
     private final UnitBadgeRenderer unitBadgeRenderer;
     private final SpriteBatch batch;
+    private final BitmapFont font;
+    private final GlyphLayout glyphLayout;
     private final Map<UnitType, TextureRegion> unitTextures;
     private final Map<CursorType, TextureRegion> cursorTextures;
 
@@ -71,6 +83,8 @@ public class BattleRenderer {
         this.fieldRenderer = new FieldRenderer(battleEngine);
         this.unitBadgeRenderer = new UnitBadgeRenderer(battleEngine, animationPlayer);
         this.batch = new SpriteBatch();
+        this.font = new BitmapFont();
+        this.glyphLayout = new GlyphLayout();
         this.unitTextures = new HashMap<>();
         this.cursorTextures = new HashMap<>();
 
@@ -249,7 +263,6 @@ public class BattleRenderer {
         batch.begin();
         drawArmySprites(getAllUnitsSortedByY());
         batch.end();
-
         unitBadgeRenderer.render();
     }
 
