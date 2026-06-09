@@ -23,6 +23,11 @@ public class ArcherUnitStack extends UnitStack {
     }
 
     @Override
+    public boolean supportsRangedAttack() {
+        return true;
+    }
+
+    @Override
     public boolean canAttackWithoutMoving(UnitStack target) {
         return target != null && canFire();
     }

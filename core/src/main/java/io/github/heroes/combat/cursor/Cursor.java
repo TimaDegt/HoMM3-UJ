@@ -6,12 +6,6 @@ import io.github.heroes.control.BattleController;
 import io.github.heroes.model.snapshot.BattleSnapshot;
 import io.github.heroes.model.snapshot.UnitSnapshot;
 import io.github.heroes.model.state.Position;
-import io.github.heroes.model.combat.BattleEngine;
-import io.github.heroes.model.combat.BattleEvent;
-import io.github.heroes.model.combat.BattlePathFinder;
-import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.unit.stack.ArcherUnitStack;
-import io.github.heroes.model.state.unit.stack.UnitStack;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 
 import static io.github.heroes.view.Battle.BattleViewConfig.ACTION_PANEL_BASE_HEIGHT;
@@ -37,16 +31,12 @@ public class Cursor {
             if (!controller.canActiveUnitReach(hoveredPosition)) return CursorType.NOPE;
             return CursorType.MOVE;
         }
-<<<<<<< HEAD
-        if (hoveredUnit.owner() == activeUnit.owner()) return CursorType.NOPE;
-=======
-        if (hoveredUnit.getOwner() == activeUnit.getOwner()) {
-            return CursorType.QUESTION;
+        if (hoveredUnit.owner() == activeUnit.owner()) return CursorType.QUESTION;
+        if (controller.activeUnitSupportsRangedAttack()) {
+            return controller.canActiveUnitAttackWithoutMoving(hoveredPosition)
+                ? CursorType.RANGER
+                : CursorType.RANGERBROKEN;
         }
-        if (activeUnit instanceof ArcherUnitStack) {
-            return CursorType.RANGER;
-        }
->>>>>>> 68a06f6e9ddd8b6bf5f776435c838f42aafd7ad7
 
         Position position = BattlefieldGeometry.findNearestNeighbor(
             hoveredUnit.position(),

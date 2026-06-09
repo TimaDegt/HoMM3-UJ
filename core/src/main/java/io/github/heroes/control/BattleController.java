@@ -82,6 +82,14 @@ public class BattleController {
         return battleEngine.canActiveUnitReach(position);
     }
 
+    public boolean activeUnitSupportsRangedAttack() {
+        return battleEngine.activeUnitSupportsRangedAttack();
+    }
+
+    public boolean canActiveUnitAttackWithoutMoving(Position targetPosition) {
+        return battleEngine.canActiveUnitAttackWithoutMoving(targetPosition);
+    }
+
     public boolean isPositionOccupied(Position position) {
         return battleEngine.isPositionOccupied(position);
     }

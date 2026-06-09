@@ -66,6 +66,10 @@ public abstract class UnitStack {
         return new MoveAndAttackAction(this, attackPosition, target);
     }
 
+    public boolean supportsRangedAttack() {
+        return false;
+    }
+
     public boolean canAttackWithoutMoving(UnitStack target) {
         return false;
     }

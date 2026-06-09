@@ -101,6 +101,20 @@ public class BattleEngine {
             && BattlePathFinder.canReach(state, activeUnit, position);
     }
 
+    public boolean activeUnitSupportsRangedAttack() {
+        UnitStack activeUnit = getActiveUnit();
+        return activeUnit != null && activeUnit.supportsRangedAttack();
+    }
+
+    public boolean canActiveUnitAttackWithoutMoving(Position targetPosition) {
+        UnitStack activeUnit = getActiveUnit();
+        UnitStack target = findUnitAt(targetPosition);
+        return activeUnit != null
+            && target != null
+            && target.getOwner() != activeUnit.getOwner()
+            && activeUnit.canAttackWithoutMoving(target);
+    }
+
     private BattleAction resolveAction(UserAction action) {
         UnitStack activeUnit = getActiveUnit();
         if (activeUnit == null) return null;
