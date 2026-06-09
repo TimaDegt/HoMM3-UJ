@@ -7,4 +7,8 @@ import java.util.List;
 
 public interface BattleAction {
     List<BattleEvent> execute(BattleState state);
+
+    default boolean endsTurn() {
+        return true;
+    }
 }

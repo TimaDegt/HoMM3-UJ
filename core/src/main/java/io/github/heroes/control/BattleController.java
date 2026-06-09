@@ -5,15 +5,13 @@ import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.model.combat.user.action.AffectPositionAction;
 import io.github.heroes.model.combat.user.action.DefendAction;
-import io.github.heroes.model.combat.user.action.NoAction;
+import io.github.heroes.model.combat.user.action.OpenSpellBookAction;
 import io.github.heroes.model.combat.user.action.UserAction;
 import io.github.heroes.model.combat.user.action.WaitAction;
 import io.github.heroes.model.state.BattleField;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Position;
 import io.github.heroes.model.state.UnitStack;
-import io.github.heroes.model.combat.*;
-import io.github.heroes.model.state.*;
 
 public class BattleController {
     private final BattleEngine battleEngine;
@@ -40,11 +38,7 @@ public class BattleController {
     }
 
     public ActionResult onSpellBookClicked() {
-        return performAction(new OpenSpellBookAction(
-            (battleEngine.getActiveUnit().getOwner() == Player.PLAYER_ONE)
-            ? battleEngine.getState().getPlayerOne().getHero().getSpellBook()
-            : battleEngine.getState().getPlayerTwo().getHero().getSpellBook()
-        ));
+        return performAction(new OpenSpellBookAction());
     }
 
 

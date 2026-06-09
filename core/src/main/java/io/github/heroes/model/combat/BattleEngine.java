@@ -4,6 +4,7 @@ import io.github.heroes.model.combat.unit.action.*;
 import io.github.heroes.model.combat.user.action.AffectPositionAction;
 import io.github.heroes.model.combat.user.action.UserAction;
 import io.github.heroes.model.state.BattleState;
+import io.github.heroes.model.state.Hero;
 import io.github.heroes.model.state.Player;
 import io.github.heroes.model.state.Position;
 import io.github.heroes.model.state.UnitStack;
@@ -43,7 +44,7 @@ public class BattleEngine {
 
         if (state.isFinished()) {
             events.add(new BattleEvent.BattleFinished(state.getWinner()));
-        } else {
+        } else if (battleAction.endsTurn()) {
             if (battleAction instanceof WaitAction) turnQueue.waitCurrentUnit();
             else turnQueue.nextTurn();
         }
@@ -94,10 +95,13 @@ public class BattleEngine {
         }
         if (action instanceof io.github.heroes.model.combat.user.action.CastSpellAction castSpellAction) {
             return new CastSpellAction(
-                castSpellAction.getCaster(),
+                getActiveHero(activeUnit),
                 castSpellAction.getSpell(),
                 castSpellAction.getTarget()
             );
+        }
+        if (action instanceof io.github.heroes.model.combat.user.action.OpenSpellBookAction) {
+            return new OpenSpellBookAction(getActiveHero(activeUnit).getSpellBook());
         }
         if (action instanceof io.github.heroes.model.combat.user.action.NoAction) {
             return new NoAction();
@@ -125,6 +129,13 @@ public class BattleEngine {
         Position attackPosition = action.getNearestPosition();
         if (attackPosition == null) return null;
         return new MoveAndAttackAction(activeUnit, attackPosition, target);
+    }
+
+    private Hero getActiveHero(UnitStack activeUnit) {
+        if (activeUnit.getOwner() == Player.PLAYER_ONE) {
+            return state.getPlayerOne().getHero();
+        }
+        return state.getPlayerTwo().getHero();
     }
 
     private void updateWinner() {
