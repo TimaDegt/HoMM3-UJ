@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.model.state.BattleField;
 import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 import io.github.heroes.view.Battle.BattleViewConfig;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 

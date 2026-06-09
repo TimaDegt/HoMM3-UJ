@@ -3,7 +3,7 @@ package io.github.heroes.model.combat;
 import com.badlogic.gdx.Gdx;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Player;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 import java.util.ArrayList;
 import java.util.List;

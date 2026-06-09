@@ -4,7 +4,7 @@ import io.github.heroes.magic.Spell;
 import io.github.heroes.model.combat.BattleEvent;
 import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Hero;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 import java.util.ArrayList;
 import java.util.List;

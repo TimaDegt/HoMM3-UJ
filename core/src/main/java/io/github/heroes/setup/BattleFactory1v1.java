@@ -1,7 +1,7 @@
 package io.github.heroes.setup;
 
 import io.github.heroes.model.combat.BattleEngine;
-import io.github.heroes.model.spellBook.SpellBook;
+import io.github.heroes.model.state.unit.stack.ArcherUnitStack;
 import io.github.heroes.model.state.Army;
 import io.github.heroes.model.state.BattleField;
 import io.github.heroes.model.state.BattlePlayer;
@@ -9,7 +9,7 @@ import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Hero;
 import io.github.heroes.model.state.Player;
 import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.DefaultUnitStack;
 import io.github.heroes.model.state.UnitType;
 
 public class BattleFactory1v1 {
@@ -20,14 +20,14 @@ public class BattleFactory1v1 {
         BattleField field = new BattleField(15, 11);
 
         Army playerOneArmy = new Army();
-        playerOneArmy.addUnit(new UnitStack(UnitType.PIKEMAN, 2, new Position(1, 5), Player.PLAYER_ONE));
-        playerOneArmy.addUnit(new UnitStack(UnitType.ARCHER, 1, new Position(1, 3), Player.PLAYER_ONE));
-        playerOneArmy.addUnit(new UnitStack(UnitType.ARCHER, 1, new Position(1, 7), Player.PLAYER_ONE));
-        playerOneArmy.addUnit(new UnitStack(UnitType.GRIFFIN, 2, new Position(1, 9), Player.PLAYER_TWO));
+        playerOneArmy.addUnit(new DefaultUnitStack(UnitType.PIKEMAN, 2, new Position(1, 5), Player.PLAYER_ONE));
+        playerOneArmy.addUnit(new ArcherUnitStack(1, new Position(1, 3), Player.PLAYER_ONE));
+        playerOneArmy.addUnit(new ArcherUnitStack(1, new Position(1, 7), Player.PLAYER_ONE));
+        playerOneArmy.addUnit(new DefaultUnitStack(UnitType.GRIFFIN, 2, new Position(1, 9), Player.PLAYER_ONE));
 
         Army playerTwoArmy = new Army();
-        playerTwoArmy.addUnit(new UnitStack(UnitType.GRIFFIN, 2, new Position(13, 5), Player.PLAYER_TWO));
-        playerTwoArmy.addUnit(new UnitStack(UnitType.ARCHER, 2, new Position(13, 3), Player.PLAYER_TWO));
+        playerTwoArmy.addUnit(new DefaultUnitStack(UnitType.GRIFFIN, 2, new Position(13, 5), Player.PLAYER_TWO));
+        playerTwoArmy.addUnit(new ArcherUnitStack(2, new Position(13, 3), Player.PLAYER_TWO));
 
         BattlePlayer playerOne = new BattlePlayer(
             Player.PLAYER_ONE,

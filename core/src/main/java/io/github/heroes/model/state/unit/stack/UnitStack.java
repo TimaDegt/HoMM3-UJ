@@ -1,10 +1,15 @@
-package io.github.heroes.model.state;
+package io.github.heroes.model.state.unit.stack;
 
 import com.badlogic.gdx.Gdx;
+import io.github.heroes.model.combat.unit.action.BattleAction;
+import io.github.heroes.model.combat.unit.action.MoveAndAttackAction;
+import io.github.heroes.model.state.Player;
+import io.github.heroes.model.state.Position;
+import io.github.heroes.model.state.UnitType;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class UnitStack {
+public abstract class UnitStack {
     private final UnitType type;
     private int count;
     private int currentHp;
@@ -30,14 +35,11 @@ public class UnitStack {
     private boolean isBlessed = false;
     private boolean isCursed = false;
 
-    private final boolean isRanged;
-    private int ammo;
-
     private void validatePositiveValue(int val) {
         if (val < 0) throw new IllegalArgumentException("Value cannot be negative");
     }
 
-    public UnitStack(UnitType type, int count, Position position, Player owner) {
+    protected UnitStack(UnitType type, int count, Position position, Player owner) {
         this.type = type;
         this.count = count;
         this.currentHp = type.getMaxHp();
@@ -47,8 +49,6 @@ public class UnitStack {
         this.maxCount = count;
         this.maxHp = type.getMaxHp();
         this.topUnitHp = type.getMaxHp();
-        this.isRanged = type.isRanged();
-        this.ammo = type.getAmmo();
         this.minDamage = type.getMinDamage();
         this.maxDamage = type.getMaxDamage();
         this.speed = type.getSpeed();
@@ -56,18 +56,14 @@ public class UnitStack {
         this.defense = type.getDefense();
     }
 
-    public int getAmmo() {
-        return ammo;
-    }
-    public boolean canFire() {
-        return ammo > 0 && isRanged;
+    public BattleAction createAttackAction(UnitStack target, Position attackPosition) {
+        if (target == null) throw new IllegalArgumentException("Target cannot be null");
+        if (attackPosition == null) return null;
+        return new MoveAndAttackAction(this, attackPosition, target);
     }
 
-    public void fire() {
-        if(ammo>0) ammo--;
-    }
-    public boolean isRanged() {
-        return isRanged;
+    public boolean canAttackWithoutMoving(UnitStack target) {
+        return false;
     }
 
     public UnitType getType() {

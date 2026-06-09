@@ -1,6 +1,6 @@
 package io.github.heroes.view.Battle.animation;
 
-import io.github.heroes.model.state.UnitStack;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
