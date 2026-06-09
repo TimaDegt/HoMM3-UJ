@@ -19,9 +19,7 @@ public class BattlePathFinder {
     }
 
     public static int findDistance(BattleState state, Position start, Position target) {
-        if (start.equals(target)) {
-            return 0;
-        }
+        if (start.equals(target)) return 0;
 
         BattleField field = state.getField();
         Queue<Position> queue = new ArrayDeque<>();
@@ -37,17 +35,11 @@ public class BattlePathFinder {
             int currentDistance = distances.get(current);
 
             for (Position neighbor : current.neighbors()) {
-                if (!field.isInside(neighbor) || visited.contains(neighbor)) {
-                    continue;
-                }
-                if (isOccupied(state, neighbor) && !neighbor.equals(target)) {
-                    continue;
-                }
+                if (!field.isInside(neighbor) || visited.contains(neighbor)) continue;
+                if (isOccupied(state, neighbor) && !neighbor.equals(target)) continue;
 
                 int nextDistance = currentDistance + 1;
-                if (neighbor.equals(target)) {
-                    return nextDistance;
-                }
+                if (neighbor.equals(target)) return nextDistance;
 
                 queue.add(neighbor);
                 distances.put(neighbor, nextDistance);
@@ -60,9 +52,7 @@ public class BattlePathFinder {
 
 
     public static List<Position> findPath(BattleState state, Position start, Position target) {
-        if (start.equals(target)) {
-            return new ArrayList<>(Collections.singleton(start));
-        }
+        if (start.equals(target)) return new ArrayList<>(Collections.singleton(start));
 
         BattleField field = state.getField();
         Queue<Position> queue = new ArrayDeque<>();
@@ -77,17 +67,11 @@ public class BattlePathFinder {
             Position current = queue.remove();
 
             for (Position neighbor : current.neighbors()) {
-                if (!field.isInside(neighbor) || visited.contains(neighbor)) {
-                    continue;
-                }
-                if (isOccupied(state, neighbor) && !neighbor.equals(target)) {
-                    continue;
-                }
+                if (!field.isInside(neighbor) || visited.contains(neighbor)) continue;
+                if (isOccupied(state, neighbor) && !neighbor.equals(target)) continue;
 
                 prevPosition.put(neighbor,current);
-                if (neighbor.equals(target)) {
-                    return recreatePath(prevPosition, target);
-                }
+                if (neighbor.equals(target)) return recreatePath(prevPosition, target);
                 queue.add(neighbor);
                 visited.add(neighbor);
             }
@@ -111,11 +95,25 @@ public class BattlePathFinder {
 
     private static boolean isOccupiedByArmy(Position position, Army army) {
         for (UnitStack unit : army.getUnits()) {
-            if (unit.isAlive() && unit.getPosition().equals(position)) {
-                return true;
+            if (unit.isAlive() && unit.getPosition().equals(position)) return true;
+        }
+        return false;
+    }
+    public static Set<Position> findReachablePositions(BattleState state, UnitStack unit) {
+        if (state == null || unit == null || !unit.isAlive()) return Set.of();
+
+        BattleField field = state.getField();
+        Set<Position> reachablePositions = new HashSet<>();
+
+        for (int row = 0; row < field.getHeight(); row++) {
+            for (int col = 0; col < field.getWidth(); col++) {
+                Position target = new Position(col, row);
+                if (!isOccupied(state, target) && canReach(state, unit, target)) {
+                    reachablePositions.add(target);
+                }
             }
         }
 
-        return false;
+        return Set.copyOf(reachablePositions);
     }
 }

@@ -24,6 +24,10 @@ public class Animation {
             || animType == AnimParams.AnimType.DEAD;
     }
 
+    public boolean isDead() {
+        return animType == AnimParams.AnimType.DEAD;
+    }
+
     List<Position> movementPath = null;
 
     public void startMovement(List<Position> path) {
@@ -73,7 +77,7 @@ public class Animation {
         }
         if (animType == AnimParams.AnimType.DEAD) {
             return new FrameData(
-                (length - 1) * size,
+                (Math.max(length, 1) - 1) * size,
                 coordinate,
                 size
             );
@@ -98,11 +102,13 @@ public class Animation {
             dx,
             dy,
             flipX,
-            true
+            animType == AnimParams.AnimType.MOVE
         );
     }
 
     public void updatik(float delta) {
+        if (animType == AnimParams.AnimType.IDLE || animType == AnimParams.AnimType.DEAD) return;
+
         frameIndex += delta / (animType == AnimParams.AnimType.MOVE ? MOVEMENT_SPEED : ANIMATION_SPEED);
         int length = params.currentLength(animType);
         if (frameIndex >= length) {

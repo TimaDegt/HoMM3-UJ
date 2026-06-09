@@ -5,9 +5,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import io.github.heroes.model.combat.BattleEngine;
-import io.github.heroes.model.combat.BattlePathFinder;
 import io.github.heroes.model.state.BattleField;
-import io.github.heroes.model.state.BattleState;
 import io.github.heroes.model.state.Position;
 import io.github.heroes.model.state.UnitStack;
 import io.github.heroes.view.Battle.BattleViewConfig;
@@ -67,32 +65,14 @@ public class FieldRenderer {
     }
 
     private void drawMovementRange() {
-        UnitStack activeUnit = battleEngine.getActiveUnit();
-        if (activeUnit == null || !activeUnit.isAlive()) {
-            return;
-        }
-
-        BattleState state = battleEngine.getState();
-        BattleField field = state.getField();
-
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0.08f, 0.08f, 0.08f, 0.45f);
-        for (int row = 0; row < field.getHeight(); row++) {
-            for (int col = 0; col < field.getWidth(); col++) {
-                Position target = new Position(col, row);
-
-                if (battleEngine.findUnitAt(target) != null) {
-                    continue;
-                }
-
-                if (BattlePathFinder.canReach(state, activeUnit, target)) {
-                    Vector2 center = BattlefieldGeometry.positionToScreen(target);
-                    drawFilledHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE - 2f);
-                }
-            }
+        for (Position target : battleEngine.getReachablePositions()) {
+            Vector2 center = BattlefieldGeometry.positionToScreen(target);
+            drawFilledHexagon(center.x, center.y, BattleViewConfig.HEX_SIZE - 2f);
         }
 
         shapeRenderer.end();

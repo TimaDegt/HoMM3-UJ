@@ -255,10 +255,25 @@ public class BattleRenderer {
 
     private void drawArmySprites(Army army) {
         for (UnitStack unit : army.getUnits()) {
-            if (unit.isAlive()) {
+            if (unit.isAlive()
+                || hasPendingVisualEvent(unit)
+                || animationPlayer.getAnimationEngine(unit).isDead()) {
                 drawUnitSprite(unit);
             }
         }
+    }
+
+    private boolean hasPendingVisualEvent(UnitStack unit) {
+        if (events == null) return false;
+        for (BattleEvent event : events) {
+            if (event instanceof BattleEvent.UnitAttacked attack
+                && (attack.attacker() == unit || attack.target() == unit)) {
+                return true;
+            }
+            if (event instanceof BattleEvent.UnitDamaged damaged && damaged.unit() == unit) return true;
+            if (event instanceof BattleEvent.UnitDied died && died.unit() == unit) return true;
+        }
+        return false;
     }
 
     private void drawUnitSprite(UnitStack unit) {
@@ -276,7 +291,10 @@ public class BattleRenderer {
         TextureRegion texture = new TextureRegion(unitTextures.get(unit.getType()), x, y, squareLength, squareLength);
         int spriteSize = texture.getRegionWidth();
 
-        if (frameData.isFlipX() || (unit.getOwner()==Player.PLAYER_TWO && !animationPlayer.getAnimationEngine(unit).isBusy())) {
+        boolean flipX = frameData.isMoving()
+            ? frameData.isFlipX()
+            : unit.getOwner() == Player.PLAYER_TWO;
+        if (flipX) {
             texture.flip(true, false);
             dx -= spriteSize - hexWidth / 2f;
         }

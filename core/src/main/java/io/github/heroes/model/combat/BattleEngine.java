@@ -6,6 +6,7 @@ import io.github.heroes.model.state.UnitStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class BattleEngine {
     private final BattleState state;
@@ -68,5 +69,9 @@ public class BattleEngine {
         if (unit != null) return unit;
 
         return state.getPlayerTwo().getArmy().findUnitAtPosition(position);
+    }
+
+    public Set<Position> getReachablePositions() {
+        return BattlePathFinder.findReachablePositions(state, getActiveUnit());
     }
 }
