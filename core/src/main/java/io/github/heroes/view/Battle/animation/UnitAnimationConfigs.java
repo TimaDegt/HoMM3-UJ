@@ -12,6 +12,9 @@ public final class UnitAnimationConfigs {
     private static final AnimParams GRIFFIN = new AnimParams(
         155, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0
     );
+    private static final AnimParams CAVALIER = new AnimParams(
+        150, 3, 8, 2, 5, 1, 9, -1, 0, 4, 11, 0, 0, 9
+    );
     private static final AnimParams ANGEL = new AnimParams(
         150, 4, 6, 3, 6, 1, 6, -1, 0, 6, 10, 0, 0, 5
     );
@@ -28,6 +31,7 @@ public final class UnitAnimationConfigs {
             case PIKEMAN -> PIKEMAN;
             case ARCHER -> ARCHER;
             case GRIFFIN -> GRIFFIN;
+            case CAVALIER -> CAVALIER;
             case ANGEL -> ANGEL;
         };
     }

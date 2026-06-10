@@ -9,6 +9,8 @@ public enum UnitType {
 
     GRIFFIN(25, 8, 8, 3, 6, 6, "Griffin", CASTLE),
 
+    CAVALIER(100, 15, 15, 15, 25, 7, "Cavalier", CASTLE),
+
     ANGEL(200, 20, 20, 50, 50, 12, "Angel", CASTLE);
 
     private final int maxHp;
