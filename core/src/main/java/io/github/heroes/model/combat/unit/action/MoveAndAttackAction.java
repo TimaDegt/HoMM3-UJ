@@ -54,8 +54,8 @@ public class MoveAndAttackAction implements BattleAction {
             attackPosition,
             path
         ));
-        events.addAll(combatResolver.attack(state, attacker, target));
         attacker.changePosition(attackPosition);
+        events.addAll(combatResolver.attack(state, attacker, target));
         return events;
     }
 
