@@ -2,6 +2,7 @@ package io.github.heroes.setup;
 
 import io.github.heroes.control.BattleController;
 import io.github.heroes.model.combat.BattleEngine;
+import io.github.heroes.model.magic.Spells;
 import io.github.heroes.model.state.unit.stack.ArcherUnitStack;
 import io.github.heroes.model.state.Army;
 import io.github.heroes.model.state.BattleField;
@@ -36,15 +37,25 @@ public class BattleFactoryEasy {
         playerTwoArmy.addUnit(new DefaultUnitStack(UnitType.GRIFFIN, 2, new Position(13, 7), Player.PLAYER_TWO));
         playerTwoArmy.addUnit(new DefaultUnitStack(UnitType.ANGEL, 1, new Position(13, 9), Player.PLAYER_TWO));
 
+        Hero playerOneHero = new Hero("Knight", 2, 2, 1, 5);
+        playerOneHero.getSpellBook().learnSpell(Spells.MAGIC_ARROW.getSpell());
+        playerOneHero.getSpellBook().learnSpell(Spells.HASTE.getSpell());
+        playerOneHero.getSpellBook().learnSpell(Spells.BLESS.getSpell());
+
+        Hero playerTwoHero = new Hero("Warlock", 2, 2, 1, 5);
+        playerTwoHero.getSpellBook().learnSpell(Spells.MAGIC_ARROW.getSpell());
+        playerTwoHero.getSpellBook().learnSpell(Spells.SLOW.getSpell());
+        playerTwoHero.getSpellBook().learnSpell(Spells.CURSE.getSpell());
+
         BattlePlayer playerOne = new BattlePlayer(
             Player.PLAYER_ONE,
-            new Hero("Knight", 2, 2, 1, 1),
+            playerOneHero,
             playerOneArmy
         );
 
         BattlePlayer playerTwo = new BattlePlayer(
             Player.PLAYER_TWO,
-            new Hero("Warlock", 2, 2, 1, 1),
+            playerTwoHero,
             playerTwoArmy
         );
 

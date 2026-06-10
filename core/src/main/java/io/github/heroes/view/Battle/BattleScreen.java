@@ -18,11 +18,13 @@ import io.github.heroes.view.Battle.animation.BattleAnimationPlayer;
 import io.github.heroes.view.Main;
 import io.github.heroes.view.Screens.LobbyScreen;
 import io.github.heroes.view.Screens.VictoryScreen;
+import io.github.heroes.view.spellBook.SpellBookDisplay;
 
 public class BattleScreen extends ScreenAdapter {
     private final Main game;
     private final BattleAnimationPlayer animationPlayer;
     private final BattleRenderer battleRenderer;
+    private final SpellBookDisplay spellBookDisplay;
     private final Stage stage;
     private final Skin skin;
     private final UnitInfoPopup unitInfoPopup;
@@ -30,14 +32,20 @@ public class BattleScreen extends ScreenAdapter {
     private final BattleInputHandler battleInputHandler;
     private BattleActionPanel actionPanel;
     private Music battleMusic;
+    private boolean battleInputEnabled = true;
 
     public BattleScreen(Main game, BattleController battleController) {
         this.game = game;
         this.battleController = battleController;
         this.animationPlayer = new BattleAnimationPlayer();
-        this.battleRenderer = new BattleRenderer(battleController, animationPlayer);
         stage = new Stage(new ScreenViewport());
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+        spellBookDisplay = new SpellBookDisplay(skin, this::onSpellSelected);
+        this.battleRenderer = new BattleRenderer(
+            battleController,
+            animationPlayer,
+            spellBookDisplay
+        );
         unitInfoPopup = new UnitInfoPopup(skin);
         battleInputHandler = new BattleInputHandler(
             battleController,
@@ -74,13 +82,35 @@ public class BattleScreen extends ScreenAdapter {
             battleController.getTurnQueue(),
             battleInputHandler::onDefendClicked,
             battleInputHandler::onWaitClicked,
-            battleInputHandler::onSpellBookClicked,
+            this::onSpellBookClicked,
             this::exitToLobby,
             this::exitToLobby
         );
         actionPanel.addTo(stage);
 
         unitInfoPopup.addTo(stage);
+        spellBookDisplay.addTo(stage);
+    }
+
+    private void onSpellBookClicked() {
+        if (spellBookDisplay.isActive()) {
+            spellBookDisplay.setActive(false);
+            setBattleInputEnabled(true);
+            return;
+        }
+        if (!battleInputEnabled) return;
+
+        spellBookDisplay.setSpells(battleController.getActiveSpells());
+        spellBookDisplay.setActive(true);
+        setBattleInputEnabled(false);
+    }
+
+    private void onSpellSelected(int spellIndex) {
+        ActionResult result = battleController.onSpellSelected(spellIndex);
+        if (result.successful()) {
+            spellBookDisplay.setActive(false);
+            setBattleInputEnabled(true);
+        }
     }
 
     private void setupInput() {
@@ -99,11 +129,13 @@ public class BattleScreen extends ScreenAdapter {
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
+        battleRenderer.renderCursor();
     }
 
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+        spellBookDisplay.resize(width, height);
         BattleSnapshot battle = battleController.getBattleSnapshot();
         BattleViewConfig.updateDimensions(
             width,
@@ -118,6 +150,7 @@ public class BattleScreen extends ScreenAdapter {
             battleMusic.stop();
             battleMusic.dispose();
         }
+        spellBookDisplay.dispose();
         stage.dispose();
         skin.dispose();
         unitInfoPopup.dispose();
@@ -126,6 +159,7 @@ public class BattleScreen extends ScreenAdapter {
     }
 
     public void setBattleInputEnabled(boolean enabled) {
+        battleInputEnabled = enabled;
         battleInputHandler.setBattleInputEnabled(enabled);
         actionPanel.setBattleInputEnabled(enabled);
     }

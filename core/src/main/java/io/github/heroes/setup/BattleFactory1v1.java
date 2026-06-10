@@ -2,6 +2,7 @@ package io.github.heroes.setup;
 
 import io.github.heroes.control.BattleController;
 import io.github.heroes.model.combat.BattleEngine;
+import io.github.heroes.model.magic.Spells;
 import io.github.heroes.model.state.unit.stack.ArcherUnitStack;
 import io.github.heroes.model.state.Army;
 import io.github.heroes.model.state.BattleField;
@@ -35,15 +36,23 @@ public class BattleFactory1v1 {
         playerTwoArmy.addUnit(new ArcherUnitStack(2, new Position(13, 3), Player.PLAYER_TWO));
         playerTwoArmy.addUnit(new DefaultUnitStack(UnitType.CAVALIER,3, new Position(13, 7), Player.PLAYER_TWO));
 
+        Hero playerOneHero = new Hero("Knight", 2, 2, 1, 1);
+        playerOneHero.getSpellBook().learnSpell(Spells.MAGIC_ARROW.getSpell());
+        playerOneHero.getSpellBook().learnSpell(Spells.HASTE.getSpell());
+
+        Hero playerTwoHero = new Hero("Warlock", 2, 2, 1, 1);
+        playerTwoHero.getSpellBook().learnSpell(Spells.MAGIC_ARROW.getSpell());
+        playerTwoHero.getSpellBook().learnSpell(Spells.SLOW.getSpell());
+
         BattlePlayer playerOne = new BattlePlayer(
             Player.PLAYER_ONE,
-            new Hero("Knight", 2, 2, 1, 1),
+            playerOneHero,
             playerOneArmy
         );
 
         BattlePlayer playerTwo = new BattlePlayer(
             Player.PLAYER_TWO,
-            new Hero("Warlock", 2, 2, 1, 1),
+            playerTwoHero,
             playerTwoArmy
         );
 

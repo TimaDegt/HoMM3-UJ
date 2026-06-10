@@ -14,10 +14,7 @@ public class DispelSpell extends Spell {
     }
 
     @Override
-    public void cast(Hero caster, UnitStack target) {
-        if (!canCast(caster)) return;
-        caster.spendMana(getManaCost(caster));
-
+    protected void applyEffect(Hero caster, UnitStack target) {
         target.clearAllBuffsAndDebuffs();
 
         if (baseHeal != null) {

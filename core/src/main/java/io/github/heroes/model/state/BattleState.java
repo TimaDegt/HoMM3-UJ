@@ -1,5 +1,6 @@
 package io.github.heroes.model.state;
 
+import io.github.heroes.model.magic.Spell;
 import io.github.heroes.model.state.unit.stack.UnitStack;
 
 public class BattleState {
@@ -11,6 +12,8 @@ public class BattleState {
     private UnitStack activeUnit;
     private Player winner;
     private int round;
+    private boolean magicMode;
+    private Spell chosenSpell;
 
     public BattleState(BattleField field, BattlePlayer playerOne, BattlePlayer playerTwo, boolean isBot) {
         if (field == null) {
@@ -28,6 +31,8 @@ public class BattleState {
         this.playerTwo = playerTwo;
         this.isBot = isBot;
         this.round = 1;
+        this.magicMode = false;
+        this.chosenSpell = null;
     }
 
     public boolean isCurrentPlayerBot(UnitStack activeUnit) {
@@ -69,6 +74,25 @@ public class BattleState {
 
     public void nextRound() {
         round++;
+    }
+
+    public boolean isMagicMode() {
+        return magicMode;
+    }
+
+    public Spell getChosenSpell() {
+        return chosenSpell;
+    }
+
+    public void selectSpell(Spell spell) {
+        if (spell == null) throw new IllegalArgumentException("Spell cannot be null");
+        chosenSpell = spell;
+        magicMode = true;
+    }
+
+    public void clearMagicMode() {
+        chosenSpell = null;
+        magicMode = false;
     }
 
     public boolean isFinished() {

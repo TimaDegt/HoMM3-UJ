@@ -2,12 +2,12 @@ package io.github.heroes.model.combat;
 
 import io.github.heroes.model.combat.unit.action.*;
 import io.github.heroes.model.combat.user.action.AffectPositionUserAction;
-import io.github.heroes.model.combat.user.action.CastSpellUserAction;
 import io.github.heroes.model.combat.user.action.DefendUserAction;
 import io.github.heroes.model.combat.user.action.NoOpUserAction;
-import io.github.heroes.model.combat.user.action.OpenSpellBookUserAction;
+import io.github.heroes.model.combat.user.action.SelectSpellUserAction;
 import io.github.heroes.model.combat.user.action.UserAction;
 import io.github.heroes.model.combat.user.action.WaitUserAction;
+import io.github.heroes.model.magic.Spell;
 import io.github.heroes.model.snapshot.BattleSnapshot;
 import io.github.heroes.model.snapshot.TurnQueueEntrySnapshot;
 import io.github.heroes.model.state.BattleState;
@@ -46,12 +46,16 @@ public class BattleEngine {
         }
 
         if (events.isEmpty())return ActionResult.failure();
+        if (battleAction instanceof CastSpellAction) {
+            state.clearMagicMode();
+        }
 
         updateWinner();
 
         if (state.isFinished()) {
             events.add(new BattleEvent.BattleFinished(state.getWinner()));
         } else if (battleAction.endsTurn()) {
+            state.clearMagicMode();
             if (battleAction instanceof WaitAction) turnQueue.waitCurrentUnit();
             else turnQueue.nextTurn();
         }
@@ -65,6 +69,12 @@ public class BattleEngine {
 
     public UnitStack getActiveUnit() {
         return state.getActiveUnit();
+    }
+
+    public List<Spell> getActiveSpells() {
+        UnitStack activeUnit = getActiveUnit();
+        if (activeUnit == null) return List.of();
+        return getActiveHero(activeUnit).getSpellBook().getSpells();
     }
 
     public List<TurnQueueEntrySnapshot> getTurnQueueOrder() {
@@ -101,10 +111,11 @@ public class BattleEngine {
         UnitStack activeUnit = getActiveUnit();
         if (state.isFinished()
             || activeUnit == null
-            || !activeUnit.isAlive()
-            || !state.getField().isInside(targetPosition)) {
+            || !activeUnit.isAlive()) {
             return BattleActionPreview.INVALID;
         }
+        if (state.isMagicMode()) return BattleActionPreview.DEFAULT;
+        if (!state.getField().isInside(targetPosition)) return BattleActionPreview.INVALID;
 
         UnitStack target = findUnitAt(targetPosition);
         if (target == null) {
@@ -159,17 +170,11 @@ public class BattleEngine {
         if (action instanceof WaitUserAction) {
             return new WaitAction(activeUnit);
         }
-        if (action instanceof CastSpellUserAction castSpellAction) {
-            UnitStack target = findUnitAt(castSpellAction.getTargetPosition());
-            if (target == null) return null;
-            return new CastSpellAction(
-                getActiveHero(activeUnit),
-                castSpellAction.getSpell(),
-                target
-            );
-        }
-        if (action instanceof OpenSpellBookUserAction) {
-            return new OpenSpellBookAction(getActiveHero(activeUnit).getSpellBook());
+        if (action instanceof SelectSpellUserAction selectSpellAction) {
+            int spellIndex = selectSpellAction.getSpellIndex();
+            List<Spell> spells = getActiveSpells();
+            if (spellIndex < 0 || spellIndex >= spells.size()) return null;
+            return new SelectSpellAction(spellIndex, spells.get(spellIndex));
         }
         if (action instanceof NoOpUserAction) {
             return new NoAction();
@@ -183,6 +188,15 @@ public class BattleEngine {
     ) {
         Position affectedPosition = action.getAffectedPosition();
         UnitStack target = findUnitAt(affectedPosition);
+
+        if (state.isMagicMode()) {
+            if (target == null || state.getChosenSpell() == null) return null;
+            return new CastSpellAction(
+                getActiveHero(activeUnit),
+                state.getChosenSpell(),
+                target
+            );
+        }
 
         if (target == null) return new MoveAction(activeUnit, affectedPosition);
         if (target.getOwner() == activeUnit.getOwner()) return null;

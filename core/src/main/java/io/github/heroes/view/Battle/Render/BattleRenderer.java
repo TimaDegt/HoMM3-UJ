@@ -18,7 +18,6 @@ import io.github.heroes.view.Battle.BattleViewConfig;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 import io.github.heroes.view.Battle.animation.BattleAnimationPlayer;
 import io.github.heroes.view.Battle.animation.FrameData;
-import io.github.heroes.view.Battle.animation.UnitAnimationConfigs;
 import io.github.heroes.view.spellBook.SpellBookDisplay;
 
 import java.util.ArrayList;
@@ -45,7 +44,8 @@ public class BattleRenderer {
 
     public BattleRenderer(
         BattleController battleController,
-        BattleAnimationPlayer animationPlayer
+        BattleAnimationPlayer animationPlayer,
+        SpellBookDisplay spellBookRenderer
     ) {
         this.battleController = battleController;
         this.animationPlayer = animationPlayer;
@@ -54,7 +54,7 @@ public class BattleRenderer {
         this.batch = new SpriteBatch();
         this.unitTextures = new HashMap<>();
         this.cursorTextures = new HashMap<>();
-        this.spellBookRenderer = new SpellBookDisplay();
+        this.spellBookRenderer = spellBookRenderer;
 
         loadTextures();
     }
@@ -77,7 +77,9 @@ public class BattleRenderer {
     }
 
     private void drawCustomCursor() {
-        CursorType cursorType = Cursor.getCustomCursor(battleController);
+        CursorType cursorType = spellBookRenderer.isActive()
+            ? CursorType.DEFAULT
+            : Cursor.getCustomCursor(battleController);
         if (cursorType == CursorType.NONE) {
             Gdx.graphics.setSystemCursor(com.badlogic.gdx.graphics.Cursor.SystemCursor.Arrow);
             return;
@@ -113,12 +115,10 @@ public class BattleRenderer {
         fieldRenderer.render(noAnimations);
         drawUnits();
         updateActionAnimation(delta);
-        if (spellBookRenderer.isActive()) {
-            batch.begin();
-            spellBookRenderer.render(batch);
-            batch.end();
-        }
-        if (noAnimations) drawCustomCursor();
+    }
+
+    public void renderCursor() {
+        if (allAnimationsFinished()) drawCustomCursor();
     }
 
     public void playActionAnimation(ActionResult result, Runnable onFinished) {
@@ -137,13 +137,15 @@ public class BattleRenderer {
             if (event instanceof BattleEvent.UnitMoved move) {
                 animationPlayer.getAnimationEngine(move.unit()).startMovement(move.path());
             } else if (event instanceof BattleEvent.UnitAttacked attack) {
+                if (!attack.animateAttacker()) {
+                    events.remove(0);
+                    continue;
+                }
                 animationPlayer.getAnimationEngine(attack.attacker()).startAttack(attack.attacker(), attack.target());
             } else if (event instanceof BattleEvent.UnitDamaged damaged) {
                 animationPlayer.getAnimationEngine(damaged.unit()).startReceiveDamage();
             } else if (event instanceof BattleEvent.UnitDied death) {
                 animationPlayer.getAnimationEngine(death.unit()).startDeath();
-            } else if (event instanceof BattleEvent.OpenSpellBook) {
-                spellBookRenderer.setActive(true);
             } else {
                 events.remove(0);
                 continue;
@@ -245,6 +247,7 @@ public class BattleRenderer {
 
     private void drawUnitSprite(UnitSnapshot unit) {
         float hexHeight = BattleViewConfig.HEX_HEIGHT;
+        float hexWidth = BattleViewConfig.HEX_WIDTH;
         float dx = 0;
         float dy = 0;
         FrameData frameData = animationPlayer.getAnimationEngine(unit).nextFrame();
@@ -268,16 +271,13 @@ public class BattleRenderer {
             : unit.owner() == Player.PLAYER_TWO;
         if (flipX) {
             texture.flip(true, false);
+            dx -= spriteSize - hexWidth / 2f;
         }
 
-        float spriteScale = 1.4f;
-        float size = spriteSize * spriteScale;
-        float anchorX = UnitAnimationConfigs.get(unit.type()).getAnchorX();
-        if (flipX) anchorX = spriteSize - anchorX;
-        float drawX = -anchorX * spriteScale + dx;
+        float size = spriteSize * 1.4f;
 
         if (frameData.isMoving()) {
-            batch.draw(texture, drawX, -hexHeight / 4f + dy, size, size);
+            batch.draw(texture, -hexHeight / 2f + dx, -hexHeight / 4f + dy, size, size);
             return;
         }
         if (flipX) {
@@ -286,7 +286,7 @@ public class BattleRenderer {
         Vector2 center = BattlefieldGeometry.positionToScreen(unit.position());
         batch.draw(
             texture,
-            center.x + drawX,
+            center.x - hexHeight / 2f + dx,
             center.y - hexHeight / 4f + dy,
             size,
             size

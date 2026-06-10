@@ -34,6 +34,7 @@ public class Cursor {
         );
 
         return switch (preview) {
+            case DEFAULT -> CursorType.DEFAULT;
             case MOVE -> CursorType.MOVE;
             case RANGED_ATTACK -> CursorType.RANGER;
             case RANGED_ATTACK_UNAVAILABLE -> CursorType.RANGERBROKEN;

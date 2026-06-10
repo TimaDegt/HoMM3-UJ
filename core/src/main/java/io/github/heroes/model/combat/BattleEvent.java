@@ -19,7 +19,15 @@ public interface BattleEvent {
         }
     }
 
-    record UnitAttacked(UnitSnapshot attacker, UnitSnapshot target) implements BattleEvent {}
+    record UnitAttacked(
+        UnitSnapshot attacker,
+        UnitSnapshot target,
+        boolean animateAttacker
+    ) implements BattleEvent {
+        public UnitAttacked(UnitSnapshot attacker, UnitSnapshot target) {
+            this(attacker, target, true);
+        }
+    }
 
     record UnitWaited(UnitSnapshot unit) implements BattleEvent {}
 
@@ -34,7 +42,7 @@ public interface BattleEvent {
 
     record UnitDefended(UnitSnapshot unit) implements BattleEvent {}
 
-    record OpenSpellBook() implements BattleEvent {}
+    record SpellSelected(int spellIndex) implements BattleEvent {}
 
     record BattleFinished(Player winner) implements BattleEvent {}
 }

@@ -23,10 +23,7 @@ public class BuffSpell extends Spell {
     }
 
     @Override
-    public void cast(Hero caster, UnitStack target) {
-        if (!canCast(caster)) return;
-        caster.spendMana(getManaCost(caster));
-
+    protected void applyEffect(Hero caster, UnitStack target) {
         int schoolLevel = caster.getMagicSchoolLevel(this.school);
 
         if (baseHeal != null) target.heal(baseHeal[schoolLevel] + caster.getSpellPower() * healPerSpellPower);

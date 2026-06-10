@@ -22,11 +22,7 @@ public class AttackSpell extends Spell {
     }
 
     @Override
-    public void cast(Hero caster, UnitStack target) {
-        if (!canCast(caster)) {
-            return;
-        }
-        caster.spendMana(getManaCost(caster));
+    protected void applyEffect(Hero caster, UnitStack target) {
         target.takeDamage(getDamage(caster));
     }
 }

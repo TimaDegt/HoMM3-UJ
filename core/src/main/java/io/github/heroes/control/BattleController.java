@@ -5,9 +5,8 @@ import io.github.heroes.model.combat.ActionResult;
 import io.github.heroes.model.combat.BattleActionPreview;
 import io.github.heroes.model.combat.BattleEngine;
 import io.github.heroes.model.combat.user.action.AffectPositionUserAction;
-import io.github.heroes.model.combat.user.action.CastSpellUserAction;
 import io.github.heroes.model.combat.user.action.DefendUserAction;
-import io.github.heroes.model.combat.user.action.OpenSpellBookUserAction;
+import io.github.heroes.model.combat.user.action.SelectSpellUserAction;
 import io.github.heroes.model.combat.user.action.UserAction;
 import io.github.heroes.model.combat.user.action.WaitUserAction;
 import io.github.heroes.model.magic.Spell;
@@ -44,12 +43,8 @@ public class BattleController {
         return performAction(new WaitUserAction());
     }
 
-    public ActionResult onSpellBookClicked() {
-        return performAction(new OpenSpellBookUserAction());
-    }
-
-    public ActionResult onSpellCast(Spell spell, Position targetPosition) {
-        return performAction(new CastSpellUserAction(spell, targetPosition));
+    public ActionResult onSpellSelected(int spellIndex) {
+        return performAction(new SelectSpellUserAction(spellIndex));
     }
 
     public ActionResult performAction(UserAction action) {
@@ -73,6 +68,10 @@ public class BattleController {
 
     public List<TurnQueueEntrySnapshot> getTurnQueue() {
         return battleEngine.getTurnQueueOrder();
+    }
+
+    public List<Spell> getActiveSpells() {
+        return battleEngine.getActiveSpells();
     }
 
     public Set<Position> getReachablePositions() {

@@ -12,14 +12,8 @@ public class MagicArrowSpell extends Spell {
     }
 
     @Override
-    public void cast(Hero caster, UnitStack target) {
-        if (!canCast(caster)) {
-            throw new IllegalStateException("Not enough mana");
-        }
-
+    protected void applyEffect(Hero caster, UnitStack target) {
         int damage = BASE_DAMAGE + caster.getSpellPower() * DAMAGE_PER_SPELL_POWER;
-
         target.takeDamage(damage);
-        caster.spendMana(getManaCost(caster));
     }
 }

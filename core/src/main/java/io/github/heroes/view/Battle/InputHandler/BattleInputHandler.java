@@ -86,12 +86,6 @@ public class BattleInputHandler extends InputAdapter {
         battleScreen.handleActionResult(actionResult);
     }
 
-    public void onSpellBookClicked() {
-        if (!battleInputEnabled) return;
-        actionResult = battleController.onSpellBookClicked();
-        battleScreen.handleActionResult(actionResult);
-    }
-
     public void onExitClicked() {
         exitBattle.run();
     }

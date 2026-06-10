@@ -24,6 +24,7 @@ public class BattleActionPanel {
     private final Runnable onSurrenderClicked;
     private final Runnable onRetreatClicked;
     private final Runnable onSpellBookClicked;
+    private ImageButton spellBookButton;
     private enum ActionButtonType {
         SURRENDER,
         RETREAT,
@@ -160,6 +161,9 @@ public class BattleActionPanel {
         else if (name.equals("Defence")) type = ActionButtonType.DEFENCE;
         assert (type != null);
 
+        if (type == ActionButtonType.SPELL_BOOK) {
+            spellBookButton = btn;
+        }
         btn.setDisabled(!isEnabledActionButton(type));
         if (isEnabledActionButton(type)) {
             battleActionButtons.add(btn);
@@ -181,7 +185,7 @@ public class BattleActionPanel {
 
     public void setBattleInputEnabled(boolean enabled) {
         for (ImageButton button : battleActionButtons) {
-            button.setDisabled(!enabled);
+            button.setDisabled(!enabled && button != spellBookButton);
         }
     }
 
