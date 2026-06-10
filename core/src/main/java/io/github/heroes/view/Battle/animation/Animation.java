@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import io.github.heroes.model.snapshot.UnitSnapshot;
 import io.github.heroes.model.state.Position;
-import io.github.heroes.model.state.unit.stack.UnitStack;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 
 import java.util.ArrayList;
@@ -12,8 +11,8 @@ import java.util.List;
 
 
 public class Animation {
-    private final float MOVEMENT_SPEED = 1f/6f;
-    private final float ANIMATION_SPEED = 1f/12f;
+    private final float MOVEMENT_SPEED = 1f/5f;
+    private final float ANIMATION_SPEED = 1f/8f;
 
     private final AnimParams params;
 
