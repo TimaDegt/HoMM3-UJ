@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.github.heroes.view.Battle.BattleViewConfig.ANIMATION_SPEED;
-import static io.github.heroes.view.Battle.BattleViewConfig.MOVEMENT_SPEED;
+import static io.github.heroes.view.Battle.BattleViewConfig.MOVEMENT_DURATION;
 
 public class Animation {
     private final AnimParams params;
@@ -83,8 +83,7 @@ public class Animation {
                 size
             );
         }
-        int floorIndex = 0;
-        while (floorIndex + 1 <= frameIndex) ++floorIndex;
+        int floorIndex = Math.min((int) frameIndex, Math.max(length - 1, 0));
         float dx = 0f, dy = 0f;
         boolean flipX = false;
         if (animType == AnimParams.AnimType.MOVE) {
@@ -93,8 +92,9 @@ public class Animation {
             Vector2 currentPos = BattlefieldGeometry.positionToScreen(currentTile);
             Vector2 nextPos = BattlefieldGeometry.positionToScreen(nextTile);
             if (nextPos.x < currentPos.x) flipX = true;
-            dx = (nextPos.x - currentPos.x) * floorIndex / (1f * length) + currentPos.x;
-            dy = (nextPos.y - currentPos.y) * floorIndex / (1f * length) + currentPos.y;
+            float progress = Math.min(frameIndex / Math.max(length, 1), 1f);
+            dx = (nextPos.x - currentPos.x) * progress + currentPos.x;
+            dy = (nextPos.y - currentPos.y) * progress + currentPos.y;
         }
         return new FrameData(
             size * floorIndex,
@@ -110,8 +110,12 @@ public class Animation {
     public void updatik(float delta) {
         if (animType == AnimParams.AnimType.IDLE || animType == AnimParams.AnimType.DEAD) return;
 
-        frameIndex += delta / (animType == AnimParams.AnimType.MOVE ? MOVEMENT_SPEED : ANIMATION_SPEED);
         int length = params.currentLength(animType);
+        if (animType == AnimParams.AnimType.MOVE) {
+            frameIndex += delta * length / MOVEMENT_DURATION;
+        } else {
+            frameIndex += delta / ANIMATION_SPEED;
+        }
         if (frameIndex >= length) {
             if (animType == AnimParams.AnimType.DEATH) {
                 animType = AnimParams.AnimType.DEAD;

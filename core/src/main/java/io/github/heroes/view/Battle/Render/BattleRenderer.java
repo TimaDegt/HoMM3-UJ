@@ -18,6 +18,7 @@ import io.github.heroes.view.Battle.BattleViewConfig;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 import io.github.heroes.view.Battle.animation.BattleAnimationPlayer;
 import io.github.heroes.view.Battle.animation.FrameData;
+import io.github.heroes.view.Battle.animation.UnitAnimationConfigs;
 import io.github.heroes.view.spellBook.SpellBookDisplay;
 
 import java.util.ArrayList;
@@ -244,7 +245,6 @@ public class BattleRenderer {
 
     private void drawUnitSprite(UnitSnapshot unit) {
         float hexHeight = BattleViewConfig.HEX_HEIGHT;
-        float hexWidth = BattleViewConfig.HEX_WIDTH;
         float dx = 0;
         float dy = 0;
         FrameData frameData = animationPlayer.getAnimationEngine(unit).nextFrame();
@@ -268,19 +268,22 @@ public class BattleRenderer {
             : unit.owner() == Player.PLAYER_TWO;
         if (flipX) {
             texture.flip(true, false);
-            dx -= spriteSize - hexWidth / 2f;
         }
 
-        float size = spriteSize * 1.4f;
+        float spriteScale = 1.4f;
+        float size = spriteSize * spriteScale;
+        float anchorX = UnitAnimationConfigs.get(unit.type()).getAnchorX();
+        if (flipX) anchorX = spriteSize - anchorX;
+        float drawX = -anchorX * spriteScale + dx;
 
         if (frameData.isMoving()) {
-            batch.draw(texture, -hexHeight / 2f + dx, -hexHeight / 4f + dy, size, size);
+            batch.draw(texture, drawX, -hexHeight / 4f + dy, size, size);
             return;
         }
         Vector2 center = BattlefieldGeometry.positionToScreen(unit.position());
         batch.draw(
             texture,
-            center.x - hexHeight / 2f + dx,
+            center.x + drawX,
             center.y - hexHeight / 4f + dy,
             size,
             size

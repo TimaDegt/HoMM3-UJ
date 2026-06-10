@@ -10,8 +10,7 @@ public class BattleViewConfig {
     public static final float ACTION_PANEL_BASE_WIDTH = 800f;
     public static float ACTION_PANEL_SCALE;
     public static float ANIMATION_SPEED = 0.08f;
-    public static int MOVEMENT_FRAMES = 24;
-    public static float MOVEMENT_SPEED = 1f/(MOVEMENT_FRAMES*1f);
+    public static float MOVEMENT_DURATION = 0.25f;
     public static final float CURSOR_SCALE = 2.0f;
 
     public static final int UNIT_SPRITESHEET_SIZE = 1000;

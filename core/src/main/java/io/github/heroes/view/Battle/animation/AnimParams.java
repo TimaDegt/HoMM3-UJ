@@ -2,6 +2,7 @@ package io.github.heroes.view.Battle.animation;
 
 public class AnimParams {
     private final int spriteSize;
+    private final float anchorX;
     private final int deathAnimIndex;
     private final int deathAnimLength;
     private final int receiveDmgAnimIndex;
@@ -27,10 +28,11 @@ public class AnimParams {
         RANDOMANIM;
     }
 
-    public AnimParams(int spriteSize, int deathAnimIndex, int deathAnimLength, int receiveDmgAnimIndex, int receiveDmgAnimLength,
+    public AnimParams(int spriteSize, float anchorX, int deathAnimIndex, int deathAnimLength, int receiveDmgAnimIndex, int receiveDmgAnimLength,
                       int attackAnimIndex, int attackAnimLength, int rangeAttackAnimIndex, int rangeAttackAnimLength,
                       int moveAnimIndex, int moveAnimLength, int idleIndex, int randomAnimIndex, int randomAnimLength) {
         this.spriteSize = spriteSize;
+        this.anchorX = anchorX;
         this.deathAnimIndex = deathAnimIndex;
         this.deathAnimLength = deathAnimLength;
         this.receiveDmgAnimIndex = receiveDmgAnimIndex;
@@ -104,5 +106,9 @@ public class AnimParams {
 
     public int getSize() {
         return spriteSize;
+    }
+
+    public float getAnchorX() {
+        return anchorX;
     }
 }
