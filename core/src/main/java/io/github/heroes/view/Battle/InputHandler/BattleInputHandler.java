@@ -51,8 +51,7 @@ public class BattleInputHandler extends InputAdapter {
             Position attackFromPosition = BattlefieldGeometry.findNearestNeighbor(
                 clickedPosition,
                 screenX,
-                worldY,
-                battle
+                worldY
             );
 
             setBattleInputEnabled(false);
