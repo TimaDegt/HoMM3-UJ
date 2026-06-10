@@ -15,6 +15,8 @@ public class AnimParams {
     private final int idleIndex;
     private final int randomAnimIndex;
     private final int randomAnimLength;
+    private final float offsetX;
+    private final float offsetY;
 
     public enum AnimType {
         IDLE,
@@ -29,7 +31,7 @@ public class AnimParams {
 
     public AnimParams(int spriteSize, int deathAnimIndex, int deathAnimLength, int receiveDmgAnimIndex, int receiveDmgAnimLength,
                       int attackAnimIndex, int attackAnimLength, int rangeAttackAnimIndex, int rangeAttackAnimLength,
-                      int moveAnimIndex, int moveAnimLength, int idleIndex, int randomAnimIndex, int randomAnimLength) {
+                      int moveAnimIndex, int moveAnimLength, int idleIndex, int randomAnimIndex, int randomAnimLength, int offsetX, int  offsetY) {
         this.spriteSize = spriteSize;
         this.deathAnimIndex = deathAnimIndex;
         this.deathAnimLength = deathAnimLength;
@@ -44,6 +46,8 @@ public class AnimParams {
         this.idleIndex = idleIndex;
         this.randomAnimIndex = randomAnimIndex;
         this.randomAnimLength = randomAnimLength;
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
     }
 
     public int currentCoordinate(AnimType animType) {
@@ -105,4 +109,6 @@ public class AnimParams {
     public int getSize() {
         return spriteSize;
     }
+    public float getOffsetX() { return offsetX; }
+    public float getOffsetY() { return offsetY; }
 }

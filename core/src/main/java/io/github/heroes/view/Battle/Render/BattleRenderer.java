@@ -136,7 +136,7 @@ public class BattleRenderer {
             if (event instanceof BattleEvent.UnitMoved move) {
                 animationPlayer.getAnimationEngine(move.unit()).startMovement(move.path());
             } else if (event instanceof BattleEvent.UnitAttacked attack) {
-                animationPlayer.getAnimationEngine(attack.attacker()).startAttack();
+                animationPlayer.getAnimationEngine(attack.attacker()).startAttack(attack.attacker(), attack.target());
             } else if (event instanceof BattleEvent.UnitDamaged damaged) {
                 animationPlayer.getAnimationEngine(damaged.unit()).startReceiveDamage();
             } else if (event instanceof BattleEvent.UnitDied death) {
@@ -276,6 +276,9 @@ public class BattleRenderer {
         if (frameData.isMoving()) {
             batch.draw(texture, -hexHeight / 2f + dx, -hexHeight / 4f + dy, size, size);
             return;
+        }
+        if (flipX) {
+            dx -= 2*frameData.getDx();
         }
         Vector2 center = BattlefieldGeometry.positionToScreen(unit.position());
         batch.draw(

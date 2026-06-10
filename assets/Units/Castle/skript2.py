@@ -3,19 +3,20 @@ import numpy as np
 import os
 
 # Configuration
-input_dir = "frames/"
-output_file = "textures/Cavalier_spritesheet.png"
+input_dir = "textures/griffin_frames"
+output_file = "textures/Griffin_spritesheet.png"
 sheet_size = 1500
-slot_size = 150
+slot_size = 152
 
 # 1. Define your layout: Each list represents a row, containing indices of frames
 # Example: Row 0 has 4 sprites, Row 1 has 3, etc.
 layout = [
-    [0, 1, 2, 3, 4, 5, 6, 7, 8],
-    [9, 10, 11, 12, 13, 14, 15, 16, 17],
-    [42, 43, 44, 45, 46],
-    [34, 35, 36, 37, 38, 39, 40, 41],
-    [56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72]  
+    [175],
+    [73,80,84,82,77,71,65,59],
+    [96,100,99,98,97],
+    [113,114,116,115,111,110,112],
+    [163,169,167,168,162,164,166,165],
+    [45,47,46,49,50]
 ]
 
 # Create a transparent 1000x1000 canvas
@@ -27,7 +28,7 @@ for row_idx, frame_indices in enumerate(layout):
     for col_idx, frame_idx in enumerate(frame_indices):
         
         # Load the specific frame
-        frame_path = os.path.join(input_dir, f"frame_{frame_idx:03d}.png")
+        frame_path = os.path.join(input_dir, f"frame_{frame_idx:02d}.png")
         if not os.path.exists(frame_path):
             print(f"Warning: {frame_path} not found, skipping.")
             continue

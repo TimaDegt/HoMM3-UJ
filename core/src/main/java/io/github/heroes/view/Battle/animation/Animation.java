@@ -1,16 +1,20 @@
 package io.github.heroes.view.Battle.animation;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
+import io.github.heroes.model.snapshot.UnitSnapshot;
 import io.github.heroes.model.state.Position;
+import io.github.heroes.model.state.unit.stack.UnitStack;
 import io.github.heroes.view.Battle.BattlefieldGeometry;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.heroes.view.Battle.BattleViewConfig.ANIMATION_SPEED;
-import static io.github.heroes.view.Battle.BattleViewConfig.MOVEMENT_SPEED;
 
 public class Animation {
+    private final float MOVEMENT_SPEED = 1f/6f;
+    private final float ANIMATION_SPEED = 1f/12f;
+
     private final AnimParams params;
 
     private AnimParams.AnimType animType = AnimParams.AnimType.IDLE;
@@ -41,7 +45,14 @@ public class Animation {
         this.frameIndex = 0;
     }
 
-    public void startAttack() {
+    private boolean needsFlip = false;
+    private Position currentPosition = null;
+    public void startAttack(UnitSnapshot attacker, UnitSnapshot target) {
+        //Gdx.app.log("ANIM_DEBUG", "Start attack");
+        Position attackerPos = attacker.position();
+        Position targetPos = target.position();
+        needsFlip = attackerPos.x() > targetPos.x();
+        currentPosition = attackerPos;
         this.animType = AnimParams.AnimType.ATTACK;
         this.frameIndex = 0;
     }
@@ -73,19 +84,27 @@ public class Animation {
             return new FrameData(
                 0,
                 coordinate,
-                size
+                size,
+                params.getOffsetX(),
+                params.getOffsetY(),
+                false,
+                false
             );
         }
         if (animType == AnimParams.AnimType.DEAD) {
             return new FrameData(
                 (Math.max(length, 1) - 1) * size,
                 coordinate,
-                size
+                size,
+                params.getOffsetX(),
+                params.getOffsetY(),
+                false,
+                false
             );
         }
         int floorIndex = 0;
         while (floorIndex + 1 <= frameIndex) ++floorIndex;
-        float dx = 0f, dy = 0f;
+        float dx = params.getOffsetX(), dy = params.getOffsetY();
         boolean flipX = false;
         if (animType == AnimParams.AnimType.MOVE) {
             Position currentTile = movementPath.get(0);
@@ -93,9 +112,15 @@ public class Animation {
             Vector2 currentPos = BattlefieldGeometry.positionToScreen(currentTile);
             Vector2 nextPos = BattlefieldGeometry.positionToScreen(nextTile);
             if (nextPos.x < currentPos.x) flipX = true;
-            dx = (nextPos.x - currentPos.x) * floorIndex / (1f * length) + currentPos.x;
-            dy = (nextPos.y - currentPos.y) * floorIndex / (1f * length) + currentPos.y;
+            dx += (nextPos.x - currentPos.x) * floorIndex / (1f * length) + currentPos.x;
+            dy += (nextPos.y - currentPos.y) * floorIndex / (1f * length) + currentPos.y;
         }
+        if (animType == AnimParams.AnimType.ATTACK) {
+            dx += BattlefieldGeometry.positionToScreen(currentPosition).x;
+            dy += BattlefieldGeometry.positionToScreen(currentPosition).y;
+            flipX = needsFlip;
+        }
+        if (flipX) dx -= 2*params.getOffsetX();
         return new FrameData(
             size * floorIndex,
             coordinate,
@@ -103,14 +128,14 @@ public class Animation {
             dx,
             dy,
             flipX,
-            animType == AnimParams.AnimType.MOVE
+            animType == AnimParams.AnimType.MOVE || animType == AnimParams.AnimType.ATTACK
         );
     }
 
     public void updatik(float delta) {
         if (animType == AnimParams.AnimType.IDLE || animType == AnimParams.AnimType.DEAD) return;
 
-        frameIndex += delta / (animType == AnimParams.AnimType.MOVE ? MOVEMENT_SPEED : ANIMATION_SPEED);
+        frameIndex += (animType == AnimParams.AnimType.MOVE ? MOVEMENT_SPEED : ANIMATION_SPEED);
         int length = params.currentLength(animType);
         if (frameIndex >= length) {
             if (animType == AnimParams.AnimType.DEATH) {
@@ -129,6 +154,8 @@ public class Animation {
             }
             animType = AnimParams.AnimType.IDLE;
             frameIndex = 0f;
+            needsFlip = false;
+            currentPosition = null;
         }
     }
 }
